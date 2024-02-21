@@ -1,0 +1,67 @@
+\section{Appendix}
+\subsection{Notation}
+In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \texttt{<string>} and \texttt{<f>} for \texttt{<file>} resprectively. Note that \texttt{<f>} can either denote a file in the current directory or a path to a file.\\
+{\small % Smaller font
+\begin{tabularx}{\linewidth}{@{} l>{\ttfamily}lX @{}}
+    \toprule
+    Description          & \normalfont Command        & Remarks         \\
+    \midrule
+    home                 & \textasciitilde{}          &                 \\
+    root                 & /                          &                 \\
+    change directory     & cd <p>                     &                 \\
+                         & cd ..                      & one up          \\
+                         & cd -                       & previous        \\
+    list folder content  & ls                         &                 \\
+                         & ls -altrh                  &                 \\
+    display file content & cat <f>                    &                 \\
+                         & less <f>                   &                 \\
+                         & more <f>                   &                 \\
+    create file          & cat ><f>                   & redirect cat    \\
+    create directory     & mkdir <dir>                &                 \\
+    remove object        & rm <f>                     &                 \\
+                         & rm -rf <p>                 & for dirs, force \\
+    print working dir    & pwd                        &                 \\
+    copy file            & cp <f> <p>                 &                 \\
+                         & cp -a <p> <p>              & copy all        \\
+    move file            & mv <f> <p>                 &                 \\
+    run executable       & <p>                        &                 \\
+                         & ./<f>                      & in current dir  \\
+    change group         & chgrp <group> <f>          &                 \\
+    change owner         & chown <owner> <f>          &                 \\
+                         & chown :<group> <f>         & group owner     \\
+                         & chown <ow>:<gr> <f>        & both            \\
+    disk usage           & df -h                      &                 \\
+    show saved dirs      & dirs -l -v                 &                 \\
+    file space usage     & du -skh \textasciitilde{}/ &                 \\
+    directory usage      & du <p>                     &                 \\
+    write                & echo "content"             &                 \\
+                         & echo "content" > <f>       & to file         \\
+                         & echo \$PWD                 & variable        \\
+                         & echo "content: \$PWD"      &                 \\
+\end{tabularx}
+\begin{tabularx}{\linewidth}{@{} l>{\ttfamily}lX @{}}
+    find file          & find <p> -name "<f>"  & start at <p>                 \\
+                       & find . -name "<f>"    &                              \\
+                       & find . -name "*.txt"  & wildcard                     \\
+                       & find . -name "foo.*"  &                              \\
+    find file          & locate <f>            & find in home                 \\
+    find in file       & grep "<s>" <f>        &                              \\
+                       & grep -i "STRing" <f>  & ignore uppercase/lowercase   \\
+                       & grep -l "<s>" <f>     & list files containing string \\
+    list block devices & lsblk                 &                              \\
+    list usb drivers   & lsusb                 &                              \\
+    zip                & zip <zipname>.zip <f> & decompress                   \\
+                       & unzip <zipname>.zip   &                              \\
+    GNU zip            & gzip <f>              &                              \\
+                       & gzip -k <f>           & retain original file         \\
+                       & gzip -d <f>           & decompress                   \\
+                       & gunzip <zipname>.gz   &                              \\
+    kill process       & kill SIGTERM <PID>    & request stop (default)       \\
+                       & kill SIGKILL <PID>    & force                        \\
+    \bottomrule
+\end{tabularx}
+
+} % End smaller font
+
+
+
