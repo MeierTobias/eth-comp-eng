@@ -1,5 +1,5 @@
 \section{Appendix}
-\subsection{Notation}
+\subsection{Common Linux CLI Commands}
 In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \texttt{<string>} and \texttt{<f>} for \texttt{<file>} resprectively. Note that \texttt{<f>} can either denote a file in the current directory or a path to a file.\\
 {\small % Smaller font
 \begin{tabularx}{\linewidth}{@{} l>{\ttfamily}lX @{}}
@@ -8,6 +8,7 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
     \midrule
     home                 & \textasciitilde{}          &                 \\
     root                 & /                          &                 \\
+    current dir          & .                          &                 \\
     change directory     & cd <p>                     &                 \\
                          & cd ..                      & one up          \\
                          & cd -                       & previous        \\
@@ -17,14 +18,22 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
                          & less <f>                   &                 \\
                          & more <f>                   &                 \\
     create file          & cat ><f>                   & redirect cat    \\
+                         & touch <f>                  &                 \\
+    write                & echo "text"                &                 \\
+                         & echo "text" > <f>          & to file         \\
+                         & echo \$PWD                 & variable        \\
+                         & echo "text: \$PWD"         &                 \\
+    edit in Nano         & nano <f>                   &                 \\
+    edit in Vim          & vim <f>                    &                 \\
     create directory     & mkdir <dir>                &                 \\
     remove object        & rm <f>                     &                 \\
                          & rm -rf <p>                 & for dirs, force \\
     print working dir    & pwd                        &                 \\
+                         & pwd <f>                    & find path       \\
     copy file            & cp <f> <p>                 &                 \\
                          & cp -a <p> <p>              & copy all        \\
     move file            & mv <f> <p>                 &                 \\
-    run executable       & <p>                        &                 \\
+    run executable       & <f>                        & path to file    \\
                          & ./<f>                      & in current dir  \\
     change group         & chgrp <group> <f>          &                 \\
     change owner         & chown <owner> <f>          &                 \\
@@ -34,30 +43,42 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
     show saved dirs      & dirs -l -v                 &                 \\
     file space usage     & du -skh \textasciitilde{}/ &                 \\
     directory usage      & du <p>                     &                 \\
-    write                & echo "content"             &                 \\
-                         & echo "content" > <f>       & to file         \\
-                         & echo \$PWD                 & variable        \\
-                         & echo "content: \$PWD"      &                 \\
 \end{tabularx}
 \begin{tabularx}{\linewidth}{@{} l>{\ttfamily}lX @{}}
-    find file          & find <p> -name "<f>"  & start at <p>                 \\
-                       & find . -name "<f>"    &                              \\
-                       & find . -name "*.txt"  & wildcard                     \\
-                       & find . -name "foo.*"  &                              \\
-    find file          & locate <f>            & find in home                 \\
-    find in file       & grep "<s>" <f>        &                              \\
-                       & grep -i "STRing" <f>  & ignore uppercase/lowercase   \\
-                       & grep -l "<s>" <f>     & list files containing string \\
-    list block devices & lsblk                 &                              \\
-    list usb drivers   & lsusb                 &                              \\
-    zip                & zip <zipname>.zip <f> & decompress                   \\
-                       & unzip <zipname>.zip   &                              \\
-    GNU zip            & gzip <f>              &                              \\
-                       & gzip -k <f>           & retain original file         \\
-                       & gzip -d <f>           & decompress                   \\
-                       & gunzip <zipname>.gz   &                              \\
-    kill process       & kill SIGTERM <PID>    & request stop (default)       \\
-                       & kill SIGKILL <PID>    & force                        \\
+    pipe               & <cmd1>|<cmd2>|...          &                                  \\
+    find file          & find <p> -name "<f>"       & start at <p>                     \\
+                       & find . -name "<f>"         &                                  \\
+                       & find . -name "*.txt"       & wildcard                         \\
+                       & find . -name "foo.*"       &                                  \\
+    find file          & locate <f>                 & find in home                     \\
+    find in file       & grep "<s>" <f>             &                                  \\
+                       & grep -i "STRing" <f>       & ignore case                      \\
+                       & grep -l "<s>" <f>          & list the files containing string \\
+    list block devices & lsblk                      &                                  \\
+    list usb drivers   & lsusb                      &                                  \\
+    mount              & mount <p> <p>              & e.g. /dev/sda /media/usb         \\
+    link               & ln <p> <p>                 & hard link                        \\
+                       & ln -s <p> <p>              & symbolic (soft) link             \\
+    zip                & zip <zipf>.zip <f>         &                                  \\
+                       & unzip <zipf>.zip           &                                  \\
+    GNU zip            & gzip <f>                   &                                  \\
+                       & gzip -k <f>                & retain original file             \\
+                       & gzip -d <f>                & decompress                       \\
+                       & gunzip <zipf>.gz           &                                  \\
+    archive/compress   & tar <f>.tgz <f>            & creates new .tgz if not existant \\
+                       & tar zcvf <f>.tgz <f>       & gzip, new, verbose, filename     \\
+                       & tar cvf <f>.tar <f>        & uncompressed arichve             \\
+                       & tar xvf <f>.tar            & extract                          \\
+    kill process       & kill SIGTERM <PID>         & request stop (default)           \\
+                       & kill SIGKILL <PID>         & force                            \\
+    create cmd alias   & alias <new>="<old>"        &                                  \\
+    save directories   & pushd \textasciitilde<dir> &                                  \\
+    load from stack    & popd                       &                                  \\
+    find PID           & ps -ux                     &                                  \\
+    superuser do       & sudo -h                    & run on host                      \\
+    unmount            & umount                     &                                  \\
+    show path of       & which                      &                                  \\
+    show datatree      & tree -dirsfirst            &                                  \\
     \bottomrule
 \end{tabularx}
 
