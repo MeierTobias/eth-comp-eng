@@ -34,47 +34,47 @@ is used, which allows for addition and subtraction with only one command.
 RISC-V instruction set architecture (isa) \code{RV32I} can be found in Section\ \ref{riscv_isa}.
 
 \subsection{Big-/ Little-Endian}
-A given register \code{t1 = [0xAA,0xBB]} can be represented in memory as
+A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be represented in memory as
 
 \begin{tikzpicture}
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw = none,
         text = black,
         fill = gray!20] (r) at (0,0) {};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,
         fill = blue!40] (r) at (30pt,0) {\fncode{0xAA}};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,] at (30pt,12pt) {\fncode{t1}};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,
         fill = magenta!40] (r) at (60pt,0) {\fncode{0xBB}};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw = none,
         text = black,
         fill = gray!20] (r) at (90pt,0) {};
 
     \node[rectangle,
         anchor = west,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,] at (110pt,0pt) {\fncode{DRAM (big-endian)}};
 
@@ -84,41 +84,41 @@ A given register \code{t1 = [0xAA,0xBB]} can be represented in memory as
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw = none,
         text = black,
         fill = gray!20] (r) at (0,0) {};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,
-        fill = blue!40] (r) at (30pt,0) {\fncode{0xBB}};
+        fill = magenta!40] (r) at (30pt,0) {\fncode{0xBB}};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,] at (30pt,12pt) {\fncode{t1}};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,
-        fill = magenta!40] (r) at (60pt,0) {\fncode{0xAA}};
+        fill = blue!40] (r) at (60pt,0) {\fncode{0xAA}};
 
     \node[rectangle,
         text width = 30pt,
-        text height = 7pt,
+        text height = 6pt,
         draw = none,
         text = black,
         fill = gray!20] (r) at (90pt,0) {};
 
     \node[rectangle,
         anchor = west,
-        text height = 7pt,
+        text height = 6pt,
         draw=none,
         text = black,] at (110pt,0pt) {\fncode{DRAM (little-endian)}};
 
