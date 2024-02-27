@@ -78,12 +78,12 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
     \end{tabular}
 \end{center}
 
-\subsection{RV32I Base Integer Instructions}
+\subsection{RV32I Base Integer Instructions}\label{riscv_isa}
 \footnotesize
 \renewcommand{\arraystretch}{1.2}
 \setlength\tabcolsep{2pt} % default value: 6pt
 \begin{tabularx}{\linewidth}{@{}T  p{0.13\linewidth}  c  T  T  T  T  p{0.08\linewidth}@{}}
-    \rm Inst & Name                    & fmt & \rm Opcode & \rm funct3 & \rm funct7     & \rm Description (C)              & Note         \\ 
+    \rm Inst & Name                    & fmt & \rm Opcode & \rm funct3 & \rm funct7     & \rm Description (C)              & Note         \\
     \cmidrule{1-8}
     add      & ADD                     & R   & 0110011    & 0x0        & 0x00           & rd = rs1 + rs2                   &              \\
     sub      & SUB                     & R   & 0110011    & 0x0        & 0x20           & rd = rs1 - rs2                   &              \\
@@ -94,44 +94,44 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
     srl      & Shift Right Logical     & R   & 0110011    & 0x5        & 0x00           & rd = rs1 \verb|>>| rs2           &              \\
     sra      & Shift Right Arith*      & R   & 0110011    & 0x5        & 0x20           & rd = rs1 \verb|>>| rs2           & msb-extends  \\
     slt      & Set Less Than           & R   & 0110011    & 0x2        & 0x00           & rd = (rs1 < rs2)?1:0             &              \\
-    sltu     & Set Less Than (U)       & R   & 0110011    & 0x3        & 0x00           & rd = (rs1 < rs2)?1:0             & zero-extends \\ 
+    sltu     & Set Less Than (U)       & R   & 0110011    & 0x3        & 0x00           & rd = (rs1 < rs2)?1:0             & zero-extends \\
     \cmidrule{1-8}
     addi     & ADD Immediate           & I   & 0010011    & 0x0        &                & rd = rs1 + imm                   &              \\
     xori     & XOR Immediate           & I   & 0010011    & 0x4        &                & rd = rs1 \^{} imm                &              \\
     ori      & OR Immediate            & I   & 0010011    & 0x6        &                & rd = rs1 | imm                   &              \\
     andi     & AND Immediate           & I   & 0010011    & 0x7        &                & rd = rs1 \& imm                  &              \\
-    slli     & Shift Left Logical Imm  & I   & 0010011    & 0x1        & imm[5:11]=0x00 & rd = rs1 \verb|<<| imm[0:4]      &              \\
-    srli     & Shift Right Logical Imm & I   & 0010011    & 0x5        & imm[5:11]=0x00 & rd = rs1 \verb|>>| imm[0:4]      &              \\
+    slli     & Shift Left Logical Imm  & I   & 0010011    & 0x1        & imm[5:11]=0x00 & rd = rs1 \verb|<<| imm[0:4]      & zero-extend  \\
+    srli     & Shift Right Logical Imm & I   & 0010011    & 0x5        & imm[5:11]=0x00 & rd = rs1 \verb|>>| imm[0:4]      & zero-extend  \\
     srai     & Shift Right Arith Imm   & I   & 0010011    & 0x5        & imm[5:11]=0x20 & rd = rs1 \verb|>>| imm[0:4]      & msb-extends  \\
     slti     & Set Less Than Imm       & I   & 0010011    & 0x2        &                & rd = (rs1 < imm)?1:0             &              \\
-    sltiu    & Set Less Than Imm (U)   & I   & 0010011    & 0x3        &                & rd = (rs1 < imm)?1:0             & zero-extends \\ 
+    sltiu    & Set Less Than Imm (U)   & I   & 0010011    & 0x3        &                & rd = (rs1 < imm)?1:0             & zero-extends \\
     \cmidrule{1-8}
     lb       & Load Byte               & I   & 0000011    & 0x0        &                & rd = M[rs1+imm][0:7]             &              \\
     lh       & Load Half               & I   & 0000011    & 0x1        &                & rd = M[rs1+imm][0:15]            &              \\
     lw       & Load Word               & I   & 0000011    & 0x2        &                & rd = M[rs1+imm][0:31]            &              \\
     lbu      & Load Byte (U)           & I   & 0000011    & 0x4        &                & rd = M[rs1+imm][0:7]             & zero-extends \\
-    lhu      & Load Half (U)           & I   & 0000011    & 0x5        &                & rd = M[rs1+imm][0:15]            & zero-extends \\ 
+    lhu      & Load Half (U)           & I   & 0000011    & 0x5        &                & rd = M[rs1+imm][0:15]            & zero-extends \\
     \cmidrule{1-8}
     sb       & Store Byte              & S   & 0100011    & 0x0        &                & M[rs1+imm][0:7]  = rs2[0:7]      &              \\
     sh       & Store Half              & S   & 0100011    & 0x1        &                & M[rs1+imm][0:15] = rs2[0:15]     &              \\
-    sw       & Store Word              & S   & 0100011    & 0x2        &                & M[rs1+imm][0:31] = rs2[0:31]     &              \\ 
+    sw       & Store Word              & S   & 0100011    & 0x2        &                & M[rs1+imm][0:31] = rs2[0:31]     &              \\
     \cmidrule{1-8}
     beq      & Branch ==               & B   & 1100011    & 0x0        &                & if(rs1 == rs2) PC += imm         &              \\
     bne      & Branch !=               & B   & 1100011    & 0x1        &                & if(rs1 != rs2) PC += imm         &              \\
     blt      & Branch <                & B   & 1100011    & 0x4        &                & if(rs1 < \enspace rs2) PC += imm &              \\
     bge      & Branch $\geq$           & B   & 1100011    & 0x5        &                & if(rs1 >= rs2) PC += imm         &              \\
     bltu     & Branch < (U)            & B   & 1100011    & 0x6        &                & if(rs1 < \enspace rs2) PC += imm & zero-extends \\
-    bgeu     & Branch $\geq$ (U)       & B   & 1100011    & 0x7        &                & if(rs1 >= rs2) PC += imm         & zero-extends \\ 
+    bgeu     & Branch $\geq$ (U)       & B   & 1100011    & 0x7        &                & if(rs1 >= rs2) PC += imm         & zero-extends \\
     \cmidrule{1-8}
     jal      & Jump And Link           & J   & 1101111    &            &                & rd = PC+4; PC += imm             &              \\
-    jalr     & Jump And Link Reg       & I   & 1100111    & 0x0        &                & rd = PC+4; PC = rs1 + imm        &              \\ 
+    jalr     & Jump And Link Reg       & I   & 1100111    & 0x0        &                & rd = PC+4; PC = rs1 + imm        &              \\
     \cmidrule{1-8}
     lui      & Load Upper Imm          & U   & 0110111    &            &                & rd = imm \verb|<<| 12            &              \\
-    auipc    & Add Upper Imm to PC     & U   & 0010111    &            &                & rd = PC + (imm \verb|<<| 12)     &              \\ 
+    auipc    & Add Upper Imm to PC     & U   & 0010111    &            &                & rd = PC + (imm \verb|<<| 12)     &              \\
     \cmidrule{1-8}
-    ecall    & Environment Call        & I   & 1110011    & 0x0        & imm=0x0        & Transfer control to OS           &              \\ 
+    ecall    & Environment Call        & I   & 1110011    & 0x0        & imm=0x0        & Transfer control to OS           &              \\
     \cmidrule{1-8}
-    ebreak   & Environment Break       & I   & 1110011    & 0x0        & imm=0x1        & Transfer control to debugger     &              \\ 
+    ebreak   & Environment Break       & I   & 1110011    & 0x0        & imm=0x1        & Transfer control to debugger     &              \\
 \end{tabularx}
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{6pt} % default value: 6pt
@@ -140,7 +140,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
 \renewcommand{\arraystretch}{1.2}
 \setlength\tabcolsep{6pt} % default value: 6pt
 \begin{tabularx}{\linewidth}{@{}llll@{}}
-    Register     & ABI Name     & Description           & Saver  \\ 
+    Register     & ABI Name     & Description           & Saver  \\
     \cmidrule{1-4}
     \tt{x0}      & \tt{zero}    & Zero constant         & ---    \\
     \tt{x1}      & \tt{ra}      & Return address        & Caller \\
