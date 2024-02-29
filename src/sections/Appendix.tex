@@ -4,13 +4,16 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
 \renewcommand{\arraystretch}{1.1}
 \setlength\tabcolsep{3pt} % default value: 6pt
 {\small % Smaller font
-    \begin{tabularx}{\linewidth}{@{} l>{\ttfamily}lp{0.3\linewidth} @{}}
+    \begin{tabularx}{\linewidth}{@{} p{0.25\linewidth}>{\ttfamily}lp{0.25\linewidth} @{}}
         \toprule
         Description          & \normalfont Command        & Remarks                          \\
         \midrule
         home                 & \textasciitilde{}          &                                  \\
         root                 & /                          &                                  \\
         current dir          & .                          &                                  \\
+        cmd output to file   & >                          &                                  \\
+        error stream         & 2>                         &                                  \\
+        file as input to cmd & <                          &                                  \\
         change directory     & cd <p>                     &                                  \\
                              & cd ..                      & one up                           \\
                              & cd -                       & previous                         \\
@@ -19,7 +22,8 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
         display file content & cat <f>                    &                                  \\
                              & less <f>                   &                                  \\
                              & more <f>                   &                                  \\
-        create file          & cat ><f>                   & redirect cat                     \\
+        create file          & cat ><f>                   & redirect cat (clears <f>)        \\
+                             & cat abc*.txt > <f>         & concatenate files into <f>       \\
                              & touch <f>                  &                                  \\
         write                & echo "text"                &                                  \\
                              & echo "text" > <f>          & to file                          \\
@@ -28,15 +32,24 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
         append               & cat >> <f>                 & ctrl+d to quit                   \\
         edit in Nano         & nano <f>                   &                                  \\
         edit in Vim          & vim <f>                    &                                  \\
+        count content        & wc -<opt> <f>              & -l: lines, -w: words, -m: chars  \\
+                             & wc <f>                     & like "-lwm"                      \\
         create directory     & mkdir <dir>                &                                  \\
+                             & mkdir -p dir1/dir2/dir3    &                                  \\
         remove object        & rm <f>                     &                                  \\
                              & rm -rf <p>                 & for dirs, force                  \\
         print working dir    & pwd                        &                                  \\
         copy file            & cp <f> <p>                 &                                  \\
                              & cp -a <p> <p>              & copy all                         \\
-        move file            & mv <f> <p>                 &                                  \\
+        move                 & mv <f> <p>                 &                                  \\
+                             & mv <p> <p>                 & moves dirs if they exist         \\
+                             & mv abc*.txt dir1 dir2      & files and dirs                   \\
+        rename               & mv old.txt new.txt         & file                             \\
+                             & mv oldname newname         & if newname not a dir yet         \\
         run executable       & <f>                        & path to file                     \\
                              & ./<f>                      & in current dir                   \\
+        change mod           & chmod <mode> <f>           & mode: set rwx bits in a decimal  \\
+                             & chmod u=x,g=w,o=r <f>      & example                          \\
         change group         & chgrp <group> <f>          &                                  \\
         change owner         & chown <owner> <f>          &                                  \\
                              & chown :<group> <f>         & group owner                      \\
@@ -49,6 +62,7 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
         find file            & find <p> -name "<f>"       & start at <p>                     \\
                              & find . -name "<f>"         &                                  \\
                              & find . -name "*.txt"       & wildcard                         \\
+                             & find . -name "?.txt"       & any single char                  \\
                              & find . -name "foo.*"       &                                  \\
         find file            & locate <f>                 & find in home                     \\
         find in file         & grep "<s>" <f>             &                                  \\
@@ -65,20 +79,22 @@ In the following table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \
                              & gzip -k <f>                & retain original file             \\
                              & gzip -d <f>                & decompress                       \\
                              & gunzip <zipf>.gz           &                                  \\
-        archive/compress     & tar <f>.tgz <f>            & creates new .tgz if not existant \\
-                             & tar zcvf <f>.tgz <f>       & gzip, new, verbose, filename     \\
-                             & tar cvf <f>.tar <f>        & uncompressed arichve             \\
-        extract from arc.    & tar xvf <f>.tar            & extract, verbose, filename       \\
-        kill process         & kill SIGTERM <PID>         & request stop (default)           \\
-                             & kill SIGKILL <PID>         & force                            \\
-        create cmd alias     & alias <new>="<old>"        &                                  \\
-        save directories     & pushd \textasciitilde<dir> &                                  \\
-        load from stack      & popd                       &                                  \\
-        find PID             & ps -ux                     &                                  \\
-        superuser do         & sudo -h                    & run on host                      \\
-        unmount              & umount                     &                                  \\
-        show path of         & which                      &                                  \\
-        show datatree        & tree -dirsfirst            &                                  \\
+    \end{tabularx}
+    \begin{tabularx}{\linewidth}{@{} p{0.25\linewidth}>{\ttfamily}lp{0.25\linewidth} @{}}
+        archive/compress  & tar <f>.tgz <f>            & creates new .tgz if not existant \\
+                          & tar zcvf <f>.tgz <f>       & gzip, new, verbose, filename     \\
+                          & tar cvf <f>.tar <f>        & uncompressed arichve             \\
+        extract from arc. & tar xvf <f>.tar            & extract, verbose, filename       \\
+        kill process      & kill SIGTERM <PID>         & request stop (default)           \\
+                          & kill SIGKILL <PID>         & force                            \\
+        create cmd alias  & alias <new>="<old>"        &                                  \\
+        save directories  & pushd \textasciitilde<dir> &                                  \\
+        load from stack   & popd                       &                                  \\
+        find PID          & ps -ux                     &                                  \\
+        superuser do      & sudo -h                    & run on host                      \\
+        unmount           & umount                     &                                  \\
+        show path of      & which                      &                                  \\
+        show datatree     & tree -dirsfirst            &                                  \\
         \bottomrule
     \end{tabularx}
 } % End smaller font
