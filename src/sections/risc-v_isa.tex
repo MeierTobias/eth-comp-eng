@@ -144,22 +144,22 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
     \cmidrule{1-4}
     \tt{x0}      & \tt{zero}    & Zero constant         & ---    \\
     \tt{x1}      & \tt{ra}      & Return address        & Caller \\
-    \tt{x2}      & \tt{sp}      & Stack pointer         & Callee \\
+    \tt{x2}      & \tt{sp}      & Stack pointer         & \textbf{Callee} \\
     \tt{x3}      & \tt{gp}      & Global pointer        & ---    \\
     \tt{x4}      & \tt{tp}      & Thread pointer        & ---    \\
     \tt{x5-x7}   & \tt{t0-t2}   & Temporaries           & Caller \\
-    \tt{x8}      & \tt{s0 / fp} & Saved / frame pointer & Callee \\
-    \tt{x9}      & \tt{s1}      & Saved register        & Callee \\
+    \tt{x8}      & \tt{s0 / fp} & Saved / frame pointer & \textbf{Callee} \\
+    \tt{x9}      & \tt{s1}      & Saved register        & \textbf{Callee} \\
     \tt{x10-x11} & \tt{a0-a1}   & Fn args/return values & Caller \\
     \tt{x12-x17} & \tt{a2-a7}   & Fn args               & Caller \\
-    \tt{x18-x27} & \tt{s2-s11}  & Saved registers       & Callee \\
+    \tt{x18-x27} & \tt{s2-s11}  & Saved registers       & \textbf{Callee} \\
     \tt{x28-x31} & \tt{t3-t6}   & Temporaries           & Caller \\
     \cmidrule{1-4}
     \tt{f0-7}    & \tt{ft0-7}   & FP temporaries        & Caller \\
-    \tt{f8-9}    & \tt{fs0-1}   & FP saved registers    & Callee \\
+    \tt{f8-9}    & \tt{fs0-1}   & FP saved registers    & \textbf{Callee} \\
     \tt{f10-11}  & \tt{fa0-1}   & FP args/return values & Caller \\
     \tt{f12-17}  & \tt{fa2-7}   & FP args               & Caller \\
-    \tt{f18-27}  & \tt{fs2-11}  & FP saved registers    & Callee \\
+    \tt{f18-27}  & \tt{fs2-11}  & FP saved registers    & \textbf{Callee} \\
     \tt{f28-31}  & \tt{ft8-11}  & FP temporaries        & Caller \\
 \end{tabularx}
 \renewcommand{\arraystretch}{1}
