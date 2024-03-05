@@ -4,14 +4,19 @@
 
 % load the template headers
 \input{\templatePath/summary_headers.tex} % ChkTex 27
+\input{headers/risc-v.tex}
 
 \begin{document}
 \begin{multicols*}{3}
     
     % create the title section
     \input{\templatePath/summary_title.tex} % ChkTex 27
+    \input{sections/Assembler.tex}
+    \newpage
+    \input{sections/Appendix.tex}
     
-    
-    
+\end{multicols*}
+\begin{multicols*}{2}
+    \input{sections/risc-v_isa.tex}
 \end{multicols*}
 \end{document}
