@@ -213,6 +213,35 @@ exit:
 \end{tabular}
 \setlength{\tabcolsep}{\oldtabcolsep}
 
+\subsection{Unconditional Jumps}
+
+\begin{itemize}
+    \item \texttt{JAL} is a UJ-type and can jump up to $2^{20}$ 2-byte instructions relative to the PC
+    \item \texttt{JALR} is an I-type and can jump anywhere in memory (independent of the PC)
+\end{itemize}
+
+\includegraphics[width=0.7\linewidth]{unconditional_jumps.png}
+
+\texttt{JAL} stores the address of the instruction following the jump (PC+4) into the register \texttt{rd}. The standard software calling convention uses \texttt{x1/ra} as the return address register.
+
+The registers that are used after the PC returned to the line below the jump instruction have the be saved to the stack. The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller}.
+
+\subsubsection{Basic function call}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+# a0 = entry point of a function 
+# increase stack pointer
+addi sp, sp, -4
+# save the return address into the stack
+sw ra, 0(sp)
+# jump to the function located at a0
+jalr ra, a0
+# After a0 is finished it resumes here and loads the return address from the stack 
+lw ra, 0(sp)
+# decrease the stack pointer
+addi sp, sp, 4
+\end{lstlisting}
+
 \subsection{Useful Instructions}
 RISC-V instruction set architecture (isa) \code{RV32I} can be found in Section\ \ref{riscv_isa}.
 
