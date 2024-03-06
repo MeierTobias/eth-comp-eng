@@ -88,7 +88,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
 
 \begin{footnotesize}
     \renewcommand{\arraystretch}{1.2}
-    \setlength\tabcolsep{2pt} % default value: 6pt
+    \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
     \begin{tabularx}{\linewidth}{@{}T  l  c  T  T  T  T  T  p{0.08\linewidth}@{}}
         \toprule
         \multicolumn{9}{c}{Base Integer Instructions: RV32I}                                                                                                       \\
@@ -164,7 +164,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         remu     & Remainder Unsigned      & R   &            &            &                &                                  &                    &              \\
     \end{tabularx}
     \renewcommand{\arraystretch}{1}
-    \setlength\tabcolsep{6pt} % default value: 6pt
+    \setlength{\tabcolsep}{\oldtabcolsep}
 
 \end{footnotesize}
 
@@ -172,7 +172,6 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
 
 \begin{footnotesize}
     \renewcommand{\arraystretch}{1.2}
-    \setlength\tabcolsep{6pt} % default value: 6pt
     \begin{tabularx}{\linewidth}{@{}llll@{}}
         Register     & ABI Name     & Description           & Saver           \\
         \cmidrule{1-4}
@@ -197,5 +196,4 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         \tt{f28-31}  & \tt{ft8-11}  & FP temporaries        & Caller          \\
     \end{tabularx}
     \renewcommand{\arraystretch}{1}
-    \setlength\tabcolsep{6pt} % default value: 6pt
 \end{footnotesize}

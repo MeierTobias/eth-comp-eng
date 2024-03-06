@@ -131,11 +131,87 @@ Conditional branches let the PC jump to a specified line relative to the current
 
 \includegraphics[width=0.7\linewidth]{conditional_branches.png}
 
-\ptitle{Basic If Condition}
-\begin{lstlisting}[language={[RISC-V]Assembler}]
+\begin{itemize}
+    \item 12 bits to branch ``around''
+    \item Immediate is always multiplied by 2
+    \item Branch backward or forward: [PC + 4KB, PC - 4KB]
+\end{itemize}
 
+\subsubsection{Basic If-Statement}
+
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+\begin{tabular}[width=\linewidth]{p{0.48\linewidth} p{0.48\linewidth}}
+    C++
+    \begin{lstlisting}[escapechar=@]
+if(@\aftergroup\magentacodecolor@condition == true@\aftergroup\blackcodecolor@){
+    // do something
+} else {
+    // do something else
+}\end{lstlisting}
+     &
+    RISC-V
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\magentacodecolor@bne a0, a1, else_label@\aftergroup\blackcodecolor@
+# do something
+beq zero, zero, out_label
+
+else_label:
+# do something else
+
+out_label:
 \end{lstlisting}
+\end{tabular}
+\setlength{\tabcolsep}{\oldtabcolsep}
 
+\subsubsection{Basic For-Loop}
+
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+\begin{tabular}[width=\linewidth]{p{0.48\linewidth} p{0.48\linewidth}}
+    C++
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\olivecodecolor@for@\aftergroup\blackcodecolor@(@\aftergroup\magentacodecolor@i = 0@\aftergroup\blackcodecolor@; @\aftergroup\cyancodecolor@i < size@\aftergroup\blackcodecolor@; @\aftergroup\purplecodecolor@++i@\aftergroup\blackcodecolor@){
+    // do something
+}
+\end{lstlisting}
+     &
+    RISC-V
+    \begin{lstlisting}[escapechar=@]
+# a1 = size
+    @\aftergroup\magentacodecolor@add t0, zero, zero@\aftergroup\blackcodecolor@
+@\aftergroup\olivecodecolor@loop:@\aftergroup\blackcodecolor@
+    @\aftergroup\cyancodecolor@bge t0, a1, exit@\aftergroup\blackcodecolor@
+    # do something
+    @\aftergroup\purplecodecolor@addi t0, t0, 1@\aftergroup\blackcodecolor@
+    @\aftergroup\olivecodecolor@beq zero, zero, loop@\aftergroup\blackcodecolor@
+exit:
+\end{lstlisting}
+\end{tabular}
+\setlength{\tabcolsep}{\oldtabcolsep}
+
+\subsubsection{Optimized For-Loop}
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+\begin{tabular}[width=\linewidth]{p{0.48\linewidth} p{0.48\linewidth}}
+    C++
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\olivecodecolor@for@\aftergroup\blackcodecolor@(@\aftergroup\magentacodecolor@arr_end = arr + size@\aftergroup\blackcodecolor@; @\aftergroup\cyancodecolor@arr++ < arr_end@\aftergroup\blackcodecolor@;){
+    // do something
+}
+\end{lstlisting}
+     &
+    RISC-V
+    \begin{lstlisting}[escapechar=@]
+# a0 = arr
+# a1 = size
+    @\aftergroup\magentacodecolor@add a1, a0, a1@\aftergroup\blackcodecolor@
+@\aftergroup\olivecodecolor@loop:@\aftergroup\blackcodecolor@
+    @\aftergroup\cyancodecolor@bge a0, a1, exit@\aftergroup\blackcodecolor@
+    # do something
+    @\aftergroup\purplecodecolor@addi a0, a0, 1@\aftergroup\blackcodecolor@
+    @\aftergroup\olivecodecolor@beq zero, zero, loop@\aftergroup\blackcodecolor@
+exit:
+\end{lstlisting}
+\end{tabular}
+\setlength{\tabcolsep}{\oldtabcolsep}
 
 \subsection{Useful Instructions}
 RISC-V instruction set architecture (isa) \code{RV32I} can be found in Section\ \ref{riscv_isa}.
