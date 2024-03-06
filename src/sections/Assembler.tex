@@ -275,3 +275,99 @@ lw      a3,0(a2)            # load from offset address
 addi    a3,a3,0x1           # increment by one
 sw      a3,0(a2)            # store to offset address
 \end{lstlisting}
+
+\newpar{}
+\ptitle{Find element in array}
+
+Find the first \texttt{0} in the 32-bit (4-byte) integer table starting at \texttt{a0} and return the number of elements.
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+add t0, zero, zero          # initialize count
+loop:
+
+lw t1, 0(a0)                # load integer to t1
+beq t1, zero, exit          # check if t1==0
+addi a0, a0, 4              # increment address
+addi t0, t0, 1              # increment count
+
+beq zero, zero, loop
+exit:
+add a0, zero, t0            # return count
+\end{lstlisting}
+
+% \newpar{}
+% \ptitle{Matrix multiplication}
+% 
+% $M0, M1, M2$ are 16-bit (2-byte) integer matrices.
+% 
+% $M0\cdot M1=M2$ with $M0\in\mathbb{Z}^{a2\times a1}$, $M1\in\mathbb{Z}^{a1\times a4}$ and $M2\in\mathbb{Z}^{a2\times a4}$
+% 
+% \begin{lstlisting}[language={[RISC-V]Assembler}]
+% add t3, zero, a0        # M0 ptr
+%     add t4, zero, a3        # M1 ptr
+%     add t5, zero, a5        # M2 ptr
+%     addi t6, zero, 2        # offset
+% 
+%     # i = t0
+%     add t0, zero, zero      
+%     loop_i:
+%         bge t0, a2, exit_i
+% 
+%         # j = t1
+%         add t1, zero, zero      
+%         loop_j:
+%             bge t1, a4, exit_j
+% 
+%             # set M0 start index
+%             mul t3, a1, t6
+%             mul t3, t3, t0
+%             add t3, t3, a0
+%             
+%             # set M1 start index
+%             mul t4, t1, t6 
+%             add t4, t4, a3
+% 
+%             # set current M2 cell to 0
+%             add s5, zero, zero
+%             
+%             # k = t2
+%             add t2, zero, zero
+%             loop_k:
+%                 bge t2, a1, exit_k
+%             
+%                 # load the M0 and M1 value and multiply them
+%                 lh s2, 0(t3)
+%                 lh s3, 0(t4)
+%                 mul s2, s2, s3
+%                 # add the product to the row sum
+%                 add s5, s5, s2
+%             
+%                 # set next M0 index
+%                 add t3, t3, t6
+%             
+%                 # set next M1 index
+%                 mul s6, a4, t6
+%                 add t4, t4, s6
+%             
+%                 # increment k
+%                 addi t2, t2, 1
+%                 beq zero, zero, loop_k
+%             exit_k:
+%             
+%             # save result to M2
+%             sh s5, 0(t5)
+% 
+%             # move M2 pointer to next cell
+%             add t5, t5, t6              
+% 
+%             # increment j
+%             addi t1, t1, 1
+%             
+%             beq zero, zero, loop_j
+%         exit_j:
+% 
+%         # increment i
+%         addi t0, t0, 1
+% 
+%         beq zero, zero, loop_i
+%     exit_i:
+% \end{lstlisting}
