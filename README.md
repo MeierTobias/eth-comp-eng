@@ -4,7 +4,7 @@
 
 This repository contains the LaTex source of the "Computer Engineering" course summary.
 
-A pre-build pdf file can be downloaded here:
+A pre-built pdf file can be downloaded here:
 
 - [Tech_Inf_full.pdf](https://meiertobias.github.io/eth-comp-eng/main_full.pdf)
 - [Tech_Inf.pdf (without examples)](https://meiertobias.github.io/eth-comp-eng/main.pdf)
