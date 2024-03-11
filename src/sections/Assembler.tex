@@ -238,8 +238,8 @@ exit:
     \item The registers that are used after the PC returned to the line below the jump instruction have the be saved to the stack.
     \item In RV32I and RV64I, both \code{JAL} and \code{JALR} will throw an error if the target address is not 4-byte-alligned.
     \item The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller/callee}.
-    \item caller-saved registers have to be saved by the caller if used later
-    \item callee-saved registers must be restored by the callee if the callee changes them
+    \item caller-saved registers must be saved by caller if used later
+    \item callee-saved registers must be restored by callee if changed
 \end{itemize}
 
 
