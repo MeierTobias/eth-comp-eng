@@ -221,25 +221,28 @@ exit:
 \end{itemize}
 
 \includegraphics[width=0.7\linewidth]{unconditional_jumps.png}
+\begin{itemize}
+    \item \texttt{JAL} stores the address of the instruction following the jump (PC+4) into the register \texttt{rd}.\newline
+        The immediate is multiplied by 2 (64-bit compatability)
+    \item The standard software calling convention uses \texttt{x1/ra} as the return address register.
+    \item The registers that are used after the PC returned to the line below the jump instruction have the be saved to the stack.
+    \item The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller/callee}.
+\end{itemize}
 
-\texttt{JAL} stores the address of the instruction following the jump (PC+4) into the register \texttt{rd}. The standard software calling convention uses \texttt{x1/ra} as the return address register.
-
-The registers that are used after the PC returned to the line below the jump instruction have the be saved to the stack. The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller}.
 
 \subsubsection{Basic function call}
 
 \begin{lstlisting}[language={[RISC-V]Assembler}]
 # a0 = entry point of a function 
-# increase stack pointer
-addi sp, sp, -4
-# save the return address into the stack
-sw ra, 0(sp)
-# jump to the function located at a0
-jalr ra, a0
-# After a0 is finished it resumes here and loads the return address from the stack 
-lw ra, 0(sp)
-# decrease the stack pointer
-addi sp, sp, 4
+addi    sp, sp, -4      # allocate memory on stack
+sw      ra, 0(sp)       # store return address on stack
+
+jalr    ra, a0          # jump to the function at a0
+# or
+jal     ra, funtion_label
+
+lw      ra, 0(sp)       # load return address from stack 
+addi    sp, sp, 4       # reset the stack pointer
 \end{lstlisting}
 
 \subsection{Useful Instructions}
@@ -281,17 +284,52 @@ sw      a3,0(a2)            # store to offset address
 
 Find the first \texttt{0} in the 32-bit (4-byte) integer table starting at \texttt{a0} and return the number of elements.
 \begin{lstlisting}[language={[RISC-V]Assembler}]
-add t0, zero, zero          # initialize count
-loop:
+    add     t0, zero, zero      # initialize count
+Loop:
 
-lw t1, 0(a0)                # load integer to t1
-beq t1, zero, exit          # check if t1==0
-addi a0, a0, 4              # increment address
-addi t0, t0, 1              # increment count
+    lw      t1, 0(a0)           # load integer to t1
+    beq     t1, zero, exit      # check if t1==0
+    addi    a0, a0, 4           # increment address
+    addi    t0, t0, 1           # increment count
 
-beq zero, zero, loop
-exit:
-add a0, zero, t0            # return count
+    beq     zero, zero, loop
+Exit:
+    add     a0, zero, t0        # return count
+\end{lstlisting}
+
+
+\newpar{}
+\ptitle{Recursive Function}
+
+When calling a function or when using recursion, both the return address \code{ra} and the saved register \code{s0-s11} have to be stored on the stack, and restored when exiting.
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+rec_fun:
+    # Pre
+    addi    sp, sp, -16     # increase stack pointer
+    sw      s0, 0(sp)
+    sw      ra, 4(sp)       # save the stack pointer into the return address
+
+    # check if a1 >= 1
+    add     t0,zero,1
+    bge     a1,t0,Else
+    add     a0,zero,zero
+    beq     zero,zero,Exit  # end of if
+
+Else:
+    # call f(a0 = a1-1)
+    add     a0,a1,-1        # a0 = a1-1
+    add     s0,zero,a1      # save a1 for later
+    jal    ra, rec_fun     # jump to the function, ra = PC+4
+
+    # f(a1-1) is now stored in a0
+    add     a0,s0,a0
+
+Exit:
+    # Post
+    lw      s0, 0(sp)       
+    lw      ra, 4(sp)
+    addi    sp, sp, 16       # reset/decrease the stack pointer
+
 \end{lstlisting}
 
 % \newpar{}

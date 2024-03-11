@@ -133,7 +133,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         bltu     & Branch < (U)            & B   & 1100011    & 0x6        &                & if(rs1 < \enspace rs2) PC += imm & bltu rs1, rs2, imm & zero-extends \\
         bgeu     & Branch $\geq$ (U)       & B   & 1100011    & 0x7        &                & if(rs1 >= rs2) PC += imm         & bgeu rs1, rs2, imm & zero-extends \\
         \midrule
-        jal      & Jump And Link           & J   & 1101111    &            &                & rd = PC+4; PC += imm             & jal  rd, imm       &              \\
+        jal      & Jump And Link           & J   & 1101111    &            &                & rd = PC+4; PC += imm             & jal  rd, imm       & \fncode{imm} $\leftarrow$ label              \\
         jalr     & Jump And Link Reg       & I   & 1100111    & 0x0        &                & rd = PC+4; PC = rs1 + imm        & jalr rd, imm(rs1)  &              \\
         \midrule
         lui      & Load Upper Imm          & U   & 0110111    &            &                & rd = imm \verb|<<| 12            & lui rd, imm        &              \\
