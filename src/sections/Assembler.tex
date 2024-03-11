@@ -122,8 +122,10 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
         text = black,] at (110pt,0pt) {\fncode{DRAM (little-endian)}};
 
 \end{tikzpicture}
-
-RISC-V uses little-endian.
+\begin{itemize}
+    \item RISC-V uses little-endian.
+    \item An advantage of little-endian is that when type casting data to a lower-sized type the address in memory does not change as the data are stored at the address LSB first.
+\end{itemize}
 
 
 \subsection{Conditional branches}
@@ -216,7 +218,7 @@ exit:
 \subsection{Unconditional Jumps}
 
 \begin{itemize}
-    \item \texttt{JAL} is a UJ-type and can jump up to $2^{20}$ 2-byte instructions relative to the PC
+    \item \texttt{JAL} is a UJ-type and can jump up to $2^{20}$ 2-byte instructions relative to the PC. \texttt{JAL} uses a signed offset to jump forward and backward.
     \item \texttt{JALR} is an I-type and can jump anywhere in memory (independent of the PC)
 \end{itemize}
 
@@ -227,6 +229,8 @@ exit:
     \item The standard software calling convention uses \texttt{x1/ra} as the return address register.
     \item The registers that are used after the PC returned to the line below the jump instruction have the be saved to the stack.
     \item The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller/callee}.
+    \item caller-saved registers have to be saved by the caller if used later
+    \item callee-saved registers must be restored by the callee if the callee changes them
 \end{itemize}
 
 
