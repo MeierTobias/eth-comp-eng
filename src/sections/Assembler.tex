@@ -8,8 +8,12 @@ The CPU uses 32-bit sized instructions to
 \end{enumerate}
 
 \newpar{}
-\textbf{Remark:} While the CPU always uses 32-bit sized instructions to access memory, 
+\textbf{Remarks:} 
+\begin{itemize}
+    \item Memory is single byte-addressable for all ISA's.
+    \item While the CPU always uses 32-bit sized instructions to access memory,
 the address space can be larger:
+\end{itemize}
 
 \renewcommand{\arraystretch}{1.3}
 \setlength\tabcolsep{6pt} % default value: 6pt
@@ -31,38 +35,6 @@ For \textbf{signed} numbers the \textbf{two's complement}
 is used, which allows for addition and subtraction with only one command.
 
 \ptitle{Hint:} To calculate the 2's compliment by hand just invert all the bits and add 1.
-
-\subsection{Useful Instructions}
-RISC-V instruction set architecture (isa) \code{RV32I} can be found in Section\ \ref{riscv_isa}.
-
-\newpar{}
-\ptitle{Bitwise Invertion}
-
-\begin{lstlisting}[language={[RISC-V]Assembler}]
-addi    a1,zero, -1         # create 0b11...111
-xor     a0,a0,a1            # xor with 0b11..11
-\end{lstlisting}
-
-\newpar{}
-\ptitle{64-bit extension}
-
-\begin{lstlisting}[language={[RISC-V]Assembler}]
-slli    a0,a0,0x3f      
-srai    a0,a0,0x3f          # 64 bit extended mask of a0
-\end{lstlisting}
-
-\newpar{}
-\ptitle{Load and Store with Offset}
-
-\begin{lstlisting}[language={[RISC-V]Assembler}]
-slli    a1,a1,0x2           # multiply offset by 4 (byte) 
-                            # <- 32-bit integer
-add     a2,a0,a1            # offset address
-
-lw      a3,0(a2)            # load from offset address
-addi    a3,a3,0x1           # increment by one
-sw      a3,0(a2)            # store to offset address
-\end{lstlisting}
 
 \subsection{Big-/ Little-Endian}
 A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be represented in memory as
@@ -154,5 +126,299 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
         text = black,] at (110pt,0pt) {\fncode{DRAM (little-endian)}};
 
 \end{tikzpicture}
+\begin{itemize}
+    \item RISC-V uses little-endian.
+    \item An advantage of little-endian is that when type casting data to a lower-sized type the address in memory does not change as the data are stored at the address LSB first.
+\end{itemize}
 
-RISC-V uses little-endian.
+
+\subsection{Conditional branches}
+Conditional branches let the PC jump to a specified line relative to the current position if the given condition holds.
+
+\includegraphics[width=0.7\linewidth]{conditional_branches.png}
+
+\begin{itemize}
+    \item 12 bits to branch ``around''
+    \item Immediate is always multiplied by 2
+    \item Branch backward or forward: [PC + 4KB, PC - 4KB]
+\end{itemize}
+
+\subsubsection{Basic If-Statement}
+
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+\begin{tabular}[width=\linewidth]{p{0.48\linewidth} p{0.48\linewidth}}
+    C++
+    \begin{lstlisting}[escapechar=@]
+if(@\aftergroup\magentacodecolor@condition == true@\aftergroup\blackcodecolor@){
+    // do something
+} else {
+    // do something else
+}\end{lstlisting}
+     &
+    RISC-V
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\magentacodecolor@bne a0, a1, else_label@\aftergroup\blackcodecolor@
+# do something
+beq zero, zero, out_label
+
+else_label:
+# do something else
+
+out_label:
+\end{lstlisting}
+\end{tabular}
+\setlength{\tabcolsep}{\oldtabcolsep}
+
+\subsubsection{Basic For-Loop}
+
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+\begin{tabular}[width=\linewidth]{p{0.48\linewidth} p{0.48\linewidth}}
+    C++
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\olivecodecolor@for@\aftergroup\blackcodecolor@(@\aftergroup\magentacodecolor@i = 0@\aftergroup\blackcodecolor@; @\aftergroup\cyancodecolor@i < size@\aftergroup\blackcodecolor@; @\aftergroup\purplecodecolor@++i@\aftergroup\blackcodecolor@){
+    // do something
+}
+\end{lstlisting}
+     &
+    RISC-V
+    \begin{lstlisting}[escapechar=@]
+# a1 = size
+    @\aftergroup\magentacodecolor@add t0, zero, zero@\aftergroup\blackcodecolor@
+@\aftergroup\olivecodecolor@loop:@\aftergroup\blackcodecolor@
+    @\aftergroup\cyancodecolor@bge t0, a1, exit@\aftergroup\blackcodecolor@
+    # do something
+    @\aftergroup\purplecodecolor@addi t0, t0, 1@\aftergroup\blackcodecolor@
+    @\aftergroup\olivecodecolor@beq zero, zero, loop@\aftergroup\blackcodecolor@
+exit:
+\end{lstlisting}
+\end{tabular}
+\setlength{\tabcolsep}{\oldtabcolsep}
+
+\subsubsection{Optimized For-Loop}
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+\begin{tabular}[width=\linewidth]{p{0.48\linewidth} p{0.48\linewidth}}
+    C++
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\olivecodecolor@for@\aftergroup\blackcodecolor@(@\aftergroup\magentacodecolor@arr_end = arr + size@\aftergroup\blackcodecolor@; @\aftergroup\cyancodecolor@arr++ < arr_end@\aftergroup\blackcodecolor@;){
+    // do something
+}
+\end{lstlisting}
+     &
+    RISC-V
+    \begin{lstlisting}[escapechar=@]
+# a0 = arr
+# a1 = size
+    @\aftergroup\magentacodecolor@add a1, a0, a1@\aftergroup\blackcodecolor@
+@\aftergroup\olivecodecolor@loop:@\aftergroup\blackcodecolor@
+    @\aftergroup\cyancodecolor@bge a0, a1, exit@\aftergroup\blackcodecolor@
+    # do something
+    @\aftergroup\purplecodecolor@addi a0, a0, 1@\aftergroup\blackcodecolor@
+    @\aftergroup\olivecodecolor@beq zero, zero, loop@\aftergroup\blackcodecolor@
+exit:
+\end{lstlisting}
+\end{tabular}
+\setlength{\tabcolsep}{\oldtabcolsep}
+
+\newcolumn{}
+\subsection{Unconditional Jumps}
+
+\begin{itemize}
+    \item \texttt{JAL} is a UJ-type and can jump relative to the PC.\ 
+    \begin{itemize}
+        \item 20 Bits can be usd to generates offsets in the range\newline [-1 MB, 1 MB].
+        \item The immediate is multiplied by 2 (for compressed compatability).
+    \end{itemize}
+    \item \texttt{JALR} is an I-type and can jump anywhere in memory (independent of the PC)
+\end{itemize}
+
+\includegraphics[width=0.7\linewidth]{unconditional_jumps.png}
+\begin{itemize}
+    \item \texttt{JAL} stores the address of the instruction following the jump (PC+4) into the register \texttt{rd}.
+    \item The standard software calling convention uses \texttt{x1/ra} as the return address register.
+    \item The registers that are used after the PC returned to the line below the jump instruction have the be saved to the stack.
+    \item In RV32I and RV64I, both \code{JAL} and \code{JALR} will throw an error if the target address is not 4-byte-alligned.
+    \item The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller/callee}.
+    \item caller-saved registers must be saved by caller if used later
+    \item callee-saved registers must be restored by callee if changed
+\end{itemize}
+
+
+\subsubsection{Basic function call}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+# a0 = entry point of a function 
+addi    sp, sp, -4      # allocate memory on stack
+sw      ra, 0(sp)       # store return address on stack
+
+jalr    ra, a0          # jump to the function at a0
+# or
+jal     ra, function_label
+
+lw      ra, 0(sp)       # load return address from stack 
+addi    sp, sp, 4       # reset the stack pointer
+\end{lstlisting}
+
+\subsection{Useful Instructions}
+RISC-V instruction set architecture (isa) \code{RV32I} can be found in Section\ \ref{riscv_isa}.
+
+\newpar{}
+\ptitle{Bitwise Invertion}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+addi    a1,zero, -1         # create 0b11...111
+xor     a0,a0,a1            # xor with 0b11..11
+\end{lstlisting}
+
+\newpar{}
+\ptitle{64-bit extension}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+slli    a0,a0,0x3f      
+srai    a0,a0,0x3f          # 64 bit extended mask of a0
+\end{lstlisting}
+
+\newpar{}
+\ptitle{Load and Store 4-Byte Data with Offset}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+# a0 = base address
+# a1 = offset
+slli    a1,a1,0x2           # multiply offset by 4 (byte) 
+                            # <- 32-bit integer
+add     a2,a0,a1            # offset address
+
+lw      a3,0(a2)            # load from offset address
+addi    a3,a3,0x1           # increment by one
+sw      a3,0(a2)            # store to offset address
+\end{lstlisting}
+
+\newpar{}
+\ptitle{Find element in array}
+
+Find the first \texttt{0} in the 32-bit (4-byte) integer table starting at \texttt{a0} and return the number of elements.
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+    add     t0, zero, zero      # initialize count
+Loop:
+
+    lw      t1, 0(a0)           # load integer to t1
+    beq     t1, zero, exit      # check if t1==0
+    addi    a0, a0, 4           # increment address
+    addi    t0, t0, 1           # increment count
+
+    beq     zero, zero, loop
+Exit:
+    add     a0, zero, t0        # return count
+\end{lstlisting}
+
+
+\newpar{}
+\ptitle{Recursive Function}
+
+When calling a function or when using recursion, both the return address \code{ra} and the saved register \code{s0-s11} have to be stored on the stack, and restored when exiting.
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+rec_fun:
+    # Pre
+    addi    sp, sp, -16     # increase stack pointer
+    sw      s0, 0(sp)
+    sw      ra, 4(sp)       # save the stack pointer into the return address
+
+    # check if a1 >= 1
+    add     t0,zero,1
+    bge     a1,t0,Else
+    add     a0,zero,zero
+    beq     zero,zero,Exit  # end of if
+
+Else:
+    # call f(a0 = a1-1)
+    add     a0,a1,-1        # a0 = a1-1
+    add     s0,zero,a1      # save a1 for later
+    jal    ra, rec_fun     # jump to the function, ra = PC+4
+
+    # f(a1-1) is now stored in a0
+    add     a0,s0,a0
+
+Exit:
+    # Post
+    lw      s0, 0(sp)       
+    lw      ra, 4(sp)
+    addi    sp, sp, 16       # reset/decrease the stack pointer
+
+\end{lstlisting}
+
+% \newpar{}
+% \ptitle{Matrix multiplication}
+% 
+% $M0, M1, M2$ are 16-bit (2-byte) integer matrices.
+% 
+% $M0\cdot M1=M2$ with $M0\in\mathbb{Z}^{a2\times a1}$, $M1\in\mathbb{Z}^{a1\times a4}$ and $M2\in\mathbb{Z}^{a2\times a4}$
+% 
+% \begin{lstlisting}[language={[RISC-V]Assembler}]
+% add t3, zero, a0        # M0 ptr
+%     add t4, zero, a3        # M1 ptr
+%     add t5, zero, a5        # M2 ptr
+%     addi t6, zero, 2        # offset
+% 
+%     # i = t0
+%     add t0, zero, zero      
+%     loop_i:
+%         bge t0, a2, exit_i
+% 
+%         # j = t1
+%         add t1, zero, zero      
+%         loop_j:
+%             bge t1, a4, exit_j
+% 
+%             # set M0 start index
+%             mul t3, a1, t6
+%             mul t3, t3, t0
+%             add t3, t3, a0
+%             
+%             # set M1 start index
+%             mul t4, t1, t6 
+%             add t4, t4, a3
+% 
+%             # set current M2 cell to 0
+%             add s5, zero, zero
+%             
+%             # k = t2
+%             add t2, zero, zero
+%             loop_k:
+%                 bge t2, a1, exit_k
+%             
+%                 # load the M0 and M1 value and multiply them
+%                 lh s2, 0(t3)
+%                 lh s3, 0(t4)
+%                 mul s2, s2, s3
+%                 # add the product to the row sum
+%                 add s5, s5, s2
+%             
+%                 # set next M0 index
+%                 add t3, t3, t6
+%             
+%                 # set next M1 index
+%                 mul s6, a4, t6
+%                 add t4, t4, s6
+%             
+%                 # increment k
+%                 addi t2, t2, 1
+%                 beq zero, zero, loop_k
+%             exit_k:
+%             
+%             # save result to M2
+%             sh s5, 0(t5)
+% 
+%             # move M2 pointer to next cell
+%             add t5, t5, t6              
+% 
+%             # increment j
+%             addi t1, t1, 1
+%             
+%             beq zero, zero, loop_j
+%         exit_j:
+% 
+%         # increment i
+%         addi t0, t0, 1
+% 
+%         beq zero, zero, loop_i
+%     exit_i:
+% \end{lstlisting}

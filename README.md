@@ -1,13 +1,13 @@
-# ETHZ Technische Informatik
+# ETHZ Computer Engineering
 
-![action status](https://github.com/meiertobias/eth-tech-inf/actions/workflows/build_deploy.yml/badge.svg)
+![action status](https://github.com/meiertobias/eth-comp-eng/actions/workflows/build_deploy.yml/badge.svg)
 
-This repository contains the LaTex source of the "Technische Informatik" course summary.
+This repository contains the LaTex source of the "Computer Engineering" course summary.
 
-A pre-build pdf file can be downloaded here:
+A pre-built pdf file can be downloaded here:
 
-- [Tech_Inf_full.pdf](https://meiertobias.github.io/eth-tech-inf/main_full.pdf)
-- [Tech_Inf.pdf (without examples)](https://meiertobias.github.io/eth-tech-inf/main.pdf)
+- [Tech_Inf_full.pdf](https://meiertobias.github.io/eth-comp-eng/main_full.pdf)
+- [Tech_Inf.pdf (without examples)](https://meiertobias.github.io/eth-comp-eng/main.pdf)
 
 ## Getting-Started
 
@@ -30,7 +30,7 @@ Make sure to compile with xelatex (required by fontspec).
 
 If you want to use your own native installed LaTeX compiler we recommend to use [TeXLive](https://www.tug.org/texlive/) which integrates well within visual studio code.
 
-If you use the [LaTeX Workshop extension](vscode:extension/James-Yu.latex-workshop) you can add the following lines to your `.vscode/settings.json` file to configure the system. There is an example settings file you can use. To get the minimum required configuration always open the provided code-workspace. This can be done by File->"Open Workspace from File" and then select the file `.vscode/eth-tech-inf.code-workspace`.
+If you use the [LaTeX Workshop extension](vscode:extension/James-Yu.latex-workshop) you can add the following lines to your `.vscode/settings.json` file to configure the system. There is an example settings file you can use. To get the minimum required configuration always open the provided code-workspace. This can be done by File->"Open Workspace from File" and then select the file `.vscode/eth-comp-eng.code-workspace`.
 
 To compile with xelatex set: **(required)**
 
