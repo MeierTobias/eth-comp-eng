@@ -9,25 +9,26 @@
     \begin{footnotesize}
         \renewcommand{\arraystretch}{1.2}
         \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
-        \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z @{}}                                                                                             \\
-                                                                  & Signal name & R-format                               & lw & sw & beq \\
+        \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z @{}}                                                               \\
+                                                                  & Signal name & R-format & lw & sw & beq \\
             \cmidrule{2-6}
-            \multirow{7}{*}{\begin{sideways}Input\end{sideways}}  & I[6]        & 0                                      & 0  & 0  & 1   \\
-                                                                  & I[5]        & 1                                      & 0  & 1  & 1   \\
-                                                                  & I[4]        & 1                                      & 0  & 0  & 0   \\
-                                                                  & I[3]        & 0                                      & 0  & 0  & 0   \\
-                                                                  & I[2]        & 0                                      & 0  & 0  & 0   \\
-                                                                  & I[1]        & 1                                      & 1  & 1  & 1   \\
-                                                                  & I[0]        & 1                                      & 1  & 1  & 1   \\
+            \multirow{7}{*}{\begin{sideways}Input\end{sideways}}  & I[6]        & 0        & 0  & 0  & 1   \\
+                                                                  & I[5]        & 1        & 0  & 1  & 1   \\
+                                                                  & I[4]        & 1        & 0  & 0  & 0   \\
+                                                                  & I[3]        & 0        & 0  & 0  & 0   \\
+                                                                  & I[2]        & 0        & 0  & 0  & 0   \\
+                                                                  & I[1]        & 1        & 1  & 1  & 1   \\
+                                                                  & I[0]        & 1        & 1  & 1  & 1   \\
             \cmidrule{2-6}
             \morecmidrules\cmidrule{2-6}
-            \multirow{6}{*}{\begin{sideways}Output\end{sideways}} & ALUSrc      & 0                                      & 1  & 1  & 0   \\
-                                                                  & MemtoReg    & 0                                      & 1  & X  & X   \\
-                                                                  & RegWrite    & 1                                      & 1  & 0  & 0   \\
-                                                                  & MemRead     & 0                                      & 1  & 0  & 0   \\
-                                                                  & MemWrite    & 0                                      & 0  & 1  & 0   \\
-                                                                  & Branch      & 0                                      & 0  & 0  & 1   \\
-                                                                  & ALUOp       & \multicolumn{4}{c}{\tt See next table}
+            \multirow{6}{*}{\begin{sideways}Output\end{sideways}} & ALUSrc      & 0        & 1  & 1  & 0   \\
+                                                                  & MemtoReg    & 0        & 1  & X  & X   \\
+                                                                  & RegWrite    & 1        & 1  & 0  & 0   \\
+                                                                  & MemRead     & 0        & 1  & 0  & 0   \\
+                                                                  & MemWrite    & 0        & 0  & 1  & 0   \\
+                                                                  & Branch      & 0        & 0  & 0  & 1   \\
+                                                                  & ALUOp1      & 1        & 0  & 0  & 0   \\
+                                                                  & ALUOp0      & 0        & 0  & 0  & 1   \\
         \end{tabularx}
         \renewcommand{\arraystretch}{1}
         \setlength{\tabcolsep}{\oldtabcolsep}
