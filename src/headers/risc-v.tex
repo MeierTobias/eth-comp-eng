@@ -78,3 +78,15 @@
 \def\magentacodecolor{\color{magenta}}
 \def\purplecodecolor{\color{purple}}
 \def\blackcodecolor{\color{black}}
+
+
+% custom tables
+% custom defines
+\newcommand{\instbit}[1]{\mbox{\scriptsize #1}}
+\newcommand{\instbitrange}[2]{~\instbit{#1} \hfill \instbit{#2}~}
+% Typewriter font 
+\newcolumntype{T}{>{\texttt\bgroup}l<{\egroup}}
+% Typewriter font 
+\newcolumntype{Z}{>{\texttt\bgroup}c<{\egroup}}
+% Typewriter font (code) 
+\newcolumntype{C}{>{\texttt\bgroup}p{2.5in}<{\egroup}}
