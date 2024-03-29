@@ -7,6 +7,8 @@
 
 
 \subsubsection{Memory Sections}
+\includegraphics[width = \linewidth]{memory_sections.png}
+
 Kernel allocates code/stack at program start. Heap is allocated dynamically by the kernel and managed by the heap allocator library (e.g. \textit{heap.so}, part of application).
 
 \ptitle{.text}
@@ -44,10 +46,6 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
     \item Used also for large allocations
 \end{itemize}
 
-\paragraph{Managing Code and Stack}
-
-
-
 \subsubsection{Managing the Heap}
 \begin{itemize}
     \item Heap suffers \textbf{fragmentation} at runtime: causes non-contiguous memory
@@ -64,6 +62,8 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \end{itemize}
 
 \subsubsection{In-Band Metadata: Linked List}
+\includegraphics[width = \linewidth]{free_linked_list.png}
+
 \begin{itemize}
     \item Use a linked list to keep track of \textbf{free} heap sections
     \item Nodes stored at start of each free heap section
@@ -116,6 +116,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \end{itemize}
 
 \ptitle{Fragmentation vs. Performance}
+
 \begin{itemize}
     \item Coalescing is very cheap (flipping bits)
     \item \lstinline{malloc()} is more expensive (scan the bitmap), depending on how coarse the bitmap is
@@ -127,10 +128,19 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \subsubsection{In-/Out-Of-Band Megadata: Slab Allocation}
 
 \begin{itemize}
-    \item Create ``sub-heaps'' for commonly used allocation sizes
+    \item Create ``sub-heaps'' (slabs) for common allocation sizes
+    \item Each slab contains e.g. 12/16/256-byte entries
+    \item Many implementations of slab allocators
+    \item Applications'  allocators ask kernel for memory
+    \item Kernel provides memory and can grow slabs if they are full or shrink them if empty
 \end{itemize}
 
-
+\ptitle{Pros and Cons}
+\begin{itemize}
+    \item Flexible (various allocation sizes, growing/shrinking)
+    \item Fragmentation across slabs (not optimized for full utilization): can't move memory between slabs as they become full/empty
+    \item Idea: use page allocation to move pages between different slabs
+\end{itemize}
 \subsubsection{Page Allocation: Buddy Allocator}
-Page Allocation optimizes for \textbf{maximal usage}.
+Page Allocation optimizes for \textbf{full utilization}.
 
