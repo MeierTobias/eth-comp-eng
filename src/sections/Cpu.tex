@@ -3,7 +3,7 @@
 \end{center}
 
 \begin{multicols*}{3}
-    \section{CPU Design}
+    \section{CPU Design}\label{cpu design}
     \subsection{Opcode}
 
     \begin{footnotesize}
@@ -58,15 +58,67 @@
 
     \subsection{Parallel Instruction Execution}
 
-    \subsubsection{Pipelining}
+    To improve the performance of the CPU the idle time of each component is reduced. This can be achieved by:
 
-    \paragraph{Structural Hazards}
+    \begin{itemize}
+        \item \textbf{Reuse} of logic units for different tasks (instructions).
+        \item \textbf{Pipelining:} Executing multiple instructions at the same time (see~\ref{pipelining}).
+        \item \textbf{Multi-issue processors} that fetch multiple instructions in each cycle (see~\ref{multi-issue processors}).
+    \end{itemize}
 
-    \paragraph{Data Hazards}
+    \subsubsection{Pipelining}\label{pipelining}
 
-    \paragraph{Control Hazards}
+    \includegraphics[width=\linewidth]{cpu_pipelining.png}
 
-    \subsubsection{Multi-Issue Processors}
+    The CPU design is segmented into five sub-steps. Each segment performs an action of a different instruction.
+    \newpar{}
+    Dependencies between instructions produce three types of \textbf{Hazards}:
+    \begin{itemize}
+        \item~\ref{structural hazards} Structural Hazards
+        \item~\ref{data hazards} Data Hazards
+        \item~\ref{control hazards} Control Hazards
+    \end{itemize}
+
+    \paragraph{Structural Hazards}\label{structural hazards}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_structural_hazard.png}
+
+    Both steps need to access the memory. To fix this one can add more resources i.e. a block that only reads the instruction memory and another block that handles the read/write operations in the data memory.
+
+    \begin{center}
+        \includegraphics[width=0.5\linewidth]{cpu_pipelining_structural_hazard_fix.png}
+    \end{center}
+
+    \paragraph{Data Hazards}\label{data hazards}
+
+    A subsequent instruction needs data or a register that is not yet ready.
+
+    \begin{itemize}
+        \item \textbf{RAW: read after write} (true dependency)
+              \begin{lstlisting}[escapechar=@]
+add @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t3, t4
+sub t6, @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t5
+\end{lstlisting}
+        \item \textbf{WAR: write after read} (anti dependency)
+              \begin{lstlisting}[escapechar=@]
+add t1, @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t3
+sub @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t4, t5
+\end{lstlisting}
+        \item \textbf{WAW: write after write} (output dependency)
+              \begin{lstlisting}[escapechar=@]
+lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 100(t2)
+lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
+\end{lstlisting}
+    \end{itemize}
+
+    The \textbf{WAR} and \textbf{WAW} hazard does not apply to the design showed at the beginning of this section. This is only an issue for Out-Of-Order CPU's.
+
+    \newpar{}
+    \ptitle{Solution for the RAW hazard}
+
+    \paragraph{Control Hazards}\label{control hazards}
+
+    \subsubsection{Multi-Issue Processors}\label{multi-issue processors}
 
     \paragraph{Static Multi-Issue Processors}
 
