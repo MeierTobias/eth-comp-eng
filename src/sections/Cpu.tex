@@ -83,7 +83,7 @@
 
     \includegraphics[width=\linewidth]{cpu_pipelining_structural_hazard.png}
 
-    Both steps need to access the memory. To fix this one can add more resources i.e. a block that only reads the instruction memory and another block that handles the read/write operations in the data memory.
+    Both steps need to access the memory. To fix this, individual resources can be added for the instruction memory and the data memory tasks.
 
     \begin{center}
         \includegraphics[width=0.5\linewidth]{cpu_pipelining_structural_hazard_fix.png}
@@ -96,8 +96,8 @@
     \begin{itemize}
         \item \textbf{RAW: read after write} (true dependency)
               \begin{lstlisting}[escapechar=@]
-add @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t3, t4
-sub t6, @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t5
+add @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, t2, t3
+sub t4, @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, t5
 \end{lstlisting}
         \item \textbf{WAR: write after read} (anti dependency)
               \begin{lstlisting}[escapechar=@]
@@ -111,10 +111,21 @@ lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
 \end{lstlisting}
     \end{itemize}
 
-    The \textbf{WAR} and \textbf{WAW} hazard does not apply to the design showed at the beginning of this section. This is only an issue for Out-Of-Order CPU's.
+    The \textbf{WAR} and \textbf{WAW} hazard does not apply to the design showed at the beginning of this section. This is only an issue for out-of-order CPU's.
 
     \newpar{}
     \ptitle{Solution for the RAW hazard}
+    
+    By passing the result of the execution stage directly into the input of the next execution stage the \texttt{add}\textleftarrow\texttt{sub} RAW hazard can be avoided.
+    
+    \includegraphics[width=\linewidth]{cpu_pipelining_raw.png}
+    
+    For some instructions this is insufficient. In these cases an extra stall/bubble step needs to be performed.
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_raw_stall.png}
+
+    \ptitle{Remark:}
+    The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle).
 
     \paragraph{Control Hazards}\label{control hazards}
 
