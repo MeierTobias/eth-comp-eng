@@ -128,6 +128,29 @@ lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
     The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle).
 
     \paragraph{Control Hazards}\label{control hazards}
+    
+    A branch instruction needs to be fully evaluated in order to know which instruction we need to execute next. 
+
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\magentacodecolor@beq@\aftergroup\blackcodecolor@ t2, t5, 40
+lw t6, 400(t0)
+\end{lstlisting}
+
+    There are three ways to solve this problem
+    \begin{itemize}
+        \item Bubble
+        \item Shortcut
+        \item Predict
+    \end{itemize}
+    
+    \newpar{}
+    \ptitle{Bubble}
+    
+    \newpar{}
+    \ptitle{Shortcut}
+    
+    \newpar{}
+    \ptitle{Predict}
 
     \subsubsection{Multi-Issue Processors}\label{multi-issue processors}
 
