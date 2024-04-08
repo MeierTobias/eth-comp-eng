@@ -3,7 +3,7 @@
 \end{center}
 
 \begin{multicols*}{3}
-    \section{CPU Design}
+    \section{CPU Design}\label{cpu design}
     \subsection{Opcode}
 
     \begin{footnotesize}
@@ -55,4 +55,170 @@
         \renewcommand{\arraystretch}{1}
         \setlength{\tabcolsep}{\oldtabcolsep}
     \end{footnotesize}
+
+    \subsection{Parallel Instruction Execution}
+
+    To improve the performance of the single-cycle CPU the idle time of each component is reduced  $\to$ increase \textit{throughput}.. This can be achieved by:
+
+    \begin{itemize}
+        \item \textbf{Reuse} of logic units for different tasks (instructions).
+        \item \textbf{Pipelining:} Executing multiple instructions at the same time (see~\ref{pipelining}).
+        \item \textbf{Multi-issue processors} that fetch multiple instructions in each cycle (see~\ref{multi-issue processors}).
+    \end{itemize}
+
+    \textbf{Remark} 
+    
+    Alternatively, the \textit{latency} i.e.\ the instruction length could be reduced too.
+
+    \subsection{Pipelining}\label{pipelining}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining.png}
+
+    The CPU design is segmented into five sub-steps. Each segment performs an action of a different instruction.
+    \newpar{}
+    Dependencies between instructions produce three types of \textbf{Hazards}:
+    \begin{itemize}
+        \item~\ref{structural hazards} Structural Hazards
+        \item~\ref{data hazards} Data Hazards
+        \item~\ref{control hazards} Control Hazards
+    \end{itemize}
+
+    \subsubsection{Structural Hazards}\label{structural hazards}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_structural_hazard.png}
+
+    Both steps need to access the memory. To fix this, individual resources can be added for the instruction memory and the data memory tasks.
+
+    \begin{center}
+        \includegraphics[width=0.5\linewidth]{cpu_pipelining_structural_hazard_fix.png}
+    \end{center}
+
+    \subsubsection{Data Hazards}\label{data hazards}
+
+    A subsequent instruction needs data or a register that is not yet ready.
+
+    \begin{itemize}
+        \item \textbf{RAW:\ read after write} (true dependency)
+              \begin{lstlisting}[escapechar=@]
+add @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, t2, t3
+sub t4, @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, t5
+\end{lstlisting}
+        \item \textbf{WAR:\ write after read} (anti dependency)
+              \begin{lstlisting}[escapechar=@]
+add t1, @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t3
+sub @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t4, t5
+\end{lstlisting}
+        \item \textbf{WAW:\ write after write} (output dependency)
+              \begin{lstlisting}[escapechar=@]
+lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 100(t2)
+lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
+\end{lstlisting}
+    \end{itemize}
+
+    The \textbf{WAR} and \textbf{WAW} hazard does not apply to the design showed at the beginning of this section. This is only an issue for out-of-order CPU's.
+
+    \newpar{}
+    \ptitle{Solution for the RAW hazard}
+
+    By passing the result of the execution stage directly into the input of the next execution stage the \texttt{add}\textleftarrow\texttt{sub} RAW hazard can be avoided.
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_raw.png}
+
+    For some instructions this is insufficient. In these cases an extra stall/bubble step needs to be performed.
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_raw_stall.png}
+
+    \ptitle{Remark:}
+    The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle).
+
+    \subsubsection{Control Hazards}\label{control hazards}
+
+    A branch instruction needs to be fully evaluated in order to know which instruction we need to execute next.
+
+    \begin{lstlisting}[escapechar=@]
+@\aftergroup\magentacodecolor@beq@\aftergroup\blackcodecolor@ t2, t5, 40
+lw t6, 400(t0)
+\end{lstlisting}
+
+    There are three ways to solve this problem
+    \begin{itemize}
+        \item~\ref{bubble} Bubble
+        \item~\ref{shortcut} Shortcut
+        \item~\ref{prediction} Prediction
+    \end{itemize}
+
+    \paragraph{Bubble}\label{bubble}
+
+    Wait until the outcome is known.
+    \begin{itemize}
+        \item[+] Simple design
+        \item[$-$] Always two stalls
+    \end{itemize}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_bubble.png}
+
+    \paragraph{Shortcut}\label{shortcut}
+
+    Wait less by adding additional logic to calculate the branch outcome sooner.
+
+    \begin{itemize}
+        \item[+] Simple design
+        \item[$-$] Always one stalls
+        \item[$-$] Needs more logic
+    \end{itemize}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_shortcut_logic.png}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_shortcut.png}
+
+    \paragraph{Prediction}\label{prediction}
+
+    Predict the outcome of a branch instruction and roll back if the prediction was wrong.
+
+    \newpar{}
+    \ptitle{Pipeline Flush}
+
+    Is a mechanism to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption).
+
+    \newpar{}
+    \ptitle{Static Prediction}
+
+    Static prediction assumes that the branch is \textbf{not taken} and just continues with the next instruction. Due to the usage of loops this prediction is often \textbf{wrong}.
+
+    \newpar{}
+    \ptitle{Dynamic Prediction}
+
+    The CPU learns which direction the branch takes. The predicition is based on the last (or multiple last) branch decision(s). %ChkTex 36
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
+
+    \newpar{}
+    \ptitle{2-bit Dynamic Prediction}
+
+    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred_2bit.png}
+
+    This method operates well on nested loops (repeated execution of the same loop).
+
+    \subsection{Multi-Issue Processors}\label{multi-issue processors}
+    Multi-issue processors fetch multiple instructions in each cycle and try to execute them in parallel.
+    \begin{itemize}
+        \item This can be achieved by adding more (independent) pipelines, ALUs etc.
+        \item As a result, multiple instrucitons per cycle (IPC) can be executed (IPC > 1)
+    \end{itemize}
+    \subsubsection{Static Multi-Issue Processors}
+    The CPU fetches a \textbf{static number} of instructions at each cycle. AKA VLIW (Very Long Instruction Word)
+
+    \includegraphics[width=\linewidth]{cpu_static_multi-issue_processors.png}
+
+    The compiler ensures that all instructions fetched in the same cycle (packet) do not have any hazards with each other (no int\textcolor{red}{ra}-packet hazards). The CPU detects int\textcolor{red}{er}-packet hazards and handles them as needed. 
+
+    \subsubsection{Dynamic Multi-Issue Processors (Superscalar)}
+    The processor decides how many instructions to fetch in each cycle. This depends on the available resources and hazards. 
+    \newpar{}
+    \ptitle{Out-of-Order (OoO) Instruction Execution}
+
+    OoO instruction execution allows to avoid certain hazards but requires a tracking of the dependencies between the instructions.
+
+    \includegraphics[width=\linewidth]{cpu_multi-issue_processors_OoO.png}
+
 \end{multicols*}
