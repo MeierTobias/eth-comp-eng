@@ -31,7 +31,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \ptitle{Stack}
 
 \begin{itemize}
-    \item Compiler manages fixed-size Stack
+    \item Compiler manages fixed-sized Stack
     \item Local variables, callee-saved registers, return address
 \end{itemize}
 
@@ -50,35 +50,37 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \begin{itemize}
     \item Heap suffers \textbf{fragmentation} at runtime: causes non-contiguous memory
           \noindent\begin{itemize}
-              \item External fragmentation is caused by disadvantageous sequences of allocations/freeings (there would be enough free heap but it is not contiguous)
-              \item Internal fragmentation is caused by having large heap units where small allocations waste memory
+              \item \textbf{External fragmentation} is caused by disadvantageous sequences of allocations/freeings (there would be enough free heap but it is not contiguous)
+              \item \textbf{Internal fragmentation} is caused by having large heap units where small allocations waste memory
           \end{itemize}
     \item Fragmentation and finding free memory must be handeled
     \item \textbf{Heap metadata} are used to keep track of free memory and for sanity checks
           \noindent\begin{itemize}
-              \item In-band heap metadata are stored inside the heap
-              \item Out-of-band heap metadata are kept ouside the heap
+              \item \textbf{In-band heap metadata} are stored inside the heap
+              \item \textbf{Out-of-band heap metadata} are kept ouside the heap
           \end{itemize}
 \end{itemize}
 
-\subsubsection{In-Band Metadata: Linked List}
+\paragraph{In-Band Metadata: Linked List}
 \includegraphics[width = \linewidth]{free_linked_list.png}
 
 \begin{itemize}
     \item Use a linked list to keep track of \textbf{free} heap sections
     \item Nodes stored at start of each free heap section
-    \item Stores size of allocation, pointer to next node, magic variable for sanity check
 \end{itemize}
 
 \begin{lstlisting}[language={C}]
-    typedef struct __node_t {
-        int size;                       // allocation size
-        union {
-            int magic;                  // sanity check
-            struct __node_t *next;      // next free section
-        } u;
-    } node_t;         
+typedef struct __node_t {
+    int size;                           // allocation size
+    union {
+        int magic;                      // sanity check
+        struct __node_t *next;          // next free section
+    } u;
+} node_t;         
 \end{lstlisting}
+\textbf{Remark}
+
+A Union is used because either the \code{magic} value \textbf{or} the \code{*next} node is of interest.
 
 \ptitle{Freeing Heap}
 
@@ -93,39 +95,41 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \ptitle{Selecting Free Heap}
 
 \begin{itemize}
-    \item Walk the linked list at \lstinline{malloc()}
-    \item \textbf{First fit}: take first free slot that is big enough
-    \item \textbf{Best fit}: take slot matching the required size the best (slow: walk entire list)
-    \item Counterintuitively, first fit uses space more efficiently than best fit (small losses at each allocation!)
-    \item As slot is selected: remove corrsponding node from list, update pointers, return pointer to free heap
+    \item Walk the linked list at \lstinline{malloc()} %ChkTex 36
+    \begin{itemize}
+        \item \textbf{First fit}: take first free slot that is big enough
+        \item \textbf{Best fit}: take slot matching the required size the best (slow: walk entire list)    
+    \end{itemize}
+    \item First fit uses space more efficiently than best fit (small losses at each allocation!)
+    \item As slot is selected: remove corresponding node from list, update pointers, return pointer to free heap
 \end{itemize}
 
 \ptitle{Handling Fragmentation}
 
 \begin{itemize}
-    \item Coalesce the free list
+    \item Coalesce/ combine the free list
     \item Walk the list, find adjacent free items and merge them
 \end{itemize}
 
-\subsubsection{Out-Of-Band Metadata: Bitmap-Based Allocations}
+\paragraph[Bitmap-Based Allocations]{Out-Of-Band Metadata:\newline Bitmap-Based Allocations}
 \begin{itemize}
-    \item Every bit can tell whether N bytes of the heap are free
-    \item \lstinline{malloc()} scans the bitmap for free space
-    \item \lstinline{free()} flips the right bits in the bitmap to zero
-    \item One needs \textbf{additional} data to keep track of the total allocation sizes (as we only know status of our N byte units)
+    \item Every bit can tell whether $N$ bytes of the heap are free
+    \item \code{malloc()} scans the bitmap for free space %ChkTex 36
+    \item \code{free()} flips the right bits in the bitmap to zero %ChkTex 36
+    \item One needs \textbf{additional} data to keep track of the total allocation sizes (as we only know status of our $N$ byte units)
 \end{itemize}
 
 \ptitle{Fragmentation vs. Performance}
 
 \begin{itemize}
     \item Coalescing is very cheap (flipping bits)
-    \item \lstinline{malloc()} is more expensive (scan the bitmap), depending on how coarse the bitmap is
-    \item In a fine bitmap one has precise allocations (low internal fragmentation) but expensive \lstinline{malloc()}
-    \item In a coarse bitmap one has more bytes per bit, hence less precise allocations (high internal frag) but cheap \lstinline{malloc()}
+    \item \code{malloc()} is more expensive (scan the bitmap), depending on how coarse the bitmap is %ChkTex 36
+    \item In a \textbf{fine bitmap} one has precise allocations (low internal fragmentation) but expensive \code{malloc()} %ChkTex 36
+    \item In a \textbf{coarse bitmap} one has more bytes per bit, hence less precise allocations (high internal frag) but cheap \lstinline{malloc()}
 \end{itemize}
 
 
-\subsubsection{In-/Out-Of-Band Megadata: Slab Allocation}
+\paragraph{In-/Out-Of-Band Megadata: Slab Allocation}
 
 \begin{itemize}
     \item Create ``sub-heaps'' (slabs) for common allocation sizes
@@ -137,10 +141,13 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 
 \ptitle{Pros and Cons}
 \begin{itemize}
-    \item Flexible (various allocation sizes, growing/shrinking)
-    \item Fragmentation across slabs (not optimized for full utilization): can't move memory between slabs as they become full/empty
+    \item[+] Flexible (various allocation sizes, growing/shrinking)
+    \item[-] Fragmentation across slabs (not optimized for full utilization): can't move memory between slabs as they become full/empty
     \item Idea: use page allocation to move pages between different slabs
 \end{itemize}
 \subsubsection{Page Allocation: Buddy Allocator}
 Page Allocation optimizes for \textbf{full utilization}.
+\begin{itemize}
+    \item A page is a \textbf{contigous area of memory} aligned to the page size (4 KB)
+\end{itemize}
 
