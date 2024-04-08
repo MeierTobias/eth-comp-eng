@@ -191,7 +191,6 @@ int buddy_free(struct block *block)
     case 0:
         return -1; /* Double free */
     case 1:
-        block->refcnt--;
         buddy_push(block, block->order);
         __buddy_try_merge(block);
 
@@ -203,7 +202,7 @@ int buddy_free(struct block *block)
 }
 \end{lstlisting}
 
-\textbf{Remark} both \code{block\_alloc} and \code{Block\_free} trigger a max of log(\code{max\_order}) of operations.
+\textbf{Remark} both \code{block\_alloc} and \code{block\_free} trigger a max of log(\code{max\_order}) of operations.
 
 \paragraph{Buddy Allocator: Data Structures}
 \ptitle{Block}
@@ -227,8 +226,10 @@ static struct block *buddy_free_lists[BUDDY_MAX_ORDER + 1];
 \paragraph{Buddy Allocator: Internal Functions}
 \ptitle{Block to Buddy}
 \begin{lstlisting}[style=bright_C++]
-#define block2buddy(block, order) \
-        (__ppn2block(block2__ppn(block) ^ 1UL << order))
+static inline struct block *block2buddy(struct block *block, int order)
+{
+    return __ppn2block(block2__ppn(block) ^ 1UL << order);
+}
 \end{lstlisting}
 
 \newpar{}
@@ -250,9 +251,9 @@ Push to the front of \code{buddy\_free\_lists}
 \begin{lstlisting}[style=bright_C++]
 static void buddy_push(struct block *block, unsigned order)
 {
-    block->refcnt = 0;
-    block->next = buddy_free_lists[order];
-    buddy_free_lists[order] = block;
+	block->next = buddy_free_lists[order];
+	buddy_free_lists[order] = block;
+	block->refcnt--;
 }
 \end{lstlisting}
 
@@ -267,14 +268,14 @@ static struct block *buddy_pop(unsigned order)
 
     struct block *block = buddy_free_lists[order];
 
-    /* update list and remove from linked list */
-    block->refcnt = 1;
-    if (block->next != NULL) {
-        buddy_free_lists[order] = block->next;
-        block->next = NULL;
-    } else {
-        buddy_free_lists[order] = NULL;
-    }
+    /* update list and pop front of linked list */
+	if (block->next != NULL) {
+		buddy_free_lists[order] = block->next;
+		block->next = NULL;
+	} else {
+		buddy_free_lists[order] = NULL;
+	}
+	block->refcnt++;
 
     return block;
 }
