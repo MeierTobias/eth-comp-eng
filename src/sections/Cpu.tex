@@ -58,13 +58,17 @@
 
     \subsection{Parallel Instruction Execution}
 
-    To improve the performance of the CPU the idle time of each component is reduced. This can be achieved by:
+    To improve the performance of the single-cycle CPU the idle time of each component is reduced  $\to$ increase \textit{throughput}.. This can be achieved by:
 
     \begin{itemize}
         \item \textbf{Reuse} of logic units for different tasks (instructions).
         \item \textbf{Pipelining:} Executing multiple instructions at the same time (see~\ref{pipelining}).
         \item \textbf{Multi-issue processors} that fetch multiple instructions in each cycle (see~\ref{multi-issue processors}).
     \end{itemize}
+
+    \textbf{Remark} 
+    
+    Alternatively, the \textit{latency} i.e.\ the instruction length could be reduced too.
 
     \subsection{Pipelining}\label{pipelining}
 
@@ -94,17 +98,17 @@
     A subsequent instruction needs data or a register that is not yet ready.
 
     \begin{itemize}
-        \item \textbf{RAW: read after write} (true dependency)
+        \item \textbf{RAW:\ read after write} (true dependency)
               \begin{lstlisting}[escapechar=@]
 add @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, t2, t3
 sub t4, @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, t5
 \end{lstlisting}
-        \item \textbf{WAR: write after read} (anti dependency)
+        \item \textbf{WAR:\ write after read} (anti dependency)
               \begin{lstlisting}[escapechar=@]
 add t1, @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t3
 sub @\aftergroup\magentacodecolor@t2@\aftergroup\blackcodecolor@, t4, t5
 \end{lstlisting}
-        \item \textbf{WAW: write after write} (output dependency)
+        \item \textbf{WAW:\ write after write} (output dependency)
               \begin{lstlisting}[escapechar=@]
 lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 100(t2)
 lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
@@ -174,7 +178,7 @@ lw t6, 400(t0)
     \newpar{}
     \ptitle{Pipeline Flush}
 
-    Is a mechanism to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage.
+    Is a mechanism to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption).
 
     \newpar{}
     \ptitle{Static Prediction}
@@ -184,7 +188,7 @@ lw t6, 400(t0)
     \newpar{}
     \ptitle{Dynamic Prediction}
 
-    The cpu learns which direction the branch takes.
+    The CPU learns which direction the branch takes. The predicition is based on the last (or multiple last) branch decision(s). %ChkTex 36
 
     \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
 
@@ -197,7 +201,10 @@ lw t6, 400(t0)
 
     \subsection{Multi-Issue Processors}\label{multi-issue processors}
     Multi-issue processors fetch multiple instructions in each cycle and try to execute them in parallel.
-
+    \begin{itemize}
+        \item This can be achieved by adding more (independent) pipelines, ALUs etc.
+        \item As a result, multiple instrucitons per cycle (IPC) can be executed (IPC > 1)
+    \end{itemize}
     \subsubsection{Static Multi-Issue Processors}
     The CPU fetches a \textbf{static number} of instructions at each cycle. AKA VLIW (Very Long Instruction Word)
 
@@ -208,7 +215,7 @@ lw t6, 400(t0)
     \subsubsection{Dynamic Multi-Issue Processors (Superscalar)}
     The processor decides how many instructions to fetch in each cycle. This depends on the available resources and hazards. 
     \newpar{}
-    \ptitle{Out-of-Order (OoO) Instruction execution}
+    \ptitle{Out-of-Order (OoO) Instruction Execution}
 
     OoO instruction execution allows to avoid certain hazards but requires a tracking of the dependencies between the instructions.
 
