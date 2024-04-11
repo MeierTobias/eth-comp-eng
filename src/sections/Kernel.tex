@@ -9,7 +9,7 @@
 \subsubsection{Memory Sections}
 \includegraphics[width = \linewidth]{memory_sections.png}
 
-Kernel allocates code/stack at program start. Heap is allocated dynamically by the kernel and managed by the heap allocator library (e.g. \textit{heap.so}, part of application).
+Kernel allocates code/stack at program start. Heap is allocated dynamically by the kernel and managed by the heap allocator library (e.g.\ \textit{heap.so}, part of application).
 
 \ptitle{.text}
 
@@ -85,7 +85,7 @@ A Union is used because either the \code{magic} value \textbf{or} the \code{*nex
 \ptitle{Freeing Heap}
 
 \begin{itemize}
-    \item \lstinline{free(a)}
+    \item \lstinline{free(a)}%ChkTex 36
     \item Allocate a new \lstinline{__node_t} data structure
     \item Check if magic value has not been overwritten
     \item Let \lstinline{ __node_t *next} point to previous \lstinline{head}
@@ -125,7 +125,7 @@ A Union is used because either the \code{magic} value \textbf{or} the \code{*nex
     \item Coalescing is very cheap (flipping bits)
     \item \code{malloc()} is more expensive (scan the bitmap), depending on how coarse the bitmap is %ChkTex 36
     \item In a \textbf{fine bitmap} one has precise allocations (low internal fragmentation) but expensive \code{malloc()} %ChkTex 36
-    \item In a \textbf{coarse bitmap} one has more bytes per bit, hence less precise allocations (high internal frag) but cheap \lstinline{malloc()}
+    \item In a \textbf{coarse bitmap} one has more bytes per bit, hence less precise allocations (high internal frag) but cheap \lstinline{malloc()} %ChkTex 36
 \end{itemize}
 
 
@@ -202,7 +202,7 @@ int buddy_free(struct block *block)
 }
 \end{lstlisting}
 
-\textbf{Remark} both \code{block\_alloc} and \code{block\_free} trigger a max of log(\code{max\_order}) of operations.
+\textbf{Remark} both \code{block\_alloc} and \code{block\_free} trigger a max of log(\code{max\_order}) of operations. %ChkTeX 36
 
 \paragraph{Buddy Allocator: Data Structures}
 \ptitle{Block}
