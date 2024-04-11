@@ -385,3 +385,133 @@ static struct block *__buddy_merge(struct block *block, struct block *buddy)
 }
 \end{lstlisting}
 
+\subsection{Virtual Memory}
+% Segmemtation and x86 history left out on purpose
+With virtual memory, the users contigous memory is spread over in physical memory to improve flexibility and external fragmentation.
+In order to achieve this, the memory management unit (\textbf{MMU}) translates memory addresses accordingly to create the illusion of contigous memory for the user.
+\subsubsection{Segmentation}
+
+\begin{itemize}
+    \item Inflexible
+    \item Suffers from both internal and external fragmentation
+\end{itemize}
+
+\subsubsection{Paging}
+\begin{center}
+    \includegraphics[width = \linewidth]{kernel_virt_mem.png}
+\end{center}
+
+\ptitle{Page Table}
+\begin{itemize}
+    \item translates the virtual page into a physical one
+    \item In RISC-V, Pages have 4 KB (12 bit) granularity
+    \item Kernel allocates pages (buddy)
+    \item CPU's MMU translates addresses using the page table
+\end{itemize}
+
+\paragraph{Linear Page Table}
+\begin{itemize}
+    \item stored in CPU
+    \item large unused parts (virtual >> physical)
+    \item simple
+\end{itemize}
+
+\ptitle{Dimensions}
+\noindent\begin{equation*}
+    s_{\text{page table}} = n_{\text{virt}}\cdot (\log_2(n_{\text{phys}}) + 1)\quad [\text{bits}]
+\end{equation*}
+
+\renewcommand{\arraystretch}{1.3}
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+\begin{tabularx}{\linewidth}{@{} c c c@{}}
+                                                                                   & physical page                  & present bit \\
+    \cmidrule{2-3}
+    \multirow{7}{*}{\begin{sideways}$n_{\text{virt}}$\end{sideways}} & 10                             & 1           \\
+                                                                                   & 01                             & 1           \\
+                                                                                   & x                              & 0           \\
+                                                                                   & x                              & 0           \\
+                                                                                   & 00                             & 1           \\
+                                                                                   & 11                             & 1           \\
+                                                                                   & x                              & 0           \\
+                                                                                   & x                              & 0           \\
+    \cmidrule{2-3}
+                                                                                   & $\log_2(n_{\text{phys}})$ bits &
+\end{tabularx}
+
+\paragraph{Multi-level Page Tables}
+\begin{itemize}
+    \item Pages are allocated when needed
+    \item Stored im DRAM
+    \item In our case (\textbf{Sv48}):
+          \begin{itemize}
+              \item 48 bit virtual and 56 bit physical address space
+              \item 4-levels
+              \item page table entry is 8 bytes (64 bit)
+              \item page is 4 KB $\to$ 512 entries (9 bits) ($\frac{\text{4 KB}}{\text{8 B}}$)
+              \item Virtual page number: 4 (levels) $\cdot$ 9 bits = 36 bits
+          \end{itemize}
+\end{itemize}
+
+\begin{center}
+    \includegraphics[width =\linewidth]{kernel_sv48.png}
+\end{center}
+
+\ptitle{Virtual $\to$ physical (memory walk)}
+\begin{itemize}
+    \item Done by CPU's MMU
+\end{itemize}
+\begin{center}
+    \includegraphics[width = \linewidth]{kernel_ml_mem_walk.png}
+\end{center}
+
+\newpar{}
+\ptitle{Creation}
+\begin{itemize}
+    \item Done in software (by OS)
+    \item Identical to memory walk.
+    \item If \code{present == 0}, allocate new page (\code{buddy\_alloc(0)} $\to$ \code{ppn}) and update PPN.\ %ChkTeX 36
+\end{itemize}
+
+\newcol{}
+\ptitle{Page Table Entry}
+
+\begin{center}
+    \includegraphics[width = \linewidth]{kernel_page_entry.png}
+\end{center}
+
+\renewcommand{\arraystretch}{1.3}
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+\begin{tabularx}{\linewidth}{@{}llcll@{}}
+    V & valid     &  & G    & accessed \\
+    R & read      &  & D    & dirty    \\
+    W & write     &  & PBMT & IO       \\
+    X & execute   &  & N    & TLBOPT   \\
+    U & user mode &  &
+\end{tabularx}
+
+\begin{tabularx}{\linewidth}{@{}cccl@{}}
+    X & W & R & Meaning                             \\
+    \cmidrule{1-4}
+    0 & 0 & 0 & Pointer to next level of page table \\
+    0 & 0 & 1 & Read-only page                      \\
+    0 & 1 & 0 & Reserved for future use             \\
+    0 & 1 & 1 & Read-write page                     \\
+    1 & 0 & 0 & Execute-only page                   \\
+    1 & 0 & 1 & Read-execute page                   \\
+    1 & 1 & 0 & Reserved for future use             \\
+    1 & 1 & 1 & Read-write-execute page
+\end{tabularx}
+\renewcommand{\arraystretch}{1}
+\setlength\tabcolsep{\oldtabcolsep}
+
+\newpar{}
+\ptitle{satp}
+\begin{itemize}
+    \item \code{satp} register points to the root of the page table
+\end{itemize}
+\begin{center}
+    \includegraphics[width = \linewidth]{kernel_satp.png}
+\end{center}
+\begin{center}
+    \includegraphics[width = .6\linewidth]{kernel_satp_table.png}
+\end{center}
