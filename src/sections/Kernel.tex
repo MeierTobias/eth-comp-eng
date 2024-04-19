@@ -1,7 +1,7 @@
 \section{Kernel}
 \subsection{Memory Management}
 \begin{itemize}
-    \item Memory is usually DRAM (capacitory that need to be refreshed periodically)
+    \item Memory is usually DRAM (capacitors that need to be refreshed periodically)
     \item Last parallel bus (64/72 Bit) in modern computers
 \end{itemize}
 
@@ -53,11 +53,11 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
               \item \textbf{External fragmentation} is caused by disadvantageous sequences of allocations/freeings (there would be enough free heap but it is not contiguous)
               \item \textbf{Internal fragmentation} is caused by having large heap units where small allocations waste memory
           \end{itemize}
-    \item Fragmentation and finding free memory must be handeled
+    \item Fragmentation and finding free memory must be handled
     \item \textbf{Heap metadata} are used to keep track of free memory and for sanity checks
           \noindent\begin{itemize}
               \item \textbf{In-band heap metadata} are stored inside the heap
-              \item \textbf{Out-of-band heap metadata} are kept ouside the heap
+              \item \textbf{Out-of-band heap metadata} are kept outside the heap
           \end{itemize}
 \end{itemize}
 
@@ -148,7 +148,7 @@ A Union is used because either the \code{magic} value \textbf{or} the \code{*nex
 \paragraph{Page Allocation: Buddy Allocator}
 Page Allocation optimizes for \textbf{full utilization}.
 \begin{itemize}
-    \item A page is a \textbf{contigous area of memory} aligned to the page size (4 KB)
+    \item A page is a \textbf{contiguous area of memory} aligned to the page size (4 KB)
     \item Blocks can have a size that scales with power-of-two wrt.\ the page size, this power is also called the \textbf{order}.
     \item Each page has a \textit{buddy} with the same size.
           \begin{itemize}
@@ -386,9 +386,9 @@ static struct block *__buddy_merge(struct block *block, struct block *buddy)
 \end{lstlisting}
 
 \subsection{Virtual Memory}
-% Segmemtation and x86 history left out on purpose
-With virtual memory, the users contigous memory is spread over in physical memory to improve flexibility and external fragmentation.
-In order to achieve this, the memory management unit (\textbf{MMU}) translates memory addresses accordingly to create the illusion of contigous memory for the user.
+% Segmentation and x86 history left out on purpose
+With virtual memory, the users contiguous memory is spread over in physical memory to improve flexibility and external fragmentation.
+In order to achieve this, the memory management unit (\textbf{MMU}) translates memory addresses accordingly to create the illusion of contiguous memory for the user. In addition the MMU also controls the permissions to that virtual memory space.
 \subsubsection{Segmentation}
 
 \begin{itemize}
@@ -412,7 +412,7 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 \paragraph{Linear Page Table}
 \begin{itemize}
     \item stored in CPU
-    \item large unused parts (virtual >> physical)
+    \item large unused parts (virtual $>>$ physical)
     \item simple
 \end{itemize}
 
@@ -481,6 +481,7 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 
 \renewcommand{\arraystretch}{1.3}
 \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+
 \begin{tabularx}{\linewidth}{@{}llcll@{}}
     V & valid     &  & G    & accessed \\
     R & read      &  & D    & dirty    \\
@@ -501,6 +502,7 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
     1 & 1 & 0 & Reserved for future use             \\
     1 & 1 & 1 & Read-write-execute page
 \end{tabularx}
+
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
 
@@ -515,3 +517,65 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 \begin{center}
     \includegraphics[width = .6\linewidth]{kernel_satp_table.png}
 \end{center}
+
+\subsubsection{Virtual Memory Management}
+The virtual memory space is divided into two sections one for the application and one for the kernel.
+\begin{center}
+    \includegraphics[width=\linewidth]{virtual_memory_app_kernel_space.png}
+\end{center}
+
+The kernel memory space contains five regions:
+
+\begin{center}
+    \includegraphics[width=\linewidth]{virtual_memory_kernel_space.png}
+\end{center}
+
+\renewcommand{\arraystretch}{1.3}
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+
+\begin{tabularx}{\linewidth}{@{}lXccc@{}}
+    Section        & Description                         & X & W & R \\
+    \midrule
+    \texttt{I/O}   & Interaction with devices            & 0 & 1 & 1 \\
+    \texttt{.text} & Kernel code                         & 1 & 0 & 0 \\
+    \texttt{.data} & Initialized global/static variables & 0 & 1 & 1 \\
+    \texttt{ID}    & Identity map of physical memory     & 0 & 1 & 1 \\
+    \texttt{stack} & Kernel stack                        & 0 & 1 & 1
+\end{tabularx}
+
+\renewcommand{\arraystretch}{1}
+\setlength\tabcolsep{\oldtabcolsep}
+
+\paragraph{MMU Start-Up}
+
+For backward compatibility reasons the kernel is located in the upper part of the virtual memory. This introduces a problem with the PC when the MMU starts. First the PC is pointing to the physical address of the kernel code. But after the MMU initialized the virtual memory space the PC points to the wrong address.
+
+\begin{center}
+    \includegraphics[width=\linewidth]{virtual_memory_mmu_problem.png}
+\end{center}
+
+This is tackled by
+\begin{enumerate}
+    \item Double mapping the kernel before the MMU starts.
+    \item Update pointers (e.g., stack) and JALR.
+    \item Remove the double mapped kernel.
+\end{enumerate}
+
+\subsubsection{Page Fault}
+If a application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For mor details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
+
+There are two types of page faults:
+\begin{itemize}
+    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. This results in the termination of the application.
+    \item \textbf{Soft page faults} occur when valid memory is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
+\end{itemize}
+
+\paragraph{Demand Paging}\label{page demanding}
+% TODO:
+\paragraph{Page Sharing}
+% TODO:
+\paragraph{Page Swapping}
+% TODO:
+
+\subsection{Exceptions}\label{exceptions}
+% TODO:
