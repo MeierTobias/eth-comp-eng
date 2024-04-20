@@ -518,6 +518,23 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
     \includegraphics[width = .6\linewidth]{kernel_satp_table.png}
 \end{center}
 
+\newpar{}
+\ptitle{Bigger Page Types}
+
+Every memory access requires 4 additional lookups (memory accesses). If the applications only need bigger junks of memory then the lookup tree can be pruned by a page (or more).
+
+\newpar{}
+One page table has 512 entries ($2^9$).
+\begin{align*}
+    \text{page}       & = & 4\text{~KB}         &   &               \\
+    \text{Huge page}  & = & 512 * 4\text{~KB}   & = & 2\text{~MB}   \\
+    \text{Super page} & = & 512^2 * 4\text{~KB} & = & 1\text{~GB}   \\
+    \text{Giant page} & = & 512^3 * 4\text{~KB} & = & 512\text{~GB}
+\end{align*}
+
+To determine if the current page table entry points to a next page table or to a bigger page size the X, W, R flags in are used (all 0 = next level of page table).
+
+
 \subsubsection{Virtual Memory Management}
 The virtual memory space is divided into two sections one for the application and one for the kernel.
 \begin{center}
@@ -571,7 +588,24 @@ There are two types of page faults:
 \end{itemize}
 
 \paragraph{Demand Paging}\label{page demanding}
-% TODO:
+Applications usually ask for mor heap memory than they need so the heap memory is allocated when it is actually needed.
+When a application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory area's} (VMA's) for each process (and itself).
+\newpar{}
+Example procedure
+\begin{enumerate}
+    \item Application tries to store Data
+          \texttt{sw t0, (addr)}
+    \item The MMU walks the pages and gets to an entry with the valid bit set to zero.
+    \item The kernel checks if the requested address is in the valid area (VMA) and if the permissions are given.
+    \item Then the page gets allocated.
+    \item The store instruction is re-executed.
+\end{enumerate}
+
+\newpar{}
+\ptitle{Demand paging all the way}
+
+This dynamic approach can be used for all the app memory so that we do not have to pre-allocate any page tables.
+
 \paragraph{Page Sharing}
 % TODO:
 \paragraph{Page Swapping}
@@ -580,15 +614,15 @@ There are two types of page faults:
 \subsection{Exceptions}\label{exceptions}
 An exception in the pipeline can ether be generated
 \begin{itemize}
-    \item \textbf{internally} by 
-    \begin{itemize}
-        \item incorrect behavior like executing an invalid instruction.
-        \item a potentially valid behavior like page faults.
-    \end{itemize} 
+    \item \textbf{internally} by
+          \begin{itemize}
+              \item incorrect behavior like executing an invalid instruction.
+              \item a potentially valid behavior like page faults.
+          \end{itemize}
     \item \textbf{externally} by
-    \begin{itemize}
-        \item interrupts like a network packet arrival or a key press.
-    \end{itemize}
+          \begin{itemize}
+              \item interrupts like a network packet arrival or a key press.
+          \end{itemize}
 \end{itemize}
 
 Exceptions are handled by flushing the pipeline and moving control to a pre-configured OS routine.
