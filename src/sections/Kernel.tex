@@ -578,4 +578,41 @@ There are two types of page faults:
 % TODO:
 
 \subsection{Exceptions}\label{exceptions}
-% TODO:
+An exception in the pipeline can ether be generated
+\begin{itemize}
+    \item \textbf{internally} by 
+    \begin{itemize}
+        \item incorrect behavior like executing an invalid instruction.
+        \item a potentially valid behavior like page faults.
+    \end{itemize} 
+    \item \textbf{externally} by
+    \begin{itemize}
+        \item interrupts like a network packet arrival or a key press.
+    \end{itemize}
+\end{itemize}
+
+Exceptions are handled by flushing the pipeline and moving control to a pre-configured OS routine.
+
+\begin{center}
+    \includegraphics[width=\linewidth]{exception_handling.png}
+\end{center}
+
+\newpar{}
+\ptitle{STVEC} Supervisor Trap Vector register
+
+On an exception the CPU jumps to the address stored in STVEC
+
+\newpar{}
+\ptitle{SEPC} Supervisor Exception Program Counter register
+
+SEPC will hold the PC of the offending instruction (to be used by the routine at STVEC)
+
+\newpar{}
+\ptitle{SCAUSE} Supervisor Exception CAUSE register
+
+SCAUSE will tell why the exception happened (e.g., a page fault)
+
+\newpar{}
+\ptitle{STVAL} Supervisor Trap Value register
+
+STVAL will provide extended information about the exception (e.g., page fault's address)
