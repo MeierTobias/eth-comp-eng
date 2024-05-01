@@ -1,9 +1,10 @@
-\begin{center}
-    \includegraphics[width=.7\linewidth]{cpu_flowchart.png}
-\end{center}
 
-\begin{multicols*}{3}
+\begin{multicols*}{2}
     \section{CPU Design}\label{cpu design}
+
+    \begin{center}
+        \includegraphics[width=\linewidth]{cpu_flowchart.png}
+    \end{center}
     \subsection{Opcode}
 
     \begin{footnotesize}
@@ -66,8 +67,8 @@
         \item \textbf{Multi-issue processors} that fetch multiple instructions in each cycle (see~\ref{multi-issue processors}).
     \end{itemize}
 
-    \textbf{Remark} 
-    
+    \textbf{Remark}
+
     Alternatively, the \textit{latency} i.e.\ the instruction length could be reduced too.
 
     \subsection{Pipelining}\label{pipelining}
@@ -90,7 +91,7 @@
     Both steps need to access the memory. To fix this, individual resources can be added for the instruction memory and the data memory tasks.
 
     \begin{center}
-        \includegraphics[width=0.5\linewidth]{cpu_pipelining_structural_hazard_fix.png}
+        \includegraphics[width=0.3\linewidth]{cpu_pipelining_structural_hazard_fix.png}
     \end{center}
 
     \subsubsection{Data Hazards}\label{data hazards}
@@ -189,13 +190,15 @@ lw t6, 400(t0)
     \ptitle{Dynamic Prediction}
 
     The CPU learns which direction the branch takes. The predicition is based on the last (or multiple last) branch decision(s). %ChkTex 36
-
-    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
+    \begin{center}
+        \includegraphics[width=.5\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
+    \end{center}
 
     \newpar{}
     \ptitle{2-bit Dynamic Prediction}
-
-    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred_2bit.png}
+    \begin{center}
+        \includegraphics[width=.5\linewidth]{cpu_pipelining_control_hazard_dyn_pred_2bit.png}
+    \end{center}
 
     This method operates well on nested loops (repeated execution of the same loop).
 
@@ -210,15 +213,16 @@ lw t6, 400(t0)
 
     \includegraphics[width=\linewidth]{cpu_static_multi-issue_processors.png}
 
-    The compiler ensures that all instructions fetched in the same cycle (packet) do not have any hazards with each other (no int\textcolor{red}{ra}-packet hazards). The CPU detects int\textcolor{red}{er}-packet hazards and handles them as needed. 
+    The compiler ensures that all instructions fetched in the same cycle (packet) do not have any hazards with each other (no int\textcolor{red}{ra}-packet hazards). The CPU detects int\textcolor{red}{er}-packet hazards and handles them as needed.
 
     \subsubsection{Dynamic Multi-Issue Processors (Superscalar)}
-    The processor decides how many instructions to fetch in each cycle. This depends on the available resources and hazards. 
+    The processor decides how many instructions to fetch in each cycle. This depends on the available resources and hazards.
     \newpar{}
     \ptitle{Out-of-Order (OoO) Instruction Execution}
 
     OoO instruction execution allows to avoid certain hazards but requires a tracking of the dependencies between the instructions.
-
-    \includegraphics[width=\linewidth]{cpu_multi-issue_processors_OoO.png}
+    \begin{center}
+        \includegraphics[width=.8\linewidth]{cpu_multi-issue_processors_OoO.png}
+    \end{center}
 
 \end{multicols*}
