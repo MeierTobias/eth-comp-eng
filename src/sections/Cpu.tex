@@ -188,6 +188,7 @@ PiplineID/EX.rs1/2 == PipelineMEM/WB.rd
     \ptitle{Remark:}
     The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
 
+    \newpar{}
     As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipline.
     Subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the nect instruction.
     \begin{center}
