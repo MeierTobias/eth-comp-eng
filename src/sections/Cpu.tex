@@ -10,6 +10,7 @@
     \begin{footnotesize}
         \renewcommand{\arraystretch}{1.2}
         \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+
         \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z Z T @{}}\label{tab:opcode}
                                                                    & Signal name & R-format & lw & sw & beq & \color{teal}Stage                                              & NOP \\
             \cmidrule{2-6}
@@ -33,6 +34,7 @@
                                                                    & MemWrite    & 0        & 0  & 1  & 0   & \multirow{3}{*}{\begin{sideways}\color{teal}WB\end{sideways}}  & 0   \\
                                                                    & Branch      & 0        & 0  & 0  & 1   &                                                                & 0   \\
         \end{tabularx}
+
         \renewcommand{\arraystretch}{1}
         \setlength{\tabcolsep}{\oldtabcolsep}
     \end{footnotesize}
@@ -44,6 +46,7 @@
     \begin{footnotesize}
         \renewcommand{\arraystretch}{1.2}
         \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+
         \begin{tabularx}{\linewidth}{@{}T Z Z Z T Z@{}}
             Opcode                  & ALUOp               & Funct7  & Funct3 & ALU action                                              & ALU contr         \\
             \cmidrule{2-6}
@@ -56,6 +59,7 @@
                                     &                     & 0000000 & 110    & \color{teal} or                                         & \color{teal} 0001 \\
                                     &                     &         &        & \multicolumn{2}{c}{\color{teal} \tt{ALU control lines}}                     \\
         \end{tabularx}
+
         \renewcommand{\arraystretch}{1}
         \setlength{\tabcolsep}{\oldtabcolsep}
     \end{footnotesize}
@@ -92,7 +96,7 @@
     \begin{itemize}
         \item[+] shorter clock cycle
         \item[+] fewer bits in the pipeline registers (instruction not passed along)
-        \item[-] reduntant control information
+        \item[-] redundant control information
     \end{itemize}
 
     \begin{center}
@@ -144,11 +148,11 @@ lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
     \newpar{}
     \ptitle{Detecting RAW hazards in the Pipeline}
 
-    The pipeline registers can be used to check if an earlier instruction (later in the pipline) has data needed for the current instruction:
-    If a current \code{src} register (\code{rs1/rs2}) is found in any later pipline register a data hazard exists.
+    The pipeline registers can be used to check if an earlier instruction (later in the pipeline) has data needed for the current instruction:
+    If a current \code{src} register (\code{rs1/rs2}) is found in any later pipeline register a data hazard exists.
     \begin{lstlisting}
-PiplineID/EX.rs1/2 == PipelineEX/MEM.rd
-PiplineID/EX.rs1/2 == PipelineMEM/WB.rd
+PipelineID/EX.rs1/2 == PipelineEX/MEM.rd
+PipelineID/EX.rs1/2 == PipelineMEM/WB.rd
     \end{lstlisting}
     \textbf{Remark}: This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd})
 
@@ -166,16 +170,18 @@ PiplineID/EX.rs1/2 == PipelineMEM/WB.rd
     \begin{footnotesize}
         \renewcommand{\arraystretch}{1.4}
         \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+
         \begin{tabularx}{\linewidth}{@{}T Z Z X @{}}
-                                                                      & MUX Control   & Source & Explantion                             \\
+                                                                                      & MUX Control   & Source & Explanation                            \\
             \cmidrule{2-4}
-            \multirow{3}{*}{\begin{sideways}1.\ ALU op\end{sideways}} & ForwardA = 00 & ID/EX  & From register file                     \\
-                                                                      & ForwardA = 10 & EX/MEM & From prior ALU result                  \\
-                                                                      & ForwardA = 01 & MEM/WB & From data memory or earlier ALU result \\[1.5em]
-            \multirow{3}{*}{\begin{sideways}2.\ ALU op\end{sideways}} & ForwardB = 00 & ID/EX  & From register file                     \\
-                                                                      & ForwardB = 10 & EX/MEM & From prior ALU result                  \\
-                                                                      & ForwardB = 01 & MEM/WB & From data memory or earlier ALU result \\
+            \multirow{3}{*}{\begin{sideways}\begin{scriptsize}1.\ ALU op\end{scriptsize}\end{sideways}} & ForwardA = 00 & ID/EX  & From register file                     \\
+                                                                                      & ForwardA = 10 & EX/MEM & From prior ALU result                  \\
+                                                                                      & ForwardA = 01 & MEM/WB & From data memory or earlier ALU result \\[1.5em]
+            \multirow{3}{*}{\begin{sideways}\begin{scriptsize}2.\ ALU op\end{scriptsize}\end{sideways}} & ForwardB = 00 & ID/EX  & From register file                     \\
+                                                                                      & ForwardB = 10 & EX/MEM & From prior ALU result                  \\
+                                                                                      & ForwardB = 01 & MEM/WB & From data memory or earlier ALU result \\
         \end{tabularx}
+
         \renewcommand{\arraystretch}{1}
         \setlength{\tabcolsep}{\oldtabcolsep}
     \end{footnotesize}
@@ -189,8 +195,8 @@ PiplineID/EX.rs1/2 == PipelineMEM/WB.rd
     The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
 
     \newpar{}
-    As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipline.
-    Subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the nect instruction.
+    As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipeline.
+    Subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction.
     \begin{center}
         \includegraphics[width=\linewidth]{cpu_pipelining_NOP.png}
     \end{center}
@@ -254,7 +260,7 @@ lw t6, 400(t0)
     \newpar{}
     \ptitle{Dynamic Prediction}
 
-    The CPU learns which direction the branch takes. The predicition is based on the last (or multiple last) branch decision(s). %ChkTex 36
+    The CPU learns which direction the branch takes. The prediction is based on the last (or multiple last) branch decision(s). %ChkTex 36
     \begin{center}
         \includegraphics[width=.5\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
     \end{center}
@@ -271,7 +277,7 @@ lw t6, 400(t0)
     Multi-issue processors fetch multiple instructions in each cycle and try to execute them in parallel.
     \begin{itemize}
         \item This can be achieved by adding more (independent) pipelines, ALUs etc.
-        \item As a result, multiple instrucitons per cycle (IPC) can be executed (IPC > 1)
+        \item As a result, multiple instructions per cycle (IPC) can be executed (IPC > 1)
     \end{itemize}
     \subsubsection{Static Multi-Issue Processors}
     The CPU fetches a \textbf{static number} of instructions at each cycle. AKA VLIW (Very Long Instruction Word)
