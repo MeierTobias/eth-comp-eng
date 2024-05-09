@@ -1,4 +1,6 @@
 \section{Kernel}
+Privileged software that is in charge of securely multiplexing hardware resources between competing processes.
+
 \subsection{Memory Management}
 \begin{itemize}
     \item Memory is usually DRAM (capacitors that need to be refreshed periodically)
@@ -472,7 +474,6 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
     \item If \code{present == 0}, allocate new page (\code{buddy\_alloc(0)} $\to$ \code{ppn}) and update PPN.\ %ChkTeX 36
 \end{itemize}
 
-\newcol{}
 \ptitle{Page Table Entry}
 
 \begin{center}
