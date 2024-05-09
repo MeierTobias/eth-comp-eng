@@ -1,46 +1,50 @@
-\begin{center}
-    \includegraphics[width=.7\linewidth]{cpu_flowchart.png}
-\end{center}
 
-\begin{multicols*}{3}
+\begin{multicols*}{2}
     \section{CPU Design}\label{cpu design}
+
+    \begin{center}
+        \includegraphics[width=\linewidth]{cpu_flowchart.png}
+    \end{center}
     \subsection{Opcode}
 
     \begin{footnotesize}
         \renewcommand{\arraystretch}{1.2}
         \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
-        \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z @{}}                                                               \\
-                                                                  & Signal name & R-format & lw & sw & beq \\
+        \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z Z T @{}}\label{tab:opcode}
+                                                                   & Signal name & R-format & lw & sw & beq & \color{teal}Stage                                              & NOP \\
             \cmidrule{2-6}
-            \multirow{7}{*}{\begin{sideways}Input\end{sideways}}  & I[6]        & 0        & 0  & 0  & 1   \\
-                                                                  & I[5]        & 1        & 0  & 1  & 1   \\
-                                                                  & I[4]        & 1        & 0  & 0  & 0   \\
-                                                                  & I[3]        & 0        & 0  & 0  & 0   \\
-                                                                  & I[2]        & 0        & 0  & 0  & 0   \\
-                                                                  & I[1]        & 1        & 1  & 1  & 1   \\
-                                                                  & I[0]        & 1        & 1  & 1  & 1   \\
+            \multirow{7}{*}{\begin{sideways}Input\end{sideways}}   & I[6]        & 0        & 0  & 0  & 1                                                                          \\
+                                                                   & I[5]        & 1        & 0  & 1  & 1                                                                          \\
+                                                                   & I[4]        & 1        & 0  & 0  & 0                                                                          \\
+                                                                   & I[3]        & 0        & 0  & 0  & 0                                                                          \\
+                                                                   & I[2]        & 0        & 0  & 0  & 0                                                                          \\
+                                                                   & I[1]        & 1        & 1  & 1  & 1                                                                          \\
+                                                                   & I[0]        & 1        & 1  & 1  & 1                                                                          \\
             \cmidrule{2-6}
             \morecmidrules\cmidrule{2-6}
-            \multirow{6}{*}{\begin{sideways}Output\end{sideways}} & ALUSrc      & 0        & 1  & 1  & 0   \\
-                                                                  & MemtoReg    & 0        & 1  & X  & X   \\
-                                                                  & RegWrite    & 1        & 1  & 0  & 0   \\
-                                                                  & MemRead     & 0        & 1  & 0  & 0   \\
-                                                                  & MemWrite    & 0        & 0  & 1  & 0   \\
-                                                                  & Branch      & 0        & 0  & 0  & 1   \\
-                                                                  & ALUOp1      & 1        & 0  & 0  & 0   \\
-                                                                  & ALUOp0      & 0        & 0  & 0  & 1   \\
+            \multirow{10}{*}{\begin{sideways}Output\end{sideways}} & ALUSrc      & 0        & 1  & 1  & 0   & \multirow{3}{*}{\begin{sideways}\color{teal}EX\end{sideways}}        \\
+                                                                   & ALUOp1      & 1        & 0  & 0  & 0   &                                                                      \\
+                                                                   & ALUOp0      & 0        & 0  & 0  & 1   &                                                                      \\
+            \cmidrule{2-7}
+                                                                   & MemtoReg    & 0        & 1  & X  & X   & \multirow{3}{*}{\begin{sideways}\color{teal}MEM\end{sideways}} &     \\
+                                                                   & RegWrite    & 1        & 1  & 0  & 0   &                                                                & 0   \\
+                                                                   & MemRead     & 0        & 1  & 0  & 0   &                                                                & 0   \\
+            \cmidrule{2-7}
+                                                                   & MemWrite    & 0        & 0  & 1  & 0   & \multirow{3}{*}{\begin{sideways}\color{teal}WB\end{sideways}}  & 0   \\
+                                                                   & Branch      & 0        & 0  & 0  & 1   &                                                                & 0   \\
         \end{tabularx}
         \renewcommand{\arraystretch}{1}
         \setlength{\tabcolsep}{\oldtabcolsep}
     \end{footnotesize}
-    \code{X}: Don't care
+    \newpar{}
+    \code{X}: Don't care; \; {\color{teal} Pipeline stages}
 
     \subsection{ALUOp}
 
     \begin{footnotesize}
         \renewcommand{\arraystretch}{1.2}
         \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
-        \begin{tabularx}{\linewidth}{@{}T Z Z Z T Z@{}}                                                                                                                \\
+        \begin{tabularx}{\linewidth}{@{}T Z Z Z T Z@{}}
             Opcode                  & ALUOp               & Funct7  & Funct3 & ALU action                                              & ALU contr         \\
             \cmidrule{2-6}
             lw                      & 00                  & XXXXXXX & XXX    & add                                                     & 0010              \\
@@ -66,16 +70,36 @@
         \item \textbf{Multi-issue processors} that fetch multiple instructions in each cycle (see~\ref{multi-issue processors}).
     \end{itemize}
 
-    \textbf{Remark} 
-    
+    \textbf{Remark}
+
     Alternatively, the \textit{latency} i.e.\ the instruction length could be reduced too.
 
-    \subsection{Pipelining}\label{pipelining}
+    \section{Pipelining}\label{pipelining}
 
     \includegraphics[width=\linewidth]{cpu_pipelining.png}
 
     The CPU design is segmented into five sub-steps. Each segment performs an action of a different instruction.
-    \newpar{}
+
+    \subsection{Pipeline Registers}
+    Pipeline registers allow holding temporary information about different stages and forwarding necessary information in the pipeline.
+    \begin{center}
+        \includegraphics[width=\linewidth]{cpu_pipeline_reg.png}
+    \end{center}
+
+    \subsection{Control of CPU Elements}
+    At the ID stage, the \textbf{per-stage control} of all stages is calculated based on the instruction.
+    The control bits of the individual stages are then stored in an extension of the \textit{pipeline registers}, according to opcode in Table~\ref{tab:opcode}.
+    \begin{itemize}
+        \item[+] shorter clock cycle
+        \item[+] fewer bits in the pipeline registers (instruction not passed along)
+        \item[-] reduntant control information
+    \end{itemize}
+
+    \begin{center}
+        \includegraphics[width=\linewidth]{cpu_pipelining_control.png}
+    \end{center}
+
+    \subsection{Hazards}
     Dependencies between instructions produce three types of \textbf{Hazards}:
     \begin{itemize}
         \item~\ref{structural hazards} Structural Hazards
@@ -90,7 +114,7 @@
     Both steps need to access the memory. To fix this, individual resources can be added for the instruction memory and the data memory tasks.
 
     \begin{center}
-        \includegraphics[width=0.5\linewidth]{cpu_pipelining_structural_hazard_fix.png}
+        \includegraphics[width=0.3\linewidth]{cpu_pipelining_structural_hazard_fix.png}
     \end{center}
 
     \subsubsection{Data Hazards}\label{data hazards}
@@ -118,18 +142,58 @@ lw @\aftergroup\magentacodecolor@t1@\aftergroup\blackcodecolor@, 200(t4)
     The \textbf{WAR} and \textbf{WAW} hazard does not apply to the design showed at the beginning of this section. This is only an issue for out-of-order CPU's.
 
     \newpar{}
-    \ptitle{Solution for the RAW hazard}
+    \ptitle{Detecting RAW hazards in the Pipeline}
 
+    The pipeline registers can be used to check if an earlier instruction (later in the pipline) has data needed for the current instruction:
+    If a current \code{src} register (\code{rs1/rs2}) is found in any later pipline register a data hazard exists.
+    \begin{lstlisting}
+PiplineID/EX.rs1/2 == PipelineEX/MEM.rd
+PiplineID/EX.rs1/2 == PipelineMEM/WB.rd
+    \end{lstlisting}
+    \textbf{Remark}: This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd})
+
+    \paragraph{Solution: Forwarding}
     By passing the result of the execution stage directly into the input of the next execution stage the \texttt{add}\textleftarrow\texttt{sub} RAW hazard can be avoided.
 
     \includegraphics[width=\linewidth]{cpu_pipelining_raw.png}
 
+    The \textit{forwarding unit} decides which registers from which stages are used by the \textit{ALU}. This decision is affected and meant to resolve \textbf{data hazards}.
+
+    \begin{center}
+        \includegraphics[width=.7\linewidth]{cpu_pipelining_forwarding_simple.png}
+    \end{center}
+
+    \begin{footnotesize}
+        \renewcommand{\arraystretch}{1.4}
+        \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+        \begin{tabularx}{\linewidth}{@{}T Z Z X @{}}
+                                                                      & MUX Control   & Source & Explantion                             \\
+            \cmidrule{2-4}
+            \multirow{3}{*}{\begin{sideways}1.\ ALU op\end{sideways}} & ForwardA = 00 & ID/EX  & From register file                     \\
+                                                                      & ForwardA = 10 & EX/MEM & From prior ALU result                  \\
+                                                                      & ForwardA = 01 & MEM/WB & From data memory or earlier ALU result \\[1.5em]
+            \multirow{3}{*}{\begin{sideways}2.\ ALU op\end{sideways}} & ForwardB = 00 & ID/EX  & From register file                     \\
+                                                                      & ForwardB = 10 & EX/MEM & From prior ALU result                  \\
+                                                                      & ForwardB = 01 & MEM/WB & From data memory or earlier ALU result \\
+        \end{tabularx}
+        \renewcommand{\arraystretch}{1}
+        \setlength{\tabcolsep}{\oldtabcolsep}
+    \end{footnotesize}
+
+    \paragraph{Solution: Stalling}
     For some instructions this is insufficient. In these cases an extra stall/bubble step needs to be performed.
 
     \includegraphics[width=\linewidth]{cpu_pipelining_raw_stall.png}
 
     \ptitle{Remark:}
-    The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle).
+    The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
+
+    \newpar{}
+    As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipline.
+    Subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the nect instruction.
+    \begin{center}
+        \includegraphics[width=\linewidth]{cpu_pipelining_NOP.png}
+    \end{center}
 
     \subsubsection{Control Hazards}\label{control hazards}
 
@@ -179,7 +243,9 @@ lw t6, 400(t0)
     \ptitle{Pipeline Flush}
 
     Is a mechanism to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption).
-
+    \begin{center}
+        \includegraphics[width=\linewidth]{cpu_pipeline_flush.png}
+    \end{center}
     \newpar{}
     \ptitle{Static Prediction}
 
@@ -189,13 +255,15 @@ lw t6, 400(t0)
     \ptitle{Dynamic Prediction}
 
     The CPU learns which direction the branch takes. The predicition is based on the last (or multiple last) branch decision(s). %ChkTex 36
-
-    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
+    \begin{center}
+        \includegraphics[width=.5\linewidth]{cpu_pipelining_control_hazard_dyn_pred.png}
+    \end{center}
 
     \newpar{}
     \ptitle{2-bit Dynamic Prediction}
-
-    \includegraphics[width=\linewidth]{cpu_pipelining_control_hazard_dyn_pred_2bit.png}
+    \begin{center}
+        \includegraphics[width=.5\linewidth]{cpu_pipelining_control_hazard_dyn_pred_2bit.png}
+    \end{center}
 
     This method operates well on nested loops (repeated execution of the same loop).
 
@@ -210,15 +278,16 @@ lw t6, 400(t0)
 
     \includegraphics[width=\linewidth]{cpu_static_multi-issue_processors.png}
 
-    The compiler ensures that all instructions fetched in the same cycle (packet) do not have any hazards with each other (no int\textcolor{red}{ra}-packet hazards). The CPU detects int\textcolor{red}{er}-packet hazards and handles them as needed. 
+    The compiler ensures that all instructions fetched in the same cycle (packet) do not have any hazards with each other (no int\textcolor{red}{ra}-packet hazards). The CPU detects int\textcolor{red}{er}-packet hazards and handles them as needed.
 
     \subsubsection{Dynamic Multi-Issue Processors (Superscalar)}
-    The processor decides how many instructions to fetch in each cycle. This depends on the available resources and hazards. 
+    The processor decides how many instructions to fetch in each cycle. This depends on the available resources and hazards.
     \newpar{}
     \ptitle{Out-of-Order (OoO) Instruction Execution}
 
     OoO instruction execution allows to avoid certain hazards but requires a tracking of the dependencies between the instructions.
-
-    \includegraphics[width=\linewidth]{cpu_multi-issue_processors_OoO.png}
+    \begin{center}
+        \includegraphics[width=.8\linewidth]{cpu_multi-issue_processors_OoO.png}
+    \end{center}
 
 \end{multicols*}

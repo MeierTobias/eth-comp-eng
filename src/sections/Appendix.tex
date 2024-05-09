@@ -10,12 +10,12 @@
         \midrule
         home                 & \textasciitilde{}          &                                  \\
         root                 & /                          &                                  \\
-        current dir          & .                          &                                  \\
+        current dir          & .                          &                                  \\ %ChkTeX 26
         cmd output to file   & >                          &                                  \\
         error stream         & 2>                         &                                  \\
         file as input to cmd & <                          &                                  \\
         change directory     & cd <p>                     &                                  \\
-                             & cd ..                      & one up                           \\
+                             & cd ..                      & one up                           \\ %ChkTeX 26
                              & cd -                       & previous                         \\
         list folder content  & ls                         &                                  \\
                              & ls -altrh                  &                                  \\
@@ -25,15 +25,15 @@
         create file          & cat ><f>                   & redirect cat (clears <f>)        \\
                              & cat abc*.txt > <f>         & concatenate files into <f>       \\
                              & touch <f>                  &                                  \\
-        write                & echo "text"                &                                  \\
-                             & echo "text" > <f>          & to file                          \\
+        write                & echo "text"                &                                  \\ %ChkTeX 18
+                             & echo "text" > <f>          & to file                          \\ %ChkTeX 18
                              & echo \$PWD                 & variable                         \\
-                             & echo "text: \$PWD"         &                                  \\
+                             & echo "text: \$PWD"         &                                  \\ %ChkTeX 18
         append               & cat >> <f>                 & ctrl+d to quit                   \\
         edit in Nano         & nano <f>                   &                                  \\
         edit in Vim          & vim <f>                    &                                  \\
         count content        & wc -<opt> <f>              & -l: lines, -w: words, -m: chars  \\
-                             & wc <f>                     & like "-lwm"                      \\
+                             & wc <f>                     & like "-lwm"                      \\ %ChkTeX 18
         create directory     & mkdir <dir>                &                                  \\
                              & mkdir -p dir1/dir2/dir3    &                                  \\
         remove object        & rm <f>                     &                                  \\
@@ -47,28 +47,28 @@
         rename               & mv old.txt new.txt         & file                             \\
                              & mv oldname newname         & if newname not a dir yet         \\
         run executable       & <f>                        & path to file                     \\
-                             & ./<f>                      & in current dir                   \\
+                             & ./<f>                      & in current dir                   \\%ChkTeX 26
         change mod           & chmod <mode> <f>           & mode: set rwx bits in a decimal  \\
                              & chmod u=x,g=w,o=r <f>      & example                          \\
         change group         & chgrp <group> <f>          &                                  \\
         change owner         & chown <owner> <f>          &                                  \\
-                             & chown :<group> <f>         & group owner                      \\
+                             & chown :<group> <f>         & group owner                      \\%ChkTeX 26
                              & chown <ow>:<gr> <f>        & both                             \\
         disk usage           & df -h                      &                                  \\
         show saved dirs      & dirs -l -v                 &                                  \\
         file space usage     & du -skh \textasciitilde{}/ &                                  \\
         directory usage      & du <p>                     &                                  \\
-        pipe                 & <cmd1>|<cmd2>|...          &                                  \\
-        find file            & find <p> -name "<f>"       & start at <p>                     \\
-                             & find . -name "<f>"         &                                  \\
-                             & find . -name "*.txt"       & wildcard                         \\
-                             & find . -name "?.txt"       & any single char                  \\
-                             & find . -name "foo.*"       &                                  \\
-        find file            & locate <f>                 & find in home                     \\
-        find in file         & grep "<s>" <f>             &                                  \\
-                             & grep -rn "<s>" <f>         & recursive, line number           \\
-                             & grep -i "STRing" <f>       & ignore case                      \\
-                             & grep -l "<s>" <f>          & list the files containing string \\
+        pipe                 & <cmd1>|<cmd2>|...          &                                  \\ %ChkTeX 11
+        find file            & find <p> -name "<f>"       & start at <p>                     \\ %ChkTeX 18 %ChkTeX 26
+                             & find . -name "<f>"         &                                  \\ %ChkTeX 18 %ChkTeX 26
+                             & find . -name "*.txt"       & wildcard                         \\ %ChkTeX 18 %ChkTeX 26
+                             & find . -name "?.txt"       & any single char                  \\ %ChkTeX 18 %ChkTeX 26
+                             & find . -name "foo.*"       &                                  \\ %ChkTeX 18 %ChkTeX 26
+        find file            & locate <f>                 & find in home                     \\ %ChkTeX 18
+        find in file         & grep "<s>" <f>             &                                  \\ %ChkTeX 18
+                             & grep -rn "<s>" <f>         & recursive, line number           \\ %ChkTeX 18
+                             & grep -i "STRing" <f>       & ignore case                      \\ %ChkTeX 18
+                             & grep -l "<s>" <f>          & list the files containing string \\ %ChkTeX 18
         list block devices   & lsblk                      &                                  \\
         list usb drivers     & lsusb                      &                                  \\
         mount                & mount <p> <p>              & e.g. /dev/sda /media/usb         \\
@@ -83,13 +83,13 @@
     \end{tabularx}
 
     \begin{tabularx}{\linewidth}{@{} p{0.25\linewidth}>{\ttfamily}lp{0.25\linewidth} @{}}
-        archive/compress  & tar <f>.tgz <f>            & creates new .tgz if not existant \\
+        archive/compress  & tar <f>.tgz <f>            & creates new .tgz if not existant \\ %ChkTeX 26
                           & tar zcvf <f>.tgz <f>       & gzip, new, verbose, filename     \\
                           & tar cvf <f>.tar <f>        & uncompressed arichve             \\
         extract from arc. & tar xvf <f>.tar            & extract, verbose, filename       \\
         kill process      & kill SIGTERM <PID>         & request stop (default)           \\
                           & kill SIGKILL <PID>         & force                            \\
-        create cmd alias  & alias <new>="<old>"        &                                  \\
+        create cmd alias  & alias <new>="<old>"        &                                  \\ %ChkTeX 18
         save directories  & pushd \textasciitilde<dir> &                                  \\
         load from stack   & popd                       &                                  \\
         find PID          & ps -ux                     &                                  \\
