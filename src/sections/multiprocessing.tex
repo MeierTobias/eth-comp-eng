@@ -44,7 +44,7 @@ The data structure gets updated when the process
     \item Jake: stored directly in kernel (no file system): need to know all applications at kernel compilation
 \end{itemize}
 \ptitle{Application Linking in Jake}
-
+%%% relevant? %%%
 \ptitle{Executable Linkable Format (ELF)}
 \begin{center}
     \includegraphics[width = .5\linewidth]{ELF.png}
@@ -56,6 +56,9 @@ Defines where \texttt{.text}/\texttt{.data}/\texttt{.bss} sections
     \item \texttt{.text} entry address would define the first instruction of the program
 \end{itemize} 
 \ptitle{Preparing \texttt{.text} VMA in Jake}
+
+After starting the new process, its first instruction will cause a page fault (no mapped yet). Since Jake does not have access to the user-mode virtual memory, it uses \textit{physmap} instead which allows for modification to page tables for creating new virtual mappings by mapping the entire physical memory to virtual memory.
+
 
 \subsubsection{Starting the First Process}
 Common OS start special first process (init process) which starts other processes. First, the specific process data structure must be initialized and then, one switches to user mode.
@@ -104,7 +107,9 @@ Just calling \textit{fork} can be useful sometimes (e.g.\ running same process o
     \item Replaces VMAs of child. 
     \item For \texttt{.text} VMA, it takes an executable file (e.g., ELF)
 \end{itemize}
-Example: exec in Jake
+\ptitle{Example: Combined System Call in Jake}
+
+In jake, \texttt{fork} and \texttt{exec} are combined to \texttt{execv}
 \begin{lstlisting}[style=bright_C++]
 // a1: identifies next application to be run
 // a2: main() argument for next process
@@ -168,12 +173,12 @@ As VMAs and physical memory are preserved, only the CPU registers must be saved 
 \paragraph{Round-Robin (RR) Scheduling}
 \ptitle{Cooperative RR}
 
-Go through the processes one by one and give each a chance to execute. In jake, one just walks the proccess list to find the next feasible process to implement RR.\\
+Go through the processes one by one and give each a chance to execute. In jake, one just walks the process list to find the next feasible process to implement RR.\\
 Starvation in cooperative RR:
 \begin{center}
     \includegraphics[width = .75\linewidth]{RR_motivation.png}
 \end{center}
-Some processes that only require short CPU time might suffer starvation (blue proccess).
+Some processes that only require short CPU time might suffer starvation (blue process).
 
 \ptitle{Priority-Based RR}
 Idea of automated priorization: kernel learns the processes' priorities. Every process starts at a high-priority priority, the kernel moves it to lower priorities if it uses the CPU too much.\\
@@ -191,7 +196,7 @@ The kernel needs to run to be able to make a scheduling decision.
 \begin{itemize}
     \item High-performance computing usually uses cooperative scheduling (less overhead).
     \item System call for cooperative scheduling: \texttt{yield}.
-    \item On \texttt{yield}, the kernel performance a context switch to another proccess:
+    \item On \texttt{yield}, the kernel performance a context switch to another process:
     \begin{enumerate}
         \item Store the registers in the old process trap frame
         \item Load the registers of the new process from its trap frame
