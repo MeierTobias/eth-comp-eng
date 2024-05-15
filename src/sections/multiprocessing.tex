@@ -91,7 +91,7 @@ Applications should be able to create new processes. Most kernels provide a syst
 \begin{itemize}
     \item Fork creates an \textbf{identical copy} of the address space of the calling process
     \begin{center}
-        \includegraphics[width = \linewidth]{fork.png}
+        \includegraphics[width = 0.8\linewidth]{fork.png}
     \end{center}
     \item Forking process: parent
     \item New process: child
@@ -149,7 +149,13 @@ After creating the compatibility for running multiple processes one can virtuali
     \item Policy: process scheduling
 \end{itemize}
 \subsubsection{Context Switching}
+\begin{itemize}
+    \item The process' context is \textbf{stored} in the \texttt{trap frame} data structure inside the process data structure.
+    \item CPU cache needs to be flushed (contains old address space)
+\end{itemize}
+
 \ptitle{Context}
+
 The designation ``context'' of a process means
 \begin{itemize}
     \item Value of the registers
@@ -160,14 +166,81 @@ As VMAs and physical memory are preserved, only the CPU registers must be saved 
 
 \subsubsection{Scheduling}
 \paragraph{Round-Robin (RR) Scheduling}
+\ptitle{Cooperative RR}
+
+Go through the processes one by one and give each a chance to execute. In jake, one just walks the proccess list to find the next feasible process to implement RR.\\
+Starvation in cooperative RR:
+\begin{center}
+    \includegraphics[width = .75\linewidth]{RR_motivation.png}
+\end{center}
+Some processes that only require short CPU time might suffer starvation (blue proccess).
 
 \ptitle{Priority-Based RR}
+Idea of automated priorization: kernel learns the processes' priorities. Every process starts at a high-priority priority, the kernel moves it to lower priorities if it uses the CPU too much.\\
+Starvation in priority-based RR:
+\begin{center}
+    \includegraphics[width = .75\linewidth]{RR_prio_starvation.png}
+\end{center}
+To avoid this, one moves all jobs to high-priority queue once in a while.
 
 \paragraph{Scheduling Modes}
+The kernel needs to run to be able to make a scheduling decision. 
 
-\ptitle{Cooperative Scheduling}
+\ptitle{Cooperative (Non-Preemptive) Scheduling}
 
-\ptitle{Non-Cooperative Scheduling}
+\begin{itemize}
+    \item High-performance computing usually uses cooperative scheduling (less overhead).
+    \item System call for cooperative scheduling: \texttt{yield}.
+    \item On \texttt{yield}, the kernel performance a context switch to another proccess:
+    \begin{enumerate}
+        \item Store the registers in the old process trap frame
+        \item Load the registers of the new process from its trap frame
+        \item call \texttt{sret}
+    \end{enumerate}
+\end{itemize}
+Pros/cons:
+\begin{itemize}
+    \item[+] Improved process performance
+    \item[+] Simple
+    \item[-] Process can \textbf{hog} CPU
+    \item[-] Process is unaware of other processes: locally and globally suboptimal
+\end{itemize}
+
+\ptitle{Non-Cooperative (Preemptive) Scheduling}
+\begin{itemize}
+    \item Standard systems (e.g., phones, laptops, etc.) have non-cooperative scheduling (better responsiveness)
+    \item Uses a timer connected to CPU to periodically generate \textbf{interrupts} (same as exception or trap)
+    \item Kernel periodically preempts processes on each interrupt
+    \item Exception handling: kernel checks on interrupt whether a context switch is necessary and executes it if 
+\end{itemize}
+Pros/cons:
+\begin{itemize}
+    \item[+] Process can't \textbf{hog} CPU
+    \item[+] Increased responsiveness
+    \item[-] Might cause negative performance impact
+    \item[-] More complex
+\end{itemize}
 
 \paragraph{Timers}
+\begin{itemize}
+    \item External oscillator attached to CPU
+\end{itemize}
+
+\ptitle{Memory-Mapped I/O (MMIO)}
+
+MMIO enables interaction with devices through memory accesses: access \textbf{device rather than DRAM}.
+
+\ptitle{RISC-V QEMU Timers}
+
+\begin{itemize}
+    \item Current QEMU version only supports machine-mode timers
+    \begin{itemize}
+        \item Timers can only be configured in machine mode
+        \item The interrupts will \textbf{always} be delivered to machine mode (non-maskable)
+    \end{itemize}
+    \item We need to mret to supervisor mode for scheduling
+\end{itemize}
+\begin{center}
+    \includegraphics[width = .75\linewidth]{QEMU_timer.png}
+\end{center}
 
