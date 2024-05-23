@@ -1,0 +1,101 @@
+\section{User Mode}
+
+\subsection{Process}
+
+A process is an abstraction for virtualizing resources in a computing system and it provides an application with the illusion that
+\begin{itemize}
+    \item the entire memory is available.
+    \item the CPU is purely dedicated.
+    \item I/O resources are purely dedicated.
+\end{itemize}
+This is achieved with the so-called sandbox execution.
+
+\subsection{Sandbox Execution}
+The basic idea is that processes run without any interference from the kernel unless needed like in the case of:
+\begin{itemize}
+    \item explicit service needed
+          \begin{itemize}
+              \item Allocate pages for a new heap
+              \item Print a character on the console
+          \end{itemize}
+    \item implicit service needed
+          \begin{itemize}
+              \item Soft page fault (e.g., demand paging)
+          \end{itemize}
+    \item force stop/continue
+          \begin{itemize}
+              \item Run a different process
+              \item Hard page fault (i.e., application bug)
+          \end{itemize}
+\end{itemize}
+
+To achieve this there are at least two modes:
+\begin{itemize}
+    \item Processes running in the sandbox (user mode)
+    \item Kernel running in outside the sandbox where all instructions are allowed (kernel mode)
+\end{itemize}
+
+\subsubsection{Address Spaces}
+Each process (user-mode) runs in its own virtual address space. The kernel can ether run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
+
+\paragraph{Isolated Kernel}
+
+\includegraphics[width=\linewidth]{user_mode_isolated_kernel.png}
+
+An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive.
+
+\paragraph{Joint Kernel}
+
+\includegraphics[width=\linewidth]{user_mode_joint_kernel.png}
+
+A kernel service request only requires a switching of the privilege and not the VMA but now the privilege have to be associated to different areas within the address space. This is done by setting the \textbf{U-bit} in the page table entry.
+
+Data pages with U-bit unset (kernel data pages) can only be accessed by code run in pages with U-bit unset (kernel code pages). This means only kernel code can access kernel data.
+
+\includegraphics[width=\linewidth]{user_mode_joint_kernel_privileges.png}
+
+While the kernel boots (before enabling the MMU) the U-bit in the page table entries that map the kernel should be set to 0. When starting a new process, the U-bit is set to 1 for the page table entries that map its user-mode VMAs.
+
+\subsection{Privilege Levels}
+
+RISC-V has three different privilege levels:
+
+\newpar{}
+\ptitle{Machine Mode}
+
+Machine mode is the only mandatory mode in RISC-V. All RISC-V CPUs boot in machine mode. Machine mode has access to all hardware features but does not have an MMU.
+
+\newpar{}
+\ptitle{Supervisor Mode}
+
+The kernel runs in the supervisor mode. Once in supervisor mode, the kernel can enable the MMU. A kernel (e.g., Jake) starting in machine mode can
+empower the supervisor mode by \textbf{delegating} (most) exceptions (e.g., page fault) before switching to it.
+
+\newpar{}
+\ptitle{User Mode}
+
+The RISC-V mode with sandboxed execution. The kernel switches to this mode every time it wants to run an application. Certain operations are not allowed (e.g., writing to \texttt{satp}).
+
+\subsubsection{Switching to Lower Privileges in RISC-V}
+
+\includegraphics[width=\linewidth]{user_mode_switch_privileges.png}
+
+\subsubsection{Switching to higher privilege IMPLICITLY}
+
+This happens when an exception occurs (see Section~\ref{exceptions} for exception handling). Exceptions are by default delivered to machine mode. Jake (and other kernels) delegates user-mode exceptions from machine mode to supervisor mode. 
+
+\subsubsection{Switching to higher privilege EXPLICITLY}
+
+If the user-mode process requests a service in a controlled manner it is called a \textbf{system call} for example
+\begin{itemize}
+    \item Printing a character to the screen.
+    \item Allocating a new heap (VMA).
+    \item Creating a new process.
+\end{itemize}
+
+RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service.
+
+\newpar{}
+% TODO: Supervisor mode to machine mode (next lecture)
+
+% TODO: Interrupts (next lecture more)

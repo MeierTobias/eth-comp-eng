@@ -1,4 +1,6 @@
 \section{Kernel}
+Privileged software that is in charge of securely multiplexing hardware resources between competing processes.
+
 \subsection{Memory Management}
 \begin{itemize}
     \item Memory is usually DRAM (capacitors that need to be refreshed periodically)
@@ -472,7 +474,6 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
     \item If \code{present == 0}, allocate new page (\code{buddy\_alloc(0)} $\to$ \code{ppn}) and update PPN.\ %ChkTeX 36
 \end{itemize}
 
-\newcol{}
 \ptitle{Page Table Entry}
 
 \begin{center}
@@ -579,7 +580,7 @@ This is tackled by
 \end{enumerate}
 
 \subsubsection{Page Fault}
-If a application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For mor details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
+If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For mor details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
 
 There are two types of page faults:
 \begin{itemize}
@@ -589,7 +590,7 @@ There are two types of page faults:
 
 \paragraph{Demand Paging}\label{page demanding}
 Applications usually ask for mor heap memory than they need so the heap memory is allocated when it is actually needed.
-When a application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory area's} (VMA's) for each process (and itself).
+When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory area's} (VMA's) for each process (and itself).
 \newpar{}
 Example procedure
 \begin{enumerate}
@@ -612,7 +613,7 @@ This dynamic approach can be used for all the app memory so that we do not have 
 % TODO:
 
 \subsection{Exceptions}\label{exceptions}
-An exception in the pipeline can ether be generated
+An exception in the pipeline can either be generated
 \begin{itemize}
     \item \textbf{internally} by
           \begin{itemize}
