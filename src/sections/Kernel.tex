@@ -533,8 +533,28 @@ One page table has 512 entries ($2^9$).
     \text{Giant page} & = & 512^3 * 4\text{~KB} & = & 512\text{~GB}
 \end{align*}
 
-To determine if the current page table entry points to a next page table or to a bigger page size the X, W, R flags in are used (all 0 = next level of page table).
+To determine if the current page table entry points to a next page table or to a bigger page size the X, W, R flags in are used (all 0 = next level of page table). In case of e.g.\ a huge page the \code{V} bit is set at level 1 already instead of level 0.
 
+\paragraph{The MMU}
+\begin{itemize}
+    \item The MMU is a HW component
+    \item After turning the MMU on, it interposes on each memory access:
+    \begin{itemize}
+        \item Go to the DRAM page at (physical) address stored in \code{satp}
+        \item Execute a memory walk to the physical address that corresponds to the given virtual address
+    \end{itemize}
+    \item During the memory walk the MMU
+    \begin{itemize}
+        \item Checks:
+        \begin{itemize}
+            \item validity using the \code{V} bit
+            \item permissions depending on the \code{R/W/X} bits
+            \item kernel/user permissions depending on the \code{U} bit
+        \end{itemize}
+        \item Raises exceptions if validity or permissions are not given
+    \end{itemize}
+    \item Note that the kernel executes a similar PT walk in software when setting up/manipulating PTEs
+\end{itemize}
 
 \subsubsection{Virtual Memory Management}
 The virtual memory space is divided into two sections one for the application and one for the kernel.
