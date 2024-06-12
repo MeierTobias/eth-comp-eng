@@ -63,7 +63,7 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
 
 \subsection{Data/ Instruction Cache}
 
-\subsection{Structure}
+\subsubsection{Structure}
 \ptitle{Cache Line Size}
 
 In DDR4 a cache line has the size
@@ -82,9 +82,10 @@ In DDR4 a cache line has the size
     \item Cache is accesed with physical addresses to avoid flushing the cache when switching vmas
 \end{itemize}
 
-\subsection{Set-Associative Cache}
+\subsubsection{Set-Associative Cache}
 In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g. 4-way 4-set associative).
 
+\newpar{}
 \ptitle{Properties}
 \begin{itemize}
     \item on typical workloads, most accesses do not cause eviction.
@@ -96,7 +97,7 @@ In set-associative cache, a DRAM entry can go to any slot in their set. The \tex
     \item \textbf{Fully-associative}: n-way 1-set associative.
 \end{itemize}
 
-\subsubsection{Direct Mapped Cache}
+\paragraph{Direct Mapped Cache}
 In direct-mapped cache, every slot of the cache can only map to one place in DRAM.
 \newpar{}
 The 64-bit cache line consists of
@@ -116,7 +117,7 @@ The 64-bit cache line consists of
     \item[-] violating PTL
 \end{itemize}
 
-\subsubsection{Fully-Assiociative Cache}
+\paragraph{Fully-Assiociative Cache}
 With fully-assiociative cache, every line from DRAM can go to every cache entry.
 
 \newpar{}
@@ -126,6 +127,7 @@ The 64-bit cache line consists of
     \item \textbf{Tag} (26 bits: \fncode{tt..tt})
 \end{itemize}
 
+\newpar{}
 \ptitle{Properties}
 \begin{itemize}
     \item[+] Flexible
@@ -134,13 +136,14 @@ The 64-bit cache line consists of
     \item[-] Search through all tags
 \end{itemize}
 
-\subsection{Loading vs. Storing}
+\subsubsection{Loading vs. Storing}
 \ptitle{Loading}
 \begin{itemize}
     \item If available, the memory can be read directly from cache
     \item Cached loads result in \textbf{clean} cache lines
 \end{itemize}
 
+\newpar{}
 \ptitle{Storing}
 \begin{itemize}
     \item Memory is first stored in cache alone, resulting in inconsistencies between cache and DRAM (\textbf{dirty} cache lines)

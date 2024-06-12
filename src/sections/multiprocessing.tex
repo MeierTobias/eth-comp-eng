@@ -14,6 +14,7 @@ The data structure gets updated when the process
     \item Dies
 \end{itemize}
 
+\newpar{}
 \ptitle{Process Data structure in Jake}
 \begin{lstlisting}[style=bright_C++]
     enum PROCESS_STATUS {
@@ -25,7 +26,7 @@ The data structure gets updated when the process
 
     struct process {
         unsigned int pid;
-        enum PROCESS_STATUS status; // see enum PROCESS_STATUS
+        enum PROCESS_STATUS status; 
         struct node *uvmas;         // user VMAs
         struct trap_frame tf;       // user registers
         unsigned long satp;         // process' root PT
@@ -43,8 +44,10 @@ The data structure gets updated when the process
     \item Common OS: executables stored in SSD, link to OS
     \item Jake: stored directly in kernel (no file system): need to know all applications at kernel compilation
 \end{itemize}
+\newpar{}
 \ptitle{Application Linking in Jake}
 %%% relevant? %%%
+\newpar{}
 \ptitle{Executable Linkable Format (ELF)}
 \begin{center}
     \includegraphics[width = .5\linewidth]{ELF.png}
@@ -55,6 +58,8 @@ Defines where \texttt{.text}/\texttt{.data}/\texttt{.bss} sections
     \item should be loaded in (virtual) memory
     \item \texttt{.text} entry address would define the first instruction of the program
 \end{itemize} 
+
+\newpar{}
 \ptitle{Preparing \texttt{.text} VMA in Jake}
 
 After starting the new process, its first instruction will cause a page fault (no mapped yet). Since Jake does not have access to the user-mode virtual memory, it uses \textit{physmap} instead which allows for modification to page tables for creating new virtual mappings by mapping the entire physical memory to virtual memory.
@@ -70,6 +75,7 @@ Common OS start special first process (init process) which starts other processe
     \item Information for the \texttt{.text} VMA
 \end{itemize}
 
+\newpar{}
 \ptitle{Switching to User Mode}
 \begin{center}
     \includegraphics[width = \linewidth]{switch_user_mode.png}
@@ -90,6 +96,7 @@ One can then switch to usermode after
 \subsubsection{Multiprocessing}
 Applications should be able to create new processes. Most kernels provide a system call called \textit{fork}:
 
+\newpar{}
 \ptitle{Fork System Call}
 \begin{itemize}
     \item Fork creates an \textbf{identical copy} of the address space of the calling process
@@ -107,6 +114,8 @@ Just calling \textit{fork} can be useful sometimes (e.g.\ running same process o
     \item Replaces VMAs of child. 
     \item For \texttt{.text} VMA, it takes an executable file (e.g., ELF)
 \end{itemize}
+
+\newpar{}
 \ptitle{Example: Combined System Call in Jake}
 
 In jake, \texttt{fork} and \texttt{exec} are combined to \texttt{execv}
@@ -159,6 +168,7 @@ After creating the compatibility for running multiple processes one can virtuali
     \item CPU cache needs to be flushed (contains old address space)
 \end{itemize}
 
+\newpar{}
 \ptitle{Context}
 
 The designation ``context'' of a process means
@@ -180,7 +190,9 @@ Starvation in cooperative RR:
 \end{center}
 Some processes that only require short CPU time might suffer starvation (blue process).
 
+\newpar{}
 \ptitle{Priority-Based RR}
+
 Idea of automated priorization: kernel learns the processes' priorities. Every process starts at a high-priority priority, the kernel moves it to lower priorities if it uses the CPU too much.\\
 Starvation in priority-based RR:
 \begin{center}
@@ -191,6 +203,7 @@ To avoid this, one moves all jobs to high-priority queue once in a while.
 \paragraph{Scheduling Modes}
 The kernel needs to run to be able to make a scheduling decision. 
 
+\newpar{}
 \ptitle{Cooperative (Non-Preemptive) Scheduling}
 
 \begin{itemize}
@@ -211,6 +224,7 @@ Pros/cons:
     \item[-] Process is unaware of other processes: locally and globally suboptimal
 \end{itemize}
 
+\newpar{}
 \ptitle{Non-Cooperative (Preemptive) Scheduling}
 \begin{itemize}
     \item Standard systems (e.g., phones, laptops, etc.) have non-cooperative scheduling (better responsiveness)
@@ -231,10 +245,12 @@ Pros/cons:
     \item External oscillator attached to CPU
 \end{itemize}
 
+\newpar{}
 \ptitle{Memory-Mapped I/O (MMIO)}
 
 MMIO enables interaction with devices through memory accesses: access \textbf{device rather than DRAM}.
 
+\newpar{}
 \ptitle{RISC-V QEMU Timers}
 
 \begin{itemize}
