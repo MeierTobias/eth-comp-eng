@@ -9,35 +9,37 @@
     \renewcommand{\arraystretch}{1.2}
     \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
 
-    \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z Z T @{}}\label{tab:opcode}
-                                                               & Signal name & R-format & lw & sw & beq & \color{teal}Stage                                              & NOP \\
+    \begin{tabularx}{\linewidth}{@{}T T Z Z Z Z Z Z T @{}}\label{tab:opcode}
+                                                               & \multicolumn{5}{c}{\fncode{Opcode}} &          & \multicolumn{2}{c}{\color{teal}\fncode{Pipelining}}                                                                                       \\
+        \cmidrule{2-6}\cmidrule{8-9}
+                                                               & Signal name                         & R-format & lw                                                  & sw & beq &   & \color{teal}Stage                                              & NOP \\
         \cmidrule{2-6}
-        \multirow{7}{*}{\begin{sideways}Input\end{sideways}}   & I[6]        & 0        & 0  & 0  & 1                                                                          \\
-                                                               & I[5]        & 1        & 0  & 1  & 1                                                                          \\
-                                                               & I[4]        & 1        & 0  & 0  & 0                                                                          \\
-                                                               & I[3]        & 0        & 0  & 0  & 0                                                                          \\
-                                                               & I[2]        & 0        & 0  & 0  & 0                                                                          \\
-                                                               & I[1]        & 1        & 1  & 1  & 1                                                                          \\
-                                                               & I[0]        & 1        & 1  & 1  & 1                                                                          \\
+        \multirow{7}{*}{\begin{sideways}Input\end{sideways}}   & I[6]                                & 0        & 0                                                   & 0  & 1   &                                                                          \\
+                                                               & I[5]                                & 1        & 0                                                   & 1  & 1   &                                                                          \\
+                                                               & I[4]                                & 1        & 0                                                   & 0  & 0   &                                                                          \\
+                                                               & I[3]                                & 0        & 0                                                   & 0  & 0   &                                                                          \\
+                                                               & I[2]                                & 0        & 0                                                   & 0  & 0   &                                                                          \\
+                                                               & I[1]                                & 1        & 1                                                   & 1  & 1   &                                                                          \\
+                                                               & I[0]                                & 1        & 1                                                   & 1  & 1   &                                                                          \\
         \cmidrule{2-6}
         \morecmidrules\cmidrule{2-6}
-        \multirow{10}{*}{\begin{sideways}Output\end{sideways}} & ALUSrc      & 0        & 1  & 1  & 0   & \multirow{3}{*}{\begin{sideways}\color{teal}EX\end{sideways}}        \\
-                                                               & ALUOp1      & 1        & 0  & 0  & 0   &                                                                      \\
-                                                               & ALUOp0      & 0        & 0  & 0  & 1   &                                                                      \\
-        \cmidrule{2-7}
-                                                               & MemtoReg    & 0        & 1  & X  & X   & \multirow{3}{*}{\begin{sideways}\color{teal}MEM\end{sideways}} &     \\
-                                                               & RegWrite    & 1        & 1  & 0  & 0   &                                                                & 0   \\
-                                                               & MemRead     & 0        & 1  & 0  & 0   &                                                                & 0   \\
-        \cmidrule{2-7}
-                                                               & MemWrite    & 0        & 0  & 1  & 0   & \multirow{3}{*}{\begin{sideways}\color{teal}WB\end{sideways}}  & 0   \\
-                                                               & Branch      & 0        & 0  & 0  & 1   &                                                                & 0   \\
+        \multirow{10}{*}{\begin{sideways}Output\end{sideways}} & ALUSrc                              & 0        & 1                                                   & 1  & 0   &   & \multirow{3}{*}{\begin{sideways}\color{teal}EX\end{sideways}}        \\
+                                                               & ALUOp1                              & 1        & 0                                                   & 0  & 0   &   &                                                                      \\
+                                                               & ALUOp0                              & 0        & 0                                                   & 0  & 1   &   &                                                                      \\
+        \cmidrule{2-6}
+                                                               & MemtoReg                            & 0        & 1                                                   & X  & X   &   & \multirow{3}{*}{\begin{sideways}\color{teal}MEM\end{sideways}} &     \\
+                                                               & RegWrite                            & 1        & 1                                                   & 0  & 0   &   &                                                                & 0   \\
+                                                               & MemRead                             & 0        & 1                                                   & 0  & 0   &   &                                                                & 0   \\
+        \cmidrule{2-6}
+                                                               & MemWrite                            & 0        & 0                                                   & 1  & 0   &   & \multirow{3}{*}{\begin{sideways}\color{teal}WB\end{sideways}}  & 0   \\
+                                                               & Branch                              & 0        & 0                                                   & 0  & 1   &   &                                                                & 0   \\
     \end{tabularx}
 
     \renewcommand{\arraystretch}{1}
     \setlength{\tabcolsep}{\oldtabcolsep}
 \end{footnotesize}
 \newpar{}
-\code{X}: Don't care; \; {\color{teal} Pipeline stages}
+\code{X}: Don't care
 
 \subsection{ALUOp}
 
