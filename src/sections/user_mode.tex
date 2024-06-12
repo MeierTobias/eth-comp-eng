@@ -8,7 +8,7 @@ A process is an abstraction for virtualizing resources in a computing system and
     \item the CPU is purely dedicated.
     \item I/O resources are purely dedicated.
 \end{itemize}
-This is achieved with the so called sandbox execution.
+This is achieved with the so-called sandbox execution.
 
 \subsection{Sandbox Execution}
 The basic idea is that processes run without any interference from the kernel unless needed like in the case of:
@@ -35,7 +35,7 @@ To achieve this there are at least two modes:
     \item Kernel running in outside the sandbox where all instructions are allowed (kernel mode)
 \end{itemize}
 
-\subsubsection{Addess Spaces}
+\subsubsection{Address Spaces}
 Each process (user-mode) runs in its own virtual address space. The kernel can ether run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
 
 \paragraph{Isolated Kernel}
@@ -44,7 +44,7 @@ Each process (user-mode) runs in its own virtual address space. The kernel can e
 
 An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive.
 
-\paragraph{Joint Kerner}
+\paragraph{Joint Kernel}
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel.png}
 
