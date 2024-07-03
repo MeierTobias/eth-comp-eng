@@ -33,7 +33,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \ptitle{Stack}
 
 \begin{itemize}
-    \item Compiler manages fixed-sized Stack
+    \item Compiler manages fixed-sized stack
     \item Local variables, callee-saved registers, return address
 \end{itemize}
 
@@ -166,6 +166,7 @@ Page Allocation optimizes for \textbf{full utilization}.
     \item allocate block of desired \code{order}
 \end{enumerate}
 
+Implementation:
 \begin{lstlisting}[style=bright_C++]
 struct block *buddy_alloc(unsigned order)
 {
@@ -186,6 +187,8 @@ struct block *buddy_alloc(unsigned order)
     \item free block
     \item if buddy is free, merge into larger block
 \end{enumerate}
+
+Implementation:
 \begin{lstlisting}[style=bright_C++]
 int buddy_free(struct block *block)
 {
@@ -358,7 +361,12 @@ static void __buddy_try_merge(struct block *block)
 {
     if (block->order == BUDDY_MAX_ORDER) return;
 
+    /* Get buddy of block */
     struct block *buddy = block2buddy(block, block->order);
+
+    ////////////////////
+    // TBD: how could this happen?
+    ////////////////////
     if (block->order != buddy->order) return;
 
     if (is_block_free(block) && is_block_free(buddy)) {
@@ -371,14 +379,15 @@ static void __buddy_try_merge(struct block *block)
 \begin{lstlisting}[style=bright_C++]
 static struct block *__buddy_merge(struct block *block, struct block *buddy)
 {
-    /* Merge into the one with the smaller address */
+    /* Remove them from current order's list */
     buddy_remove(buddy, buddy->order);
     buddy_remove(block, block->order);
+
+    /* Merge into the one with the smaller address */
     if (block2__ppn(block) < block2__ppn(buddy)) {
         block->order++;
         buddy_push(block, block->order);
         return block;
-
     } else {
         buddy->order++;
         buddy_push(buddy, buddy->order);
@@ -447,10 +456,16 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
     \item In our case (\textbf{Sv48}):
           \begin{itemize}
               \item 48 bit virtual and 56 bit physical address space
-              \item 4-levels
-              \item page table entry is 8 bytes (64 bit)
-              \item page is 4 KB $\to$ 512 entries (9 bits) ($\frac{\text{4 KB}}{\text{8 B}}$)
-              \item Virtual page number: 4 (levels) $\cdot$ 9 bits = 36 bits
+              \item 4 levels
+              \item page table entry (PTE) is 8 bytes (64 bit)
+              \item page is 4 KB $\to \frac{\text{4 KB}}{\text{8 B / entry}} = 512$ entries
+              \begin{itemize}
+                \item $\log_{2}(512) = 9$ bits required to index page table to get a PTE
+              \end{itemize}
+              \item virtual page number: 4 (levels) $\cdot$ 9 bits = 36 bits
+              \begin{itemize}
+                \item the remaining $48-36=12$ bits are used to index the ${2}^{12} = 4$ kiB of physical bytes
+              \end{itemize}
           \end{itemize}
 \end{itemize}
 
@@ -510,7 +525,7 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 \newpar{}
 \ptitle{satp}
 \begin{itemize}
-    \item \code{satp} register points to the root of the page table
+    \item \code{satp} (supervisor address translation and protection) register points to the root of the page table
 \end{itemize}
 \begin{center}
     \includegraphics[width = \linewidth]{kernel_satp.png}
@@ -600,7 +615,7 @@ This is tackled by
 \end{enumerate}
 
 \subsubsection{Page Fault}
-If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For mor details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
+If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For more details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
 
 There are two types of page faults:
 \begin{itemize}
@@ -609,12 +624,12 @@ There are two types of page faults:
 \end{itemize}
 
 \paragraph{Demand Paging}\label{page demanding}
-Applications usually ask for mor heap memory than they need so the heap memory is allocated when it is actually needed.
-When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory area's} (VMA's) for each process (and itself).
+Applications usually ask for more heap memory than they need so the heap memory is allocated when it is actually needed.
+When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (and itself).
 \newpar{}
 Example procedure
 \begin{enumerate}
-    \item Application tries to store Data
+    \item Application tries to store data
           \texttt{sw t0, (addr)}
     \item The MMU walks the pages and gets to an entry with the valid bit set to zero.
     \item The kernel checks if the requested address is in the valid area (VMA) and if the permissions are given.
@@ -623,7 +638,7 @@ Example procedure
 \end{enumerate}
 
 \newpar{}
-\ptitle{Demand paging all the way}
+\ptitle{Demand Paging All The Way}
 
 This dynamic approach can be used for all the app memory so that we do not have to pre-allocate any page tables.
 
