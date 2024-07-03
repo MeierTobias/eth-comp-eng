@@ -4,7 +4,7 @@ In general, cache can save the same type of memory as is stored in DRAM.
 \subsection{Principles}
 \ptitle{Hits and Misses}
 
-If the required memeory is found in cache the memory can be taken from there (\textbf{cache hit}, fast), else the memroy has to be loaded from DRAM (\textbf{cache miss}, slow).
+If the required memory is found in cache the memory can be taken from there (\textbf{cache hit}, fast), else the memory has to be loaded from DRAM (\textbf{cache miss}, slow).
 
 \newpar{}
 \ptitle{Locality}
@@ -52,7 +52,7 @@ To decrease the computational cost arising from page table walks, a \textit{tran
 \newpar{}
 \ptitle{Eviction}
 
-If the TLB is full entries can be evicted using the \textit{least recently used} (LRU) strategy. This strategy complies tih PTL.
+If the TLB is full entries can be evicted using the \textit{least recently used} (LRU) strategy. This strategy complies with PTL.
 
 \newpar{}
 \textbf{Remark}
@@ -66,7 +66,7 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
 \subsubsection{Structure}
 \ptitle{Cache Line Size}
 
-In DDR4 a cache line has the size
+In DDR4 a cache line has due to \textit{read/write bursts} the size
 \noindent\begin{equation*}
     \underbrace{8}_{\textsf{pipelines}}\cdot \underbrace{8~\mathrm{byte}}_{\textsf{request size}} = 64 ~\mathrm{byte}
 \end{equation*}
@@ -77,24 +77,20 @@ In DDR4 a cache line has the size
 \end{itemize}
 
 \newpar{}
-\textbf{Remark}
+\textbf{Remarks}
 \begin{itemize}
-    \item Cache is accesed with physical addresses to avoid flushing the cache when switching vmas
+    \item In contrast to TLB cache, data/instruction cache is accessed with physical addresses to avoid flushing the cache when switching vmas
+    \item In the case of TLB, the data remain in DRAM but the address translation is saved in cache. For data/instruction cache the actual data are cached using their physical addresses.
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
-In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g. 4-way 4-set associative).
+In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g. a 4-way 4-set associative has 4 sets with 4 slots in each one of them).
 
-\newpar{}
-\ptitle{Properties}
+\ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
-    \item on typical workloads, most accesses do not cause eviction.
-\end{itemize}
-
-\ptitle{Extreme cases}
-\begin{itemize}
-    \item \textbf{Direct-mapped}: 1-way n-set associative.
-    \item \textbf{Fully-associative}: n-way 1-set associative.
+    \item In a \textbf{direct-mapped} (1-way n-set associative) cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
+    \item In a \textbf{fully-associative} (n-way 1-set associative) cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
+    \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookop time such that, on typical workloads, most accesses do not cause eviction.
 \end{itemize}
 
 \paragraph{Direct Mapped Cache}
@@ -112,13 +108,13 @@ The 64-bit cache line consists of
 \ptitle{Properties}
 \begin{itemize}
     \item[+] simple design
-    \item[+] $\mathcal{O}(1)$
-    \item[-] Sparse population
-    \item[-] violating PTL
+    \item[+] $\mathcal{O}(1)$: check one tag to detect hit/miss
+    \item[-] sparse population
+    \item[-] violating PTL: a cache line can be evicted even though there is space left in the cache
 \end{itemize}
 
 \paragraph{Fully-Assiociative Cache}
-With fully-assiociative cache, every line from DRAM can go to every cache entry.
+With fully-assiociative cache, every line from DRAM can go to every cache entry. Very small caches (e.g.\ small TLBs) use this approach.
 
 \newpar{}
 The 64-bit cache line consists of

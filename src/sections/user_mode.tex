@@ -36,7 +36,7 @@ To achieve this there are at least two modes:
 \end{itemize}
 
 \subsubsection{Address Spaces}
-Each process (user-mode) runs in its own virtual address space. The kernel can ether run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
+Each process (user-mode) runs in its own virtual address space. The kernel can either run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
 
 \paragraph{Isolated Kernel}
 
@@ -79,6 +79,14 @@ The RISC-V mode with sandboxed execution. The kernel switches to this mode every
 \subsubsection{Switching to Lower Privileges in RISC-V}
 
 \includegraphics[width=\linewidth]{user_mode_switch_privileges.png}
+
+\newpar{}
+\ptitle{Terminology Example: Returning From S to U}
+\begin{itemize}
+    \item SPP: Supervisor Previous Privilege = 0. This means that, returning (via \texttt{sret}) from S, the previous privilege was the user mode. When ``returning'' from S to S this would be 1.
+    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the usermode app will continue at SP=SEPC.
+\end{itemize}
+
 
 \subsubsection{Switching to higher privilege IMPLICITLY}
 

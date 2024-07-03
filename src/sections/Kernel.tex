@@ -671,3 +671,8 @@ SCAUSE will tell why the exception happened (e.g., a page fault)
 \ptitle{STVAL} Supervisor Trap Value register
 
 STVAL will provide extended information about the exception (e.g., page fault's address)
+
+\newpar{}
+\ptitle{Example}
+
+On a soft PF the CPU jumps to STVEC. The handler routine sees which instruction caused the PF (the instruction at SEPC), knows from SCAUSE that the reason was a PF and finds the (user mode virtual) address (page number) at which the exception occured in STVAL. A routine can then be called to load the missing code page to the address stored in STVAL.
