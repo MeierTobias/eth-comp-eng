@@ -98,14 +98,11 @@ Applications should be able to create new processes. Most kernels provide a syst
 
 \newpar{}
 \ptitle{Fork System Call}
-\begin{itemize}
-    \item Fork creates an \textbf{identical copy} of the address space of the calling process
-    \begin{center}
-        \includegraphics[width = 0.8\linewidth]{fork.png}
-    \end{center}
-    \item Forking process: parent
-    \item New process: child
-\end{itemize}
+Fork creates an \textbf{identical copy} of the address space of the calling process
+\begin{center}
+    \includegraphics[width = 0.8\linewidth]{fork.png}
+\end{center}
+
 Just calling \textit{fork} can be useful sometimes (e.g.\ running same process on multiple CPUs) but to create a new process one must call \textit{exec}:
 
 \ptitle{Exec System Call}
@@ -153,7 +150,6 @@ void scall_handler_execv()
     }
 }
 \end{lstlisting}
-Note that fork and exec are merged into one system call in Jake.
 
 \subsection{CPU Virtualization}
 After creating the compatibility for running multiple processes one can virtualize the CPU. The idea of CPU virtualization is similar to memory virtualization:
