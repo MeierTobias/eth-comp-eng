@@ -156,9 +156,15 @@ Conditional branches let the PC jump to a specified line relative to the current
 \begin{itemize}
     \item 12 bits to branch ``around''
     \item Immediate is always multiplied by 2
+    % TBD: please give your ok for the following 3 remarks
+    \begin{itemize}
+        \item To achieve compressed compatibility the immediate gets per default multiplied by 2 (instead of 4 as for ``common'' 32-bit instructions)
+        \item The immediate gets calculated in such a way that the right jump results: divide jump size in bytes by 2
+        \item Note that multiplying the immediate by 4 would double the reachable range but one would lose compressed compatability
+    \end{itemize}
     \item Branch backward or forward: [PC + 4KB, PC - 4KB]
     \begin{itemize}
-        \item Due to the multiplication by 2 the effective range in bytes is $2\cdot 2^12$
+        \item Due to the multiplication by 2 the effective range in bytes is $2\cdot {2}^{12}$
     \end{itemize}
 \end{itemize}
 
@@ -238,13 +244,12 @@ exit:
 \end{tabular}
 \setlength{\tabcolsep}{\oldtabcolsep}
 
-\newcolumn{}
 \subsection{Unconditional Jumps}
 
 \begin{itemize}
     \item \texttt{JAL} is a UJ-type and can jump relative to the PC.\
           \begin{itemize}
-              \item 20 Bits can be used to generate offsets in the range\newline [-1 MB, 1 MB].
+              \item 20 Bits can be used to generate offsets in the range\newline [-1 MB, 1 MB] (larger immediate as no condition bits are required).
               \item The immediate is multiplied by 2 (for compressed compatibility).
           \end{itemize}
     \item \texttt{JALR} is an I-type and can jump anywhere in memory (independent of the PC)
@@ -282,6 +287,11 @@ addi    sp, sp, 4       # reset the stack pointer
     \item \texttt{jalr} stores \texttt{PC+4} in \texttt{rd}
     \item One uses \texttt{ra} as \texttt{rd} by convention
     \item Then, the called function has \texttt{ra} available in the same way as we have it in ``our'' function. The called function will analogously first push \texttt{ra} to the stack and finally return to \texttt{ra}, where we have stored \texttt{PC+4}
+    \item At the end of the main function (end of program) one usually calls 
+    \begin{lstlisting}[language={[RISC-V]Assembler}]
+        jalr zero, 0(ra)
+    \end{lstlisting}
+    i.e.\ no return address is stored
 \end{itemize}
 
 \subsection{Useful Instructions}
@@ -311,6 +321,22 @@ srai    a0,a0,0x3f          # 64 bit extended mask of a0
 Remarks:
 \begin{itemize}
     \item Shift operations are special types of I-type instructions where the shift amount is specified in the lower 5 immediate bits.
+\end{itemize}
+
+\newpar{}
+\ptitle{Store Local Variables on Stack}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+    addi sp, sp, -8
+    # save ra on Stack
+    sw ra, 4(sp)
+    # save local variable
+    sw t0, (sp)
+\end{lstlisting}
+Remark:
+\begin{itemize}
+    \item Stack grows in negative direction
+    \item Variables still get stored in positive direction: access 1st element with \texttt{sw ra, 4(sp)} and not \texttt{sw ra, 8(sp)}
 \end{itemize}
 
 \newpar{}
