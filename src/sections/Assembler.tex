@@ -27,6 +27,7 @@ The CPU uses 32-bit sized instructions to
 \end{tabularx}
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
+Among others, 64-bit registers make 64-bit integer calculations more efficient (compared to 32-bit) and increase the addressable memory space.
 
 \subsubsection{RV32E Base Integer Instruction Set}
 As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable for embedded systems:
@@ -37,7 +38,8 @@ As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable 
 \newpar{}
 \ptitle{Remarks}
 \begin{itemize}
-    \item Reduced version of RV32I for embedded systems: only 16 integer registers instead of 32
+    \item Reduced version of RV32I for embedded systems
+    \item Only 16 integer registers instead of 32
 \end{itemize}
 
 \subsection{Signedness}
@@ -155,6 +157,9 @@ Conditional branches let the PC jump to a specified line relative to the current
     \item 12 bits to branch ``around''
     \item Immediate is always multiplied by 2
     \item Branch backward or forward: [PC + 4KB, PC - 4KB]
+    \begin{itemize}
+        \item Due to the multiplication by 2 the effective range in bytes is $2\cdot 2^12$
+    \end{itemize}
 \end{itemize}
 
 \subsubsection{Basic If-Statement}

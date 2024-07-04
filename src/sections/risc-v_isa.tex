@@ -5,7 +5,7 @@
 
 % \newpar{}
 
-% The following tables are from the \textbf{RISC-V Reference Card} by \textit{James Zhu}, available on Github (with minor formatting changes).
+% The following tables are from the \textbf{RISC-V Reference Card} by \textit{James Zhu}, available on Github (with minor formatting changes and comments in the first table).
 
 % \url{https://github.com/jameslzhu/riscv-card}
 
@@ -26,7 +26,7 @@
         \instbitrange{19}{15}                                         &
         \instbitrange{14}{12}                                         &
         \instbitrange{11}{7}                                          &
-        \instbitrange{6}{0}                                           & \textbf{fmt} \\
+        \instbitrange{6}{0}                                           & \textbf{fmt}                                       \\
         \cline{2-11}
 
                                                                       &
@@ -35,7 +35,7 @@
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & R-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & R-type (arithmetic)                                \\
         \cline{2-11}
 
                                                                       &
@@ -43,7 +43,7 @@
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & I-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & I-type (loads \& immediate arithmetic)             \\
         \cline{2-11}
 
                                                                       &
@@ -52,7 +52,7 @@
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{imm[4:0]}                                 &
-        \multicolumn{1}{c|}{opcode}                                   & S-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & S-type (stores)                                    \\
         \cline{2-11}
 
                                                                       &
@@ -61,19 +61,19 @@
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{imm[4:1$\vert$11]}                        &
-        \multicolumn{1}{c|}{opcode}                                   & B-type       \\
-        \cline{2-11}
-
-                                                                      &
-        \multicolumn{8}{|c|}{imm[31:12]}                              &
-        \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & U-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & B-type (conditional branches, also called SB-type) \\
         \cline{2-11}
 
                                                                       &
         \multicolumn{8}{|c|}{imm[20$\vert$10:1$\vert$11$\vert$19:12]} &
         \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & J-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & J-type (unconditional jumps, also called UJ-type)  \\
+        \cline{2-11}
+
+                                                                      &
+        \multicolumn{8}{|c|}{imm[31:12]}                              &
+        \multicolumn{1}{c|}{rd}                                       &
+        \multicolumn{1}{c|}{opcode}                                   & U-type (upper immediate format)                    \\
         \cline{2-11}
     \end{tabular}
 \end{center}
@@ -84,7 +84,7 @@
     \renewcommand{\arraystretch}{1.2}
     \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
     \begin{tabularx}{\linewidth}{@{}T  l  c  T  T  T  T  T  p{0.08\linewidth}@{}}
-        \multicolumn{9}{c}{\textbf{Base Integer Instructions: RV32I}}                                                                                                                                                         \\
+        \multicolumn{9}{c}{\textbf{Base Integer Instructions: RV32I}}                                                                                                                                                \\
         \cmidrule{1-9}
         \rm Inst & Name                    & fmt                 & \rm Opcode                & \rm funct3 & \rm funct7     & \rm Description (C)              & \rm Syntax         & \rm Note                        \\
         \cmidrule{1-9}
@@ -146,7 +146,7 @@
         csrrci   & Read \& Clear Bit Imm   &                     &                           &            &                &                                  &                    &                                 \\
 
         \\[.5em]
-        \multicolumn{9}{c}{\textbf{Optional Multiply-Divide Insctruction Extension: RVM}}                                                                                                                                     \\
+        \multicolumn{9}{c}{\textbf{Optional Multiply-Divide Insctruction Extension: RVM}}                                                                                                                            \\
         \cmidrule{1-9}
         mul      & Multiply                & \multirow{8}{*}{R}  &                           &            &                & rd = rs1 * rs2                   & mul rd, rs1, rs2   &                                 \\
         mulh     & Multiply High           &                     &                           &            &                &                                  &                    &                                 \\
