@@ -1,5 +1,8 @@
 \section{Assembler}
-\subsection{Interaction with Memory}
+\subsection{RISC-V Instruction Set Architecture (ISA)}
+
+\subsubsection{Interaction With Memory}
+
 The CPU uses 32-bit sized instructions to
 \begin{enumerate}[leftmargin=20pt]
     \item read memory (DRAM) into registers if needed
@@ -8,25 +11,34 @@ The CPU uses 32-bit sized instructions to
 \end{enumerate}
 
 \newpar{}
-\textbf{Remarks:}
+\ptitle{Remarks}
 \begin{itemize}
     \item Memory is single byte-addressable for all ISA's.
     \item While the CPU always uses 32-bit sized instructions to access memory,
           the address space can be larger:
 \end{itemize}
-
 \renewcommand{\arraystretch}{1.3}
 \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
-
 \begin{tabularx}{\linewidth}{@{}lll@{}}
     Name        & Register size & Address space          \\
     \cmidrule{1-3}
     \code{RV32} & 32 bit        & $2^{32} \simeq 4$ Gbit \\
     \code{RV64} & 64 bit        & $2^{64} \gg 1$ Pbit    \\
 \end{tabularx}
-
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
+
+\subsubsection{RV32E Base Integer Instruction Set}
+As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable for embedded systems:
+\begin{quote}
+    ``We have found that in the small RV32I core designs, the upper 16 registers consume around one quarter of the total area of the core excluding memories, thus their removal saves around 25\% core area with a corresponding core power reduction''
+\end{quote}
+
+\newpar{}
+\ptitle{Remarks}
+\begin{itemize}
+    \item Reduced version of RV32I for embedded systems: only 16 integer registers instead of 32
+\end{itemize}
 
 \subsection{Signedness}
 $n$ bits can either represent [0,$2^{n}-1$] \textbf{unsigned} or [$-2^{n-1}, 2^{n-1}$] \textbf{signed} numbers.
@@ -36,7 +48,7 @@ For \textbf{signed} numbers the \textbf{two's complement}
 \end{equation*}
 is used, which allows for addition and subtraction with only one command.
 
-\ptitle{Hint:} To calculate the 2's compliment by hand just invert all the bits and add 1.
+\ptitle{Hint:} To calculate the 2's complement by hand just invert all the bits and add 1.
 
 \subsection{Big-/ Little-Endian}
 A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be represented in memory as
@@ -129,7 +141,7 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
 
 \end{tikzpicture}
 \begin{itemize}
-    \item RISC-V uses little-endian.
+    \item RISC-V uses little-endian (low bytes at low DRAM address).
     \item An advantage of little-endian is that when type casting data to a lower-sized type the address in memory does not change as the data are stored at the address LSB first.
 \end{itemize}
 
@@ -277,6 +289,11 @@ RISC-V instruction set architecture (ISA) \code{RV32I} can be found in Section\ 
 addi    a1,zero, -1         # create 0b11...111
 xor     a0,a0,a1            # xor with 0b11..11
 \end{lstlisting}
+Remarks:
+\begin{itemize}
+    \item \texttt{addi} only affects the lowest 12 bits (I-type instruction). However, for negative numbers a sign extension is applied.
+    \item The upper bits can be filled by immediates using \texttt{lui}
+\end{itemize}
 
 \newpar{}
 \ptitle{64-Bit Extension}
@@ -285,6 +302,11 @@ xor     a0,a0,a1            # xor with 0b11..11
 slli    a0,a0,0x3f          # 0x3f = 63d
 srai    a0,a0,0x3f          # 64 bit extended mask of a0
 \end{lstlisting}
+
+Remarks:
+\begin{itemize}
+    \item Shift operations are special types of I-type instructions where the shift amount is specified in the lower 5 immediate bits.
+\end{itemize}
 
 \newpar{}
 \ptitle{Load and Store 4-Byte Data With Offset}
