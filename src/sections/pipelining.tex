@@ -26,6 +26,7 @@ The control bits of the individual stages are then stored in an extension of the
     \item[+] shorter clock cycle
     \item[+] fewer bits in the pipeline registers (instruction not passed along)
     \item[-] redundant control information
+    % TODO: Which bits are redundant? Are the MEM&WB bits meant (as they are also available in the ID/EX stage. If we don't push them we loose them so they are not really redundant in my opinion.)? 
 \end{itemize}
 
 \begin{center}
