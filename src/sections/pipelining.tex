@@ -91,18 +91,36 @@ If a current \code{src} register (\code{rs1/rs2}) is found in any later pipeline
 PipelineID/EX.rs1/2 == PipelineEX/MEM.rd
 PipelineID/EX.rs1/2 == PipelineMEM/WB.rd
     \end{lstlisting}
-\textbf{Remark}: This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd})
+
+\newpar{}
+\ptitle{Remarks}
+\begin{itemize}
+    \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd})
+    \item 3 components of hardware logic are required to handle data hazards:
+    \begin{enumerate}
+        \item Hazard detection logic (detect that there \textit{actually is} a hazard)
+        \item Forwarding logic 
+        \item Stalling logic
+    \end{enumerate}
+\end{itemize}
+
+\begin{examplesection}[Example]\label{example_hazard_detection}
+    Even though the \texttt{and} and the \texttt{or} instruction face a similar hazard, the comparison required to detect the hazard is specific to their relative location w.r.t.\ the \texttt{sub} instruction.
+
+    \includegraphics[width=\linewidth]{example_hazard_detection.png}
+\end{examplesection}
 
 \paragraph{Solution: Forwarding}
 By passing the result of the execution stage directly into the input of the next execution stage the \texttt{add}\textleftarrow\texttt{sub} RAW hazard can be avoided.
 
 \includegraphics[width=\linewidth]{cpu_pipelining_raw.png}
 
-The \textit{forwarding unit} decides which registers from which stages are used by the \textit{ALU}. This decision is affected and meant to resolve \textbf{data hazards}.
+The \textit{forwarding unit} decides which registers from which stages are used by the \textit{ALU}. This decision is affected and meant to resolve \textbf{type 1 data hazards} (no memory load involved).
 
 \begin{center}
     \includegraphics[width=.7\linewidth]{cpu_pipelining_forwarding_simple.png}
 \end{center}
+As seen in Example~\ref{example_hazard_detection} the comparison must either happen with the \texttt{EX/MEM} or with the \texttt{MEM/WB} stage depending on the instruction order.
 
 \begin{footnotesize}
     \renewcommand{\arraystretch}{1.4}
@@ -128,15 +146,20 @@ For some instructions this is insufficient. In these cases an extra stall/bubble
 
 \includegraphics[width=\linewidth]{cpu_pipelining_raw_stall.png}
 
+% TODO: I guess I added this remark once? You can delete it if you want.
 \ptitle{Remark:}
 The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
 
 \newpar{}
-As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipeline.
-Subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction.
+As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipeline. 
+\begin{itemize}
+    \item To achieve this, the hazard detection unit selects the zero input of the multiplexer yielding zero control registers.
+    \item Therefore subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction. This mechanism is meant to resolve \textbf{type 2 data hazards} (memory load involved).
+\end{itemize}
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipelining_NOP.png}
 \end{center}
+Note that the comparison already happens at the \texttt{ID/EX} stage and that the PC is mainpulated!
 
 \subsubsection{Control Hazards}\label{control hazards}
 
@@ -195,7 +218,7 @@ Predict the outcome of a branch instruction and roll back if the prediction was 
 \newpar{}
 \ptitle{Pipeline Flush}
 
-Is a mechanism to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption).
+Is a \textit{mechanism} to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption). If the shortcut unit presented in~\ref{shortcut} detects a branch, the hazard detection unit flushes the wrongly fetched instruction and adds the immediate (given by the branch) to the PC yielding the right instruction in the next cycle (creates 1 bubble).
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipeline_flush.png}
 \end{center}
@@ -203,6 +226,10 @@ Is a mechanism to clear out the executed parts of the followup instruction if th
 \ptitle{Static Prediction}
 
 Static prediction assumes that the branch is \textbf{not taken} and just continues with the next instruction. Due to the usage of loops this prediction is often \textbf{wrong}.
+\begin{center}
+    \includegraphics[width=\linewidth]{static_prediction.png}
+\end{center}
+The example assumes the shortcut logic~\ref{shortcut} to enable \texttt{ID}$\to$\texttt{IF} forwarding (orange arrow).
 
 \newpar{}
 \ptitle{Dynamic Prediction}
