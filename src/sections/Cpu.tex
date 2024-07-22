@@ -45,12 +45,12 @@
                                                                & ALUOp1                              & 1        & 0                                                   & 0  & 0   &   &                                                                      \\
                                                                & ALUOp0                              & 0        & 0                                                   & 0  & 1   &   &                                                                      \\
         \cmidrule{2-6}
-                                                               & MemtoReg                            & 0        & 1                                                   & X  & X   &   & \multirow{3}{*}{\begin{sideways}\color{teal}MEM\end{sideways}} &     \\
-                                                               & RegWrite                            & 1        & 1                                                   & 0  & 0   &   &                                                                & 0   \\
+                                                               & Branch                              & 0        & 0                                                   & 0  & 1   &   & \multirow{3}{*}{\begin{sideways}\color{teal}MEM\end{sideways}} & 0   \\
+                                                               & MemWrite                            & 0        & 0                                                   & 1  & 0   &   &                                                                & 0   \\
                                                                & MemRead                             & 0        & 1                                                   & 0  & 0   &   &                                                                & 0   \\
         \cmidrule{2-6}
-                                                               & MemWrite                            & 0        & 0                                                   & 1  & 0   &   & \multirow{3}{*}{\begin{sideways}\color{teal}WB\end{sideways}}  & 0   \\
-                                                               & Branch                              & 0        & 0                                                   & 0  & 1   &   &                                                                & 0   \\
+                                                               & MemtoReg                            & 0        & 1                                                   & X  & X   &   & \multirow{3}{*}{\begin{sideways}\color{teal}WB\end{sideways}}  &     \\
+                                                               & RegWrite                            & 1        & 1                                                   & 0  & 0   &   &                                                                & 0   \\
     \end{tabularx}
 
     \renewcommand{\arraystretch}{1}
