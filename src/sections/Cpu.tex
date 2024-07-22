@@ -9,12 +9,15 @@
 \begin{itemize}
     \item 12 bits $\to$ \texttt{Imm Gen} $\to$ 32 bits (extends sign)
     \item \texttt{MemRead}/\texttt{MemWrite} are \textbf{both} needed as some instructions don't use data memory at all.
-    \begin{itemize}
-        \item Don't just use one wire to switch between 0/1
-        \item Use 2 wires. If both =0: Turn power off when it is not required.
-        % TODO: I think for MemRead one could have an "X" in the cases R-format and beq (would still run but waste power). Must it be 0 in the sw case (guess BUS is duplex)?
-        % TODO: I think for MemWrite we could never have an "X".
-    \end{itemize}
+          \begin{itemize}
+              \item Don't just use one wire to switch between 0/1
+              \item Use 2 wires. If both =0: Turn power off when it is not required.
+                    % Question: I think for MemRead one could have an "X" in the cases R-format and beq (would still run but waste power). Must it be 0 in the sw case (guess BUS is duplex)?
+                    % TODO: Answer: I don't think this will work: if MemRead is 1 (valid for X) then the memory block will try to read at the address that the ALU produced, which is not a valid address -> bad things happen. 
+                    % TODO: For sw the memory block only gets one address, if MemRead and MemWrite are both 1, then the memory block will both write and read from the same address -> undefined behaviour
+                    % Question: I think for MemWrite we could never have an "X".
+                    % TODO: Answer: Thats probably why there is no C in the table ;)
+          \end{itemize}
     \item \texttt{RegWrite} blocks writing if needed (e.g.\ for branches no register write is required)
 \end{itemize}
 
@@ -59,11 +62,11 @@
 \newpar{}
 \ptitle{Remarks}
 \begin{itemize}
-    \item These results can all be achieved using the \texttt{opcode} bits only.
+    % \item These results can all be achieved using the \texttt{opcode} bits only. % 
     \item Using one multiplexer per control signal: $2^n$ input bits.
-    \begin{itemize}
-        \item Use Karnaugh or Quine-McCluskey for optimization.
-    \end{itemize}
+          \begin{itemize}
+              \item Use Karnaugh or Quine-McCluskey for optimization.
+          \end{itemize}
 \end{itemize}
 
 \subsubsection{ALUOp}
@@ -72,16 +75,16 @@
     \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
 
     \begin{tabularx}{\linewidth}{@{}T Z Z Z T Z@{}}
-        Opcode                  & ALUOp               & Funct7  & Funct3 & ALU action                                              & ALU contr         \\
+        Opcode                  & ALUOp               & Funct7        & Funct3 & ALU action                                              & ALU contr         \\
         \cmidrule{2-6}
-        lw                      & 00                  & XXXXXXX & XXX    & add                                                     & 0010              \\
-        sw                      & 00                  & XXXXXXX & XXX    & add                                                     & 0010              \\
-        beq                     & 01                  & XXXXXXX & XXX    & sub                                                     & 0110              \\
-        \multirow{4}{*}{R-type} & \multirow{4}{*}{10} & 0000000 & 000    & \color{teal} add                                        & \color{teal} 0010 \\
-                                &                     & 0100000 & 000    & \color{teal} sub                                        & \color{teal} 0110 \\
-                                &                     & 0000000 & 111    & \color{teal} and                                        & \color{teal} 0000 \\
-                                &                     & 0000000 & 110    & \color{teal} or                                         & \color{teal} 0001 \\
-                                &                     &         &        & \multicolumn{2}{c}{\color{teal} \tt{ALU control lines}}                     \\
+        lw                      & 00                  & not available & XXX    & add                                                     & 0010              \\
+        sw                      & 00                  & not available & XXX    & add                                                     & 0010              \\
+        beq                     & 01                  & not available & XXX    & sub                                                     & 0110              \\
+        \multirow{4}{*}{R-type} & \multirow{4}{*}{10} & 0000000       & 000    & \color{teal} add                                        & \color{teal} 0010 \\
+                                &                     & 0100000       & 000    & \color{teal} sub                                        & \color{teal} 0110 \\
+                                &                     & 0000000       & 111    & \color{teal} and                                        & \color{teal} 0000 \\
+                                &                     & 0000000       & 110    & \color{teal} or                                         & \color{teal} 0001 \\
+                                &                     &               &        & \multicolumn{2}{c}{\color{teal} \tt{ALU control lines}}                     \\
     \end{tabularx}
 
     \renewcommand{\arraystretch}{1}
@@ -90,14 +93,14 @@
 \newpar{}
 \ptitle{Remarks}
 \begin{itemize}
-    \item Given the \texttt{I[6-0]} bits the \texttt{ALUOp} bits get set.
-    \item Note however, that these bits can be identical for multiple instructions.
-    \item Hence, the \texttt{funct} bits define the \texttt{ALU contr} bits which steer the exact operation performed by the ALU.
+    \item The \code{ALUOp} bits are part of the Opcode
+          % \item Note however, that these bits can be identical for multiple instructions.
+    \item Furthermore, the \texttt{funct} bits define the \texttt{ALU contr} bits which steer the exact operation performed by the ALU.
     \item Also note that the \texttt{Funct3} bits are don't care e.g.\ for \texttt{lw} but only w.r.t.\ the ALU.
-    \begin{itemize}
-        \item These bits define e.g.\ the exact load size such as byte, half word.
-    \end{itemize}
-    \item \texttt{Funct7} are only needed for R-type.
+          \begin{itemize}
+              \item These bits define e.g.\ the exact load size such as byte, half word.
+          \end{itemize}
+          % \item \texttt{Funct7} are only needed for R-type.
 \end{itemize}
 
 \subsection{Parallel Instruction Execution}

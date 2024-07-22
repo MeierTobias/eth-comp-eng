@@ -30,16 +30,16 @@ The CPU uses 32-bit sized instructions to
 Among others, 64-bit registers make 64-bit integer calculations more efficient (compared to 32-bit) and increase the addressable memory space.
 
 \subsubsection{RV32E Base Integer Instruction Set}
-As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable for embedded systems:
-\begin{quote}
-    ``We have found that in the small RV32I core designs, the upper 16 registers consume around one quarter of the total area of the core excluding memories, thus their removal saves around 25\% core area with a corresponding core power reduction''
-\end{quote}
+% As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable for embedded systems:
+% \begin{quote}
+%     ``We have found that in the small RV32I core designs, the upper 16 registers consume around one quarter of the total area of the core excluding memories, thus their removal saves around 25\% core area with a corresponding core power reduction''
+% \end{quote}
 
-\newpar{}
-\ptitle{Remarks}
+% \newpar{}
+% \ptitle{Remarks}
 \begin{itemize}
     \item Reduced version of RV32I for embedded systems
-    \item Only 16 integer registers instead of 32
+    \item Only 16 integer registers instead of 32 (saves 25\% of core area)
 \end{itemize}
 
 \subsection{Signedness}
@@ -143,7 +143,7 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
 
 \end{tikzpicture}
 \begin{itemize}
-    \item RISC-V uses little-endian (low bytes at low DRAM address).
+    \item RISC-V uses little-endian (LSB at low DRAM address).
     \item An advantage of little-endian is that when type casting data to a lower-sized type the address in memory does not change as the data are stored at the address LSB first.
 \end{itemize}
 
@@ -155,17 +155,17 @@ Conditional branches let the PC jump to a specified line relative to the current
 
 \begin{itemize}
     \item 12 bits to branch ``around''
-    \item Immediate is always multiplied by 2
-    % TBD: please give your ok for the following 3 remarks
-    \begin{itemize}
-        \item To achieve compressed compatibility the immediate gets per default multiplied by 2 (instead of 4 as for ``common'' 32-bit instructions)
-        \item The immediate gets calculated in such a way that the right jump results: divide jump size in bytes by 2
-        \item Note that multiplying the immediate by 4 would double the reachable range but one would lose compressed compatability
-    \end{itemize}
+    \item Immediate is always multiplied by 2 (for compressed compatability)
+          % TODO: please give your ok for the following 3 remarks
+          \begin{itemize}
+              % \item To achieve compressed compatibility the immediate gets per default multiplied by 2 (instead of 4 as for ``common'' 32-bit instructions)
+              \item The immediate gets calculated in such a way that the right jump results: divide jump size in bytes by 2
+                    %     % \item Note that multiplying the immediate by 4 would double the reachable range but one would lose compressed compatability
+          \end{itemize}
     \item Branch backward or forward: [PC + 4KB, PC - 4KB]
-    \begin{itemize}
-        \item Due to the multiplication by 2 the effective range in bytes is $2\cdot {2}^{12}$
-    \end{itemize}
+          \begin{itemize}
+              \item Due to the multiplication by 2 the effective range in bytes is $2\cdot {2}^{12}$
+          \end{itemize}
 \end{itemize}
 
 \subsubsection{Basic If-Statement}
@@ -287,11 +287,11 @@ addi    sp, sp, 4       # reset the stack pointer
     \item \texttt{jalr} stores \texttt{PC+4} in \texttt{rd}
     \item One uses \texttt{ra} as \texttt{rd} by convention
     \item Then, the called function has \texttt{ra} available in the same way as we have it in ``our'' function. The called function will analogously first push \texttt{ra} to the stack and finally return to \texttt{ra}, where we have stored \texttt{PC+4}
-    \item At the end of the main function (end of program) one usually calls 
-    \begin{lstlisting}[language={[RISC-V]Assembler}]
+    \item At the end of the main function (end of program) one usually calls
+          \begin{lstlisting}[language={[RISC-V]Assembler}]
         jalr zero, 0(ra)
     \end{lstlisting}
-    i.e.\ no return address is stored
+          i.e.\ no return address is stored
 \end{itemize}
 
 \subsection{Useful Instructions}
