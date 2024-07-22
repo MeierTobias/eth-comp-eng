@@ -24,9 +24,9 @@ The principles of locality are used to increase the cache hit rate:
 \end{itemize}
 
 \subsection{Page Translation}
-To decrease the computational cost arising from page table walks, a \textit{transitional lookaside buffer} can be used to store frequently accessed page table entries.
+To decrease the computational cost arising from page table walks, a \textit{translation lookaside buffer} can be used to store frequently accessed page table entries.
 
-\subsubsection{Transitional Lookaside Buffer (TLB)}
+\subsubsection{Translation Lookaside Buffer (TLB)}
 \begin{itemize}
     \item TLB hit $\to$ return TLB entry (physical address)
     \item TLB miss $\to$ page table walk $\to$ save found physical page to TLB
