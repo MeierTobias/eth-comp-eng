@@ -53,7 +53,7 @@ is used, which allows for addition and subtraction with only one command.
 \ptitle{Hint:} To calculate the 2's complement by hand just invert all the bits and add 1.
 
 \subsection{Big-/ Little-Endian}
-A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be represented in memory as
+A given register \code{t1 = [{\color{blue}MSB}$\dots${\color{magenta}LSB}]} can be represented in memory as
 
 \begin{tikzpicture}
 
@@ -65,31 +65,38 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
         fill = gray!20] (r) at (0,0) {};
 
     \node[rectangle,
-        text width = 30pt,
+        text width = 20pt,
         text height = 6pt,
         draw=none,
         text = black,
-        fill = blue!40] (r) at (30pt,0) {\fncode{0xAA}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,] at (30pt,12pt) {\fncode{t1}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,
-        fill = magenta!40] (r) at (60pt,0) {\fncode{0xBB}};
+        fill = blue!40] (r) at (20pt,0) {\fncode{MSB}};
 
     \node[rectangle,
         text width = 30pt,
         text height = 6pt,
         draw = none,
         text = black,
-        fill = gray!20] (r) at (90pt,0) {};
+        fill = gray!40] (r) at (50pt,0) {$\dots$};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,] at (20pt,12pt) {\fncode{t1}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,
+        fill = magenta!40] (r) at (70pt,0) {\fncode{LSB}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw = none,
+        text = black,
+        fill = gray!20] (r) at (95pt,0) {};
 
     \node[rectangle,
         anchor = west,
@@ -109,37 +116,44 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
         fill = gray!20] (r) at (0,0) {};
 
     \node[rectangle,
-        text width = 30pt,
+        text width = 20pt,
         text height = 6pt,
         draw=none,
         text = black,
-        fill = magenta!40] (r) at (30pt,0) {\fncode{0xBB}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,] at (30pt,12pt) {\fncode{t1}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,
-        fill = blue!40] (r) at (60pt,0) {\fncode{0xAA}};
+        fill = magenta!40] (r) at (20pt,0) {\fncode{LSB}};
 
     \node[rectangle,
         text width = 30pt,
         text height = 6pt,
         draw = none,
         text = black,
-        fill = gray!20] (r) at (90pt,0) {};
+        fill = gray!40] (r) at (50pt,0) {$\dots$};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,] at (20pt,12pt) {\fncode{t1}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,
+        fill = blue!40] (r) at (70pt,0) {\fncode{MSB}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw = none,
+        text = black,
+        fill = gray!20] (r) at (95pt,0) {};
 
     \node[rectangle,
         anchor = west,
         text height = 6pt,
         draw=none,
-        text = black,] at (110pt,0pt) {\fncode{DRAM (little-endian)}};
+        text = black,] at (110pt,0pt) {\fncode{DRAM (litte-endian)}};
 
 \end{tikzpicture}
 \begin{itemize}
