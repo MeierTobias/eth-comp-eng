@@ -84,12 +84,12 @@ In DDR4 a cache line has due to \textit{read/write bursts} the size
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
-In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g. a 4-way 4-set associative has 4 sets with 4 slots in each one of them).
+In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g.\ 4-way 4-set associative).
 
 \ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
-    \item In a \textbf{direct-mapped} (1-way n-set associative) cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
-    \item In a \textbf{fully-associative} (n-way 1-set associative) cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
+    \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. %cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
+    \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate. %cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
     \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookop time such that, on typical workloads, most accesses do not cause eviction.
 \end{itemize}
 
@@ -128,6 +128,7 @@ The 64-bit cache line consists of
 \begin{itemize}
     \item[+] Flexible
     \item[+] Dense population
+    \item[-] $\mathcal{O}(n)$ for lookup
     \item[-] Many tag bits
     \item[-] Search through all tags
 \end{itemize}

@@ -464,7 +464,7 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
               \end{itemize}
               \item virtual page number: 4 (levels) $\cdot$ 9 bits = 36 bits
               \begin{itemize}
-                \item the remaining $48-36=12$ bits are used to index the ${2}^{12} = 4$ kiB of physical bytes
+                \item the remaining $48-36=12$ bits are used to index the ${2}^{12} = 4$ KB of physical bytes
               \end{itemize}
           \end{itemize}
 \end{itemize}
@@ -691,3 +691,4 @@ STVAL will provide extended information about the exception (e.g., page fault's 
 \ptitle{Example}
 
 On a soft PF the CPU jumps to STVEC. The handler routine sees which instruction caused the PF (the instruction at SEPC), knows from SCAUSE that the reason was a PF and finds the (user mode virtual) address (page number) at which the exception occured in STVAL. A routine can then be called to load the missing code page to the address stored in STVAL.
+% TODO: how is this not the exact same as above?

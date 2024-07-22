@@ -30,16 +30,16 @@ The CPU uses 32-bit sized instructions to
 Among others, 64-bit registers make 64-bit integer calculations more efficient (compared to 32-bit) and increase the addressable memory space.
 
 \subsubsection{RV32E Base Integer Instruction Set}
-As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable for embedded systems:
-\begin{quote}
-    ``We have found that in the small RV32I core designs, the upper 16 registers consume around one quarter of the total area of the core excluding memories, thus their removal saves around 25\% core area with a corresponding core power reduction''
-\end{quote}
+% As stated in the \textit{RISC-V Instruction Set Manual} RV32E is more favorable for embedded systems:
+% \begin{quote}
+%     ``We have found that in the small RV32I core designs, the upper 16 registers consume around one quarter of the total area of the core excluding memories, thus their removal saves around 25\% core area with a corresponding core power reduction''
+% \end{quote}
 
-\newpar{}
-\ptitle{Remarks}
+% \newpar{}
+% \ptitle{Remarks}
 \begin{itemize}
     \item Reduced version of RV32I for embedded systems
-    \item Only 16 integer registers instead of 32
+    \item Only 16 integer registers instead of 32 (saves 25\% of core area)
 \end{itemize}
 
 \subsection{Signedness}
@@ -53,7 +53,7 @@ is used, which allows for addition and subtraction with only one command.
 \ptitle{Hint:} To calculate the 2's complement by hand just invert all the bits and add 1.
 
 \subsection{Big-/ Little-Endian}
-A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be represented in memory as
+A given register \code{t1 = [{\color{blue}MSB}$\dots${\color{magenta}LSB}]} can be represented in memory as
 
 \begin{tikzpicture}
 
@@ -65,31 +65,38 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
         fill = gray!20] (r) at (0,0) {};
 
     \node[rectangle,
-        text width = 30pt,
+        text width = 20pt,
         text height = 6pt,
         draw=none,
         text = black,
-        fill = blue!40] (r) at (30pt,0) {\fncode{0xAA}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,] at (30pt,12pt) {\fncode{t1}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,
-        fill = magenta!40] (r) at (60pt,0) {\fncode{0xBB}};
+        fill = blue!40] (r) at (20pt,0) {\fncode{MSB}};
 
     \node[rectangle,
         text width = 30pt,
         text height = 6pt,
         draw = none,
         text = black,
-        fill = gray!20] (r) at (90pt,0) {};
+        fill = gray!40] (r) at (50pt,0) {$\dots$};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,] at (20pt,12pt) {\fncode{t1}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,
+        fill = magenta!40] (r) at (70pt,0) {\fncode{LSB}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw = none,
+        text = black,
+        fill = gray!20] (r) at (95pt,0) {};
 
     \node[rectangle,
         anchor = west,
@@ -109,41 +116,48 @@ A given register \code{t1 = [{\color{blue}0xAA},{\color{magenta}0xBB}]} can be r
         fill = gray!20] (r) at (0,0) {};
 
     \node[rectangle,
-        text width = 30pt,
+        text width = 20pt,
         text height = 6pt,
         draw=none,
         text = black,
-        fill = magenta!40] (r) at (30pt,0) {\fncode{0xBB}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,] at (30pt,12pt) {\fncode{t1}};
-
-    \node[rectangle,
-        text width = 30pt,
-        text height = 6pt,
-        draw=none,
-        text = black,
-        fill = blue!40] (r) at (60pt,0) {\fncode{0xAA}};
+        fill = magenta!40] (r) at (20pt,0) {\fncode{LSB}};
 
     \node[rectangle,
         text width = 30pt,
         text height = 6pt,
         draw = none,
         text = black,
-        fill = gray!20] (r) at (90pt,0) {};
+        fill = gray!40] (r) at (50pt,0) {$\dots$};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,] at (20pt,12pt) {\fncode{t1}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw=none,
+        text = black,
+        fill = blue!40] (r) at (70pt,0) {\fncode{MSB}};
+
+    \node[rectangle,
+        text width = 20pt,
+        text height = 6pt,
+        draw = none,
+        text = black,
+        fill = gray!20] (r) at (95pt,0) {};
 
     \node[rectangle,
         anchor = west,
         text height = 6pt,
         draw=none,
-        text = black,] at (110pt,0pt) {\fncode{DRAM (little-endian)}};
+        text = black,] at (110pt,0pt) {\fncode{DRAM (litte-endian)}};
 
 \end{tikzpicture}
 \begin{itemize}
-    \item RISC-V uses little-endian (low bytes at low DRAM address).
+    \item RISC-V uses little-endian (LSB at low DRAM address).
     \item An advantage of little-endian is that when type casting data to a lower-sized type the address in memory does not change as the data are stored at the address LSB first.
 \end{itemize}
 
@@ -155,17 +169,17 @@ Conditional branches let the PC jump to a specified line relative to the current
 
 \begin{itemize}
     \item 12 bits to branch ``around''
-    \item Immediate is always multiplied by 2
-    % TBD: please give your ok for the following 3 remarks
-    \begin{itemize}
-        \item To achieve compressed compatibility the immediate gets per default multiplied by 2 (instead of 4 as for ``common'' 32-bit instructions)
-        \item The immediate gets calculated in such a way that the right jump results: divide jump size in bytes by 2
-        \item Note that multiplying the immediate by 4 would double the reachable range but one would lose compressed compatability
-    \end{itemize}
+    \item Immediate is always multiplied by 2 (for compressed compatability)
+          % TODO: please give your ok for the following 3 remarks
+          \begin{itemize}
+              % \item To achieve compressed compatibility the immediate gets per default multiplied by 2 (instead of 4 as for ``common'' 32-bit instructions)
+              \item The immediate gets calculated in such a way that the right jump results: divide jump size in bytes by 2
+                    %     % \item Note that multiplying the immediate by 4 would double the reachable range but one would lose compressed compatability
+          \end{itemize}
     \item Branch backward or forward: [PC + 4KB, PC - 4KB]
-    \begin{itemize}
-        \item Due to the multiplication by 2 the effective range in bytes is $2\cdot {2}^{12}$
-    \end{itemize}
+          \begin{itemize}
+              \item Due to the multiplication by 2 the effective range in bytes is $2\cdot {2}^{12}$
+          \end{itemize}
 \end{itemize}
 
 \subsubsection{Basic If-Statement}
@@ -287,11 +301,11 @@ addi    sp, sp, 4       # reset the stack pointer
     \item \texttt{jalr} stores \texttt{PC+4} in \texttt{rd}
     \item One uses \texttt{ra} as \texttt{rd} by convention
     \item Then, the called function has \texttt{ra} available in the same way as we have it in ``our'' function. The called function will analogously first push \texttt{ra} to the stack and finally return to \texttt{ra}, where we have stored \texttt{PC+4}
-    \item At the end of the main function (end of program) one usually calls 
-    \begin{lstlisting}[language={[RISC-V]Assembler}]
+    \item At the end of the main function (end of program) one usually calls
+          \begin{lstlisting}[language={[RISC-V]Assembler}]
         jalr zero, 0(ra)
     \end{lstlisting}
-    i.e.\ no return address is stored
+          i.e.\ no return address is stored
 \end{itemize}
 
 \subsection{Useful Instructions}
