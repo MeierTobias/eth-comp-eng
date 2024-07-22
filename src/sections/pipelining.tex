@@ -5,14 +5,23 @@
 The CPU design is segmented into five sub-steps. Each segment performs an action of a different instruction.
 
 \subsection{Pipeline Registers}
-Pipeline registers allow holding temporary information about different stages and forwarding necessary information in the pipeline.
+Pipeline registers allow holding temporary information about different stages and forwarding necessary information in the pipeline. They are internal to the CPU and cannot be accessed from software. Each instruction propagates through the pipeline as data and control information.
+\subsubsection{Data Registers}
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipeline_reg.png}
 \end{center}
+Examples of data that are commonly preserved using pipeline registers are
+\begin{enumerate}
+    \item PC for later PC-relative branch. Branch outcome known first after register stage (assuming shortcut:~\ref{shortcut}).\\
+    Instruction word. Also contains indices of registers used per instruction (needed e.g.\ for hazard detection or final WB).
+    \item Data read from register file (for EX \textit{and} MEM stage).
+    \item ALU results (Used as address for MEM or as data for WB).
+    \item Buffer for MEM/WB (yields 5 short stages instead of 4 long ones).
+\end{enumerate}
 
-\subsection{Control of CPU Elements}
-At the ID stage, the \textbf{per-stage control} of all stages is calculated based on the instruction.
-The control bits of the individual stages are then stored in an extension of the \textit{pipeline registers}, according to opcode in Table~\ref{tab:opcode}.
+\subsubsection{Control Registers}
+Instead of calculating control bits on the fly, at the ID stage the \textbf{per-stage control} for \textit{all} stages of the decoded instruction is calculated.
+The control bits of the individual stages are then stored in an extension of the pipeline registers according to opcode in Table~\ref{tab:opcode}.
 \begin{itemize}
     \item[+] shorter clock cycle
     \item[+] fewer bits in the pipeline registers (instruction not passed along)
@@ -22,6 +31,13 @@ The control bits of the individual stages are then stored in an extension of the
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipelining_control.png}
 \end{center}
+
+Three stages need control bits
+\begin{enumerate}
+    \item EX: \texttt{ALUSrc, ALUOp}
+    \item MEM: \texttt{Branch, MemWrite, MemRead}
+    \item WB: \texttt{MemtoReg, RegWrite}
+\end{enumerate}
 
 \subsection{Hazards}
 Dependencies between instructions produce three types of \textbf{Hazards}:
