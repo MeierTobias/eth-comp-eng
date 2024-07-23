@@ -688,7 +688,7 @@ When an application accesses a not allocated but valid area in the memory we get
 Example procedure
 \begin{enumerate}
     \item Application tries to store data
-          \texttt{sw t0, (addr)}
+          \texttt{sw t0, 0(t1)}
     \item The MMU walks the pages and gets to an entry with the valid bit set to zero.
     \item The kernel checks if the requested address is in the valid area (VMA) and if the permissions are given.
     \item Then the page gets allocated.
