@@ -764,9 +764,9 @@ There are 3 common use cases for page sharing.
 
 \begin{itemize}
     \item mapping same physical page to the virtual pages of multiple processes
-    \item all processes have r/w permissions or some has r, other w
+    \item all processes have r/w permissions or some have r, other w
     \begin{itemize}
-        \item it is intended to modify the other's content!
+        \item intended to modify other's contents for communcation
     \end{itemize}
 \end{itemize}
 
@@ -780,17 +780,43 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
 
 \begin{itemize}
     \item \texttt{.bss} variables have same value for all processses i.e.\ zero
-    \item maps ALL the \texttt{.bss} sections to the same physical zero-page 
+    \item map ALL \texttt{.bss} sections to the same physical zero-page 
     \item writing is enabled by:
     \begin{itemize}
-        \item kernel marks \textbf{all} virtual pages pointing to the zero-page as read-only
+        \item kernel marks \textbf{all} virtual pages pointing to the zero-page as \textit{read-only first}
         \item triggers a soft PF if one process tries to write
         \item handle page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). Then resume with valid access.
     \end{itemize}
 \end{itemize}
 
 \paragraph{Page Swapping}
-% TODO:
+Idea: move pages to SSD if all RAM is used
+\begin{itemize}
+    \item unset present bit in the PTE. This triggers a PF on access
+    \item store SSD address in the PTE to find page later 
+\end{itemize}
+
+\newpar{}
+\ptitle{Handling the PF}
+
+On a (soft) PF the kernel
+\begin{itemize}
+    \item consults VMA to check whether it is indeed a soft PF
+    \item checks PTE to ensure page is indeed swapped out
+    \item swap out another victim page
+    \item allocate the new free page, update PTE
+\end{itemize}
+
+\newpar{}
+\ptitle{Swapping Policy}
+
+\begin{itemize}
+    \item various, e.g.\ LRU
+    \item support from paging HW: level-0 PTEs have recently-accesses bit
+    \begin{itemize}
+        \item don't swap these pages out
+    \end{itemize}
+\end{itemize}
 
 \subsection{Exceptions}\label{exceptions}
 An exception in the pipeline can either be generated
