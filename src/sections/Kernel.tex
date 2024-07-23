@@ -803,8 +803,8 @@ On a (soft) PF the kernel
 \begin{itemize}
     \item consults VMA to check whether it is indeed a soft PF
     \item checks PTE to ensure page is indeed swapped out
-    \item swap out another victim page
-    \item allocate the new free page, update PTE
+    \item swaps out another victim page
+    \item allocates the new free page, update PTE
 \end{itemize}
 
 \newpar{}
@@ -812,7 +812,7 @@ On a (soft) PF the kernel
 
 \begin{itemize}
     \item various, e.g.\ LRU
-    \item support from paging HW: level-0 PTEs have recently-accesses bit
+    \item support from paging HW: level-0 PTEs have recently-accessesed bit
     \begin{itemize}
         \item don't swap these pages out
     \end{itemize}
