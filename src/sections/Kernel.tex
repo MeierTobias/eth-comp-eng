@@ -154,7 +154,11 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
     \item Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fragmentation
     \item Each slab contains e.g. 12/16/256-byte entries
     \item Applications' allocators ask kernel for memory
-    \item Built \textit{on top} of low-level allocator: Kernel provides memory and can grow full slabs / shrink empty ones
+    \item Built \textit{on top} of low-level allocator:
+    \begin{itemize}
+        \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
+        \item Slab allocator for small memory requests within pages
+    \end{itemize}
     \item Implementation:
     \begin{itemize}
         \item LL: No coalescing, fast malloc but extra metadata
@@ -235,13 +239,17 @@ int buddy_free(struct block *block)
 }
 \end{lstlisting}
 
-\textbf{Remark} both \code{block\_alloc} and \code{block\_free} trigger a max of log(\code{max\_order}) of operations. %ChkTeX 36
+\textbf{Remarks}
+\begin{itemize}
+    \item Both \code{block\_alloc} and \code{block\_free} trigger a max of log(\code{max\_order}) of operations. %ChkTeX 36
+    \item Initialization: Call \code{block\_free} on every 4kB page (causes merging).
+\end{itemize}
 
 \paragraph{Buddy Allocator: Data Structures}
 \ptitle{Block}
 \begin{lstlisting}[style=bright_C++]
 struct block {
-    unsigned refcnt;
+    unsigned refcnt;    /* e.g. for shared memory */
     unsigned order; /* 0 <= order <= BUDDY_MAX_ORDER */
     struct block *next;
 };
@@ -260,7 +268,7 @@ static struct block *buddy_free_lists[BUDDY_MAX_ORDER + 1];
 \ptitle{Remarks}
 \begin{itemize}
     \item Static heap size assumed in Jake: \texttt{buddy\_blocks} in \texttt{.bss}
-    \item This static assumption is not used in general OS (variable heap size per system)
+    \item Static assumption not used in general OS (variable heap size per system)
     \begin{itemize}
         \item Use bootmem allocator
     \end{itemize}
@@ -435,6 +443,13 @@ static struct block *__buddy_merge(struct block *block, struct block *buddy)
     }
 }
 \end{lstlisting}
+
+\paragraph{In-Application Memory Management}
+
+\begin{itemize}
+    \item Applications request memory from the kernel.
+    \item Then, internally, they have themselves a variety of allocators to manage it.
+\end{itemize} 
 
 \subsection{Virtual Memory}
 % Segmentation and x86 history left out on purpose
