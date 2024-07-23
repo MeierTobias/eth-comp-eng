@@ -151,6 +151,9 @@ The 64-bit cache line consists of
 \ptitle{Loading}
 \begin{itemize}
     \item If available, the memory can be read directly from cache
+    \begin{itemize}
+        \item Otherways, load from DRAM and evict if necessary
+    \end{itemize}
     \item Cached loads result in \textbf{clean} cache lines
 \end{itemize}
 

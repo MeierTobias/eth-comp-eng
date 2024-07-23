@@ -14,6 +14,7 @@ Examples of data that are commonly preserved using pipeline registers are
 \begin{enumerate}
     \item PC for later PC-relative branch. Branch outcome known first after register stage (assuming shortcut:~\ref{shortcut}).\\
     Instruction word. Also contains indices of registers used per instruction (needed e.g.\ for hazard detection or final WB).
+    % TODO: Razavi told in lecture that the entire instruction word is pushed. Can we assume that the opcode and funct bits are thrown away after the IF/ID stage? At this point, we calculated the control bits and only need the register indices and immediates for later.
     \item Data read from register file (for EX \textit{and} MEM stage).
     \item ALU results (Used as address for MEM or as data for WB).
     \item Buffer for MEM/WB (yields 5 short stages instead of 4 long ones).
