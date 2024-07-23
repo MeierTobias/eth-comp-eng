@@ -63,12 +63,13 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
           \end{itemize}
 \end{itemize}
 
-\paragraph{In-Band Metadata: Linked List}
+\paragraph{In-Band Metadata: Linked List (LL)}
 \includegraphics[width = \linewidth]{free_linked_list.png}
 
 \begin{itemize}
-    \item Use a linked list to keep track of \textbf{free} heap sections
+    \item Use a LL to keep track of \textbf{free} heap sections
     \item Nodes stored at start of each free heap section
+    \item External fragmentation but no internal fragmentation
 \end{itemize}
 
 \begin{lstlisting}[language={C}]
@@ -82,19 +83,13 @@ typedef struct __node_t {
 \end{lstlisting}
 \textbf{Remark}
 
-A Union is used because either the \code{magic} value \textbf{or} the \code{*next} node is of interest.
-
-\ptitle{Freeing Heap}
-
+Union represents either \code{magic} value \textbf{or} \code{*next} node variable.
 \begin{itemize}
-    \item \lstinline{free(a)}%ChkTex 36
-    \item Allocate a new \lstinline{__node_t} data structure
-    \item Check if magic value has not been overwritten
-    \item Let \lstinline{ __node_t *next} point to previous \lstinline{head}
-    \item Make the new node the new \lstinline{head}
+    \item \code{magic} value for allocated areas.
+    \item \code{*next} node for free elements.
 \end{itemize}
 
-\ptitle{Selecting Free Heap}
+\ptitle{Malloc}
 
 \begin{itemize}
     \item Walk the linked list at \lstinline{malloc()} %ChkTex 36
@@ -103,7 +98,18 @@ A Union is used because either the \code{magic} value \textbf{or} the \code{*nex
               \item \textbf{Best fit}: take slot matching the required size the best (slow: walk entire list)
           \end{itemize}
     \item First fit uses space more efficiently than best fit (small losses at each allocation!)
-    \item As slot is selected: remove corresponding node from list, update pointers, return pointer to free heap
+    \item As slot is selected: set magic value / remove corresponding node from list, update pointers, return pointer to free heap
+\end{itemize}
+
+\ptitle{Free}
+
+\begin{itemize}
+    \item \lstinline{free(a)}%ChkTex 36
+    \item Allocate a new \lstinline{__node_t} data structure
+    \item Check magic value. If it has been overwritten: out-of-bound software bug
+    \item Let \lstinline{ __node_t *next} point to previous \lstinline{head}
+    \item Make the new node the new \lstinline{head}
+    \item A \textit{doubly linked list} can be used for convenient unlinking
 \end{itemize}
 
 \ptitle{Handling Fragmentation}
@@ -116,9 +122,20 @@ A Union is used because either the \code{magic} value \textbf{or} the \code{*nex
 \paragraph[Bitmap-Based Allocations]{Out-Of-Band Metadata:\newline Bitmap-Based Allocations}
 \begin{itemize}
     \item Every bit can tell whether $N$ bytes of the heap are free
-    \item \code{malloc()} scans the bitmap for free space %ChkTex 36
-    \item \code{free()} flips the right bits in the bitmap to zero %ChkTex 36
+    \begin{itemize}
+        \item Can be more wasteful than LL metadata: inflexible block size
+        \item Internal fragmentation    % TODO: In the book it says that variable-size allocations in bitmap allocators cause internal fragmentation. But isn't there also external fragmentation in bitmap allocators?
+    \end{itemize}
     \item One needs \textbf{additional} data to keep track of the total allocation sizes (as we only know status of our $N$ byte units)
+    \item \code{malloc()} scans the bitmap for free space %ChkTex 36
+    \begin{itemize}
+        \item Update allocation size in additional metadata
+    \end{itemize}
+    \item \code{free()} flips the right bits in the bitmap to zero %ChkTex 36
+    \begin{itemize}
+        \item Get size to free from additional metadata
+        \item Coalescing comes for free
+    \end{itemize}
 \end{itemize}
 
 \ptitle{Fragmentation vs. Performance}
@@ -134,29 +151,40 @@ A Union is used because either the \code{magic} value \textbf{or} the \code{*nex
 \paragraph{In-/Out-Of-Band Megadata: Slab Allocation}
 
 \begin{itemize}
-    \item Create ``sub-heaps'' (slabs) for common allocation sizes
+    \item Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fragmentation
     \item Each slab contains e.g. 12/16/256-byte entries
-    \item Many implementations of slab allocators
-    \item Applications'  allocators ask kernel for memory
-    \item Kernel provides memory and can grow slabs if they are full or shrink them if empty
+    \item Applications' allocators ask kernel for memory
+    \item Built \textit{on top} of low-level allocator: Kernel provides memory and can grow full slabs / shrink empty ones
+    \item Implementation:
+    \begin{itemize}
+        \item LL: No coalescing, fast malloc but extra metadata
+        \item Bitmap: Single bit metadata but slower malloc due to scanning
+    \end{itemize}
 \end{itemize}
 
 \ptitle{Pros and Cons}
 \begin{itemize}
     \item[+] Flexible (various allocation sizes, growing/shrinking)
-    \item[-] Fragmentation across slabs (not optimized for full utilization): can't move memory between slabs as they become full/empty
-    \item Idea: use page allocation to move pages between different slabs
+    \item[-] Some internal fragmentation
+    \item[-] External fragmentation: \textit{Fragmentation across slabs} (not optimized for full utilization): Can't move memory between slabs as they become full/empty
+    \begin{itemize}
+        \item Solution: Use page allocation to move pages between different slabs
+    \end{itemize}
 \end{itemize}
 \paragraph{Page Allocation: Buddy Allocator}
 Page Allocation optimizes for \textbf{full utilization}.
 \begin{itemize}
     \item A page is a \textbf{contiguous area of memory} aligned to the page size (4 KB)
     \item Blocks can have a size that scales with power-of-two wrt.\ the page size, this power is also called the \textbf{order}.
+    \begin{itemize}
+        \item Code, stack, heap are at least 1 page each.
+    \end{itemize}
     \item Each page has a \textit{buddy} with the same size.
           \begin{itemize}
               \item If a page is split, a new page and a buddy with order - 1 are generated.
-              \item If a page is freed and its buddy is also free, these two pages are merged into a page with order + 1
+              \item If a page is freed and its buddy is also free, these two pages are merged into a page with order + 1.
           \end{itemize}
+    \item Page allocation finds tradeoff between performance and efficient memory usage
 \end{itemize}
 
 \paragraph{Buddy Allocator: Interface}
@@ -228,6 +256,17 @@ static struct block buddy_blocks[1UL << BUDDY_MAX_ORDER];
 static struct block *buddy_free_lists[BUDDY_MAX_ORDER + 1];
 \end{lstlisting}
 
+\newpar{}
+\ptitle{Remarks}
+\begin{itemize}
+    \item Static heap size assumed in Jake: \texttt{buddy\_blocks} in \texttt{.bss}
+    \item This static assumption is not used in general OS (variable heap size per system)
+    \begin{itemize}
+        \item Use bootmem allocator
+    \end{itemize}
+    \item \texttt{buddy\_free\_lists} to avoid bitmap scans: cheap malloc
+\end{itemize}
+
 \paragraph{Buddy Allocator: Internal Functions}
 \ptitle{Block to Buddy}
 \begin{lstlisting}[style=bright_C++]
@@ -236,6 +275,7 @@ static inline struct block *block2buddy(struct block *block, int order)
     return __ppn2block(block2__ppn(block) ^ 1UL << order);
 }
 \end{lstlisting}
+Note: If address instead of page number is used: flip \texttt{12+order+1}th bit.
 
 \newpar{}
 \ptitle{Smallest Order}
@@ -565,6 +605,9 @@ To determine if the current page table entry points to a next page table or to a
             \item validity using the \code{V} bit
             \item permissions depending on the \code{R/W/X} bits
             \item kernel/user permissions depending on the \code{U} bit
+            \begin{itemize}
+                \item \texttt{sstatus} stores processor's state (kernel/user)
+            \end{itemize}
         \end{itemize}
         \item Raises exceptions if validity or permissions are not given
     \end{itemize}
