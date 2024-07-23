@@ -709,16 +709,40 @@ There are two types of page faults:
     \item \textbf{Soft page faults} occur when valid memory (in VMA and permissions given) is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
 \end{itemize}
 
-\paragraph{Demand Paging}\label{page demanding}
+\paragraph{Demand Paging and VMAs}\label{page demanding}
 Applications usually ask for more heap memory than they need so the heap memory is allocated when it is actually needed.
-When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory areas} (VMAs: virtual base and bound/size) for each process (and itself).
+When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory areas} for each process (and itself). VMAs contain
+\begin{itemize}
+    \item Base VPN
+    \item Size
+    \item Permission flags
+\end{itemize}
+Their creation is triggered by \texttt{mmap}, removing by \texttt{munmap}.
+
 \newpar{}
-Example procedure
+\ptitle{Benefits for Memory Regions}
+\begin{itemize}
+    \item \texttt{.code}
+    \begin{itemize}
+        \item apps have many functions: not all used at the same time.
+        \item only allocate pages currently used functions
+    \end{itemize}
+    \item \texttt{heap}
+    \begin{itemize}
+        \item often sparsely-used
+        \item in contrast to code: just zero phys.\ page before mapping it
+    \end{itemize}
+    \item \texttt{stack}: often sparsely-used
+\end{itemize}
+
+\newpar{}
+\ptitle{Example procedure}
+
 \begin{enumerate}
     \item Application tries to store data
           \texttt{sw t0, 0(t1)}
-    \item The MMU walks the pages and gets to an entry with the valid bit set to zero. \texttt{stvec} is called.
-    \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue.
+    \item The MMU walks the pages and gets to an entry with the valid bit set to zero.~\texttt{stvec} is called.
+    \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue with 4.
     \item Then the page gets allocated
     \begin{itemize}
         \item permissions according to the VMA
@@ -733,7 +757,38 @@ Example procedure
 This dynamic approach can be used for all the app memory so that we do not have to pre-allocate any page tables.
 
 \paragraph{Page Sharing}
-% TODO:
+There are 3 common use cases for page sharing.
+
+\newpar{}
+\ptitle{Communication}
+
+\begin{itemize}
+    \item mapping same physical page to the virtual pages of multiple processes
+    \item all processes have r/w permissions or some has r, other w
+    \begin{itemize}
+        \item it is intended to modify the other's content!
+    \end{itemize}
+\end{itemize}
+
+\newpar{}
+\ptitle{Shared Libraries}
+
+Map virtual addresses of multiple processes to same copy of a library. Execute-only permisson for security.
+
+\newpar{}
+\ptitle{Copy-On-Write (COW)}
+
+\begin{itemize}
+    \item \texttt{.bss} variables have same value for all processses i.e.\ zero
+    \item maps ALL the \texttt{.bss} sections to the same physical zero-page 
+    \item writing is enabled by:
+    \begin{itemize}
+        \item kernel marks \textbf{all} virtual pages pointing to the zero-page as read-only
+        \item triggers a soft PF if one process tries to write
+        \item handle page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). Then resume with valid access.
+    \end{itemize}
+\end{itemize}
+
 \paragraph{Page Swapping}
 % TODO:
 
