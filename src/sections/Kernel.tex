@@ -620,9 +620,9 @@ To determine if the current page table entry points to a next page table or to a
 \paragraph{The MMU}
 \begin{itemize}
     \item The MMU is a HW component
-    \item After turning the MMU on, it interposes on each memory access:
+    \item After starting it, MMU interposes on each memory access:
     \begin{itemize}
-        \item Go to the DRAM page at (physical) address stored in \code{satp}
+        \item Go to DRAM page at (phys.) address stored in \code{satp}
         \item Execute a memory walk to the physical address that corresponds to the given virtual address
     \end{itemize}
     \item During the memory walk the MMU
@@ -666,6 +666,16 @@ The kernel memory space contains five regions:
     \texttt{stack} & Kernel stack                        & 0 & 1 & 1
 \end{tabularx}
 
+\newpar{}
+\ptitle{Remark}
+
+\texttt{ID} 
+\begin{itemize}
+    \item maps the entire physical memory left
+    \item is required for manipulating page tables
+    % TODO: Additional purposes?
+\end{itemize}
+
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
 
@@ -680,7 +690,11 @@ For backward compatibility reasons the kernel is located in the upper part of th
 This is tackled by
 \begin{enumerate}
     \item Double mapping the kernel before the MMU starts.
-    \item Update pointers (e.g., stack) and JALR.\
+    \item Update pointers
+    \begin{itemize}
+        \item \texttt{sp} etc. % TODO: ra too? pc automatically
+    \end{itemize}
+    and JALR to high address space
     \item Remove the double mapped kernel.
 \end{enumerate}
 
@@ -689,22 +703,26 @@ If an application violates the permissions or tries to access an unmapped memory
 
 There are two types of page faults:
 \begin{itemize}
-    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. This results in the termination of the application.
-    \item \textbf{Soft page faults} occur when valid memory is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
+    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. Either there is no VMA of permissions are not given. This results in the termination of the application.
+    \item \textbf{Soft page faults} occur when valid memory (in VMA and permissions given) is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
 \end{itemize}
 
 \paragraph{Demand Paging}\label{page demanding}
 Applications usually ask for more heap memory than they need so the heap memory is allocated when it is actually needed.
-When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (and itself).
+When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory areas} (VMAs: virtual base and bound/size) for each process (and itself).
 \newpar{}
 Example procedure
 \begin{enumerate}
     \item Application tries to store data
           \texttt{sw t0, 0(t1)}
-    \item The MMU walks the pages and gets to an entry with the valid bit set to zero.
-    \item The kernel checks if the requested address is in the valid area (VMA) and if the permissions are given.
-    \item Then the page gets allocated.
-    \item The store instruction is re-executed.
+    \item The MMU walks the pages and gets to an entry with the valid bit set to zero. \texttt{stvec} is called.
+    \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue.
+    \item Then the page gets allocated
+    \begin{itemize}
+        \item permissions according to the VMA
+        \item page type (normal, huge etc.) according to the VMA
+    \end{itemize}
+    \item The store instruction is re-executed at \texttt{sepc}
 \end{enumerate}
 
 \newpar{}
