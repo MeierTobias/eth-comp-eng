@@ -59,7 +59,7 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
 \begin{itemize}
     \item The TLB is only valid in one virtual address space, i.e.\ the TLB needs to be flushed explicity when changing vmas!
     \item Storing larger pages, i.e.\ huge pages in the TLB improves the coverage of the TLB. This idea is guided by PSL.
-    \item Typical sizes: $\mathcal{O}(10)$ in small CPUs, $\mathcal{O}(100)$ in larger ones.
+    \item Typical sizes: $\mathcal{O}(10)$ in small CPUs, $\mathcal{O}(100)$ in larger ones.  % TODO: what does this mean? O(100)=O(10)=O(1), why would a fixed data structure not be constant in size? Do you mean that their size is in the 10s/100s?
 \end{itemize}
 
 \subsection{Data/ Instruction Cache}
@@ -92,10 +92,8 @@ In set-associative cache, a DRAM entry can go to any slot in their set. The \tex
     \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. %cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
     \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate. %cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
     \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookop time such that, on typical workloads, most accesses do not cause eviction.
-    \begin{itemize}
-        \item Has always less slot bits than direct-mapped cache.
-        \item \textit{Within} a set, LRU is commonly used on eviction.
-    \end{itemize}
+        % \item Has always less slot bits than direct-mapped cache. % For the same size of cache line this is true but also very trivial
+        % Removed comment about LRU since its duplicate. I think this should be an overview and the details are already in the subsection
 \end{itemize}
 
 \paragraph{Direct Mapped Cache}

@@ -92,7 +92,7 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
 \ptitle{Malloc}
 
 \begin{itemize}
-    \item Walk the linked list at \lstinline{malloc()} %ChkTex 36
+    \item Walk the linked list at \code{malloc()} %ChkTex 36
           \begin{itemize}
               \item \textbf{First fit}: take first free slot that is big enough
               \item \textbf{Best fit}: take slot matching the required size the best (slow: walk entire list)
@@ -104,11 +104,11 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
 \ptitle{Free}
 
 \begin{itemize}
-    \item \lstinline{free(a)}%ChkTex 36
-    \item Allocate a new \lstinline{__node_t} data structure
+    \item \code{free(a)}%ChkTex 36
+    \item Allocate a new \code{\_\_node\_t} data structure
     \item Check magic value. If it has been overwritten: out-of-bound software bug
-    \item Let \lstinline{ __node_t *next} point to previous \lstinline{head}
-    \item Make the new node the new \lstinline{head}
+    \item Let \code{ \_\_node\_t *next} point to previous \code{head}
+    \item Make the new node the new \code{head}
     \item A \textit{doubly linked list} can be used for convenient unlinking
 \end{itemize}
 
@@ -241,7 +241,7 @@ int buddy_free(struct block *block)
 
 \textbf{Remarks}
 \begin{itemize}
-    \item Both \code{block\_alloc} and \code{block\_free} trigger a max of log(\code{max\_order}) of operations. %ChkTeX 36
+    \item Both \code{block\_alloc} and \code{block\_free} trigger a max of (\code{max\_order}) of operations. %ChkTeX 36 
     \item Initialization: Call \code{block\_free} on every 4kB page (causes merging).
 \end{itemize}
 
