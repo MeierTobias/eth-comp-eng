@@ -622,8 +622,10 @@ To determine if the current page table entry points to a next page table or to a
     \item The MMU is a HW component
     \item After starting it, MMU interposes on each memory access:
     \begin{itemize}
+        \item Lookup TLB. If cache hit: done. If cache miss: continue
         \item Go to DRAM page at (phys.) address stored in \code{satp}
         \item Execute a memory walk to the physical address that corresponds to the given virtual address
+        \item Store translation in TLB
     \end{itemize}
     \item During the memory walk the MMU
     \begin{itemize}
@@ -636,7 +638,7 @@ To determine if the current page table entry points to a next page table or to a
                 \item \texttt{sstatus} stores processor's state (kernel/user)
             \end{itemize}
         \end{itemize}
-        \item Raises exceptions if validity or permissions are not given
+        \item Raises exceptions if validity or permissions are not given (page faults)
     \end{itemize}
     \item Note that the kernel executes a similar PT walk in software when setting up/manipulating PTEs
 \end{itemize}
