@@ -463,6 +463,8 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 \end{itemize}
 
 \subsubsection{Paging}
+Solves issues arising from segmentation.
+
 \begin{center}
     \includegraphics[width = \linewidth]{kernel_virt_mem.png}
 \end{center}
@@ -471,6 +473,9 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 \begin{itemize}
     \item translates the virtual page into a physical one
     \item In RISC-V, Pages have 4 KB (12 bit) granularity
+    \begin{itemize}
+        \item Reason for buddy page size
+    \end{itemize}
     \item Kernel allocates pages (buddy)
     \item CPU's MMU translates addresses using the page table
 \end{itemize}
@@ -479,7 +484,14 @@ In order to achieve this, the memory management unit (\textbf{MMU}) translates m
 \begin{itemize}
     \item stored in CPU
     \item large unused parts (virtual $>>$ physical)
+    \begin{itemize}
+        \item wastes physical memory
+    \end{itemize}
     \item simple
+    \item virtual address is index to page table
+    \begin{itemize}
+        \item virtual offset = physical offset within page
+    \end{itemize}
 \end{itemize}
 
 \ptitle{Dimensions}
