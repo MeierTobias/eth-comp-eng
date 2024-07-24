@@ -110,10 +110,10 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
     \item Check magic value. If it has been overwritten: out-of-bound software bug
     \item Allocate a new free node
     \item Insert node to the front of the free LL:
-    \begin{itemize}
-        \item \code{*next = head}
-        \item \code{head = node}
-    \end{itemize}
+          \begin{itemize}
+              \item \code{*next = head}
+              \item \code{head = node}
+          \end{itemize}
 \end{enumerate}
 A \textit{doubly linked list} can be used for convenient unlinking
 
@@ -181,9 +181,9 @@ A \textit{doubly linked list} can be used for convenient unlinking
     \item[+] Flexible (various allocation sizes, growing/shrinking)
     \item[-] Some internal fragmentation
     \item[-] External fragmentation: \textit{Fragmentation across slabs} (not optimized for full utilization): Can't move memory between slabs as they become full/empty
-        %   \begin{itemize}
-        %       \item Solution: Use page allocation to move pages between different slabs (Buddy Paging)
-        %   \end{itemize}
+          %   \begin{itemize}
+          %       \item Solution: Use page allocation to move pages between different slabs (Buddy Paging)
+          %   \end{itemize}
 \end{itemize}
 
 \subsubsection{Page Allocation: Buddy Allocator}
@@ -462,8 +462,14 @@ static struct block *__buddy_merge(struct block *block, struct block *buddy)
 
 \subsection{Virtual Memory}
 % Segmentation and x86 history left out on purpose
-With virtual memory, the users contiguous memory is spread over in physical memory to improve flexibility and external fragmentation.
+With virtual memory, the users contiguous memory is spread out in physical memory to improve flexibility and external fragmentation.
 In order to achieve this, the memory management unit (\textbf{MMU}) translates memory addresses accordingly to create the illusion of contiguous memory for the user. In addition the MMU also controls the permissions to that virtual memory space.
+
+\subsubsection{Memory Access in Jake}
+\begin{center}
+    \includegraphics[width=0.9\linewidth]{memory_access.png}
+\end{center}
+
 \subsubsection{Segmentation}
 
 \begin{itemize}
@@ -650,7 +656,7 @@ To determine if the current page table entry points to a next page table or to a
                     \end{itemize}
               \item Raises exceptions if validity or permissions are not given (page faults)
           \end{itemize}
-    \item Note that the kernel executes a similar PT walk in software when setting up/manipulating PTEs
+          % \item Note that the kernel executes a similar PT walk in software when setting up/manipulating PTEs % Clearer formulated in page fault subsection
 \end{itemize}
 
 \subsubsection{Virtual Memory Management}
@@ -707,30 +713,22 @@ This is tackled by
               \item \texttt{sp} etc. % TODO: ra too? pc automatically
           \end{itemize}
           and JALR to high address space
+    \item Change the \code{mode} bit to tur on the MMU
     \item Remove the double mapped kernel.
 \end{enumerate}
 
-\subsubsection{Page Fault}
-If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For more details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
+\subsubsection{VMAs}
+% If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For more details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
 
-There are two types of page faults:
-\begin{itemize}
-    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. Either there is no VMA of permissions are not given. This results in the termination of the application.
-    \item \textbf{Soft page faults} occur when valid memory (in VMA and permissions given) is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
-\end{itemize}
-
-\paragraph{Demand Paging and VMAs}\label{page demanding}
-Applications usually ask for more heap memory than they need so the heap memory is allocated when it is actually needed.
-When an application accesses a not allocated but valid area in the memory we get a \textbf{soft page fault}. To determine the valid areas the kernel has a list of \textbf{virtual memory areas} for each process (and itself). VMAs contain
+The kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (and itself). VMAs are managed by the MMU (\code{mmap, munmap}) and they contain
 \begin{itemize}
     \item Base VPN
     \item Size
     \item Permission flags
 \end{itemize}
-Their creation is triggered by \texttt{mmap}, removing by \texttt{munmap}.
 
 \newpar{}
-\ptitle{Benefits for Memory Regions}
+\ptitle{Benefits of Memory Regions}
 \begin{itemize}
     \item \texttt{.code}
           \begin{itemize}
@@ -744,6 +742,18 @@ Their creation is triggered by \texttt{mmap}, removing by \texttt{munmap}.
           \end{itemize}
     \item \texttt{stack}: often sparsely-used
 \end{itemize}
+
+\paragraph{Page Faults}
+The VMA is used to differentiate between \textbf{soft} and \textbf{hard page faults}:
+\begin{itemize}
+    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. Either there is no VMA of permissions are not given. This results in the termination of the application.
+    \item \textbf{Soft page faults} occur when valid memory (in VMA and permissions given) is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
+\end{itemize}
+
+
+
+\paragraph{Demand Paging}\label{page demanding}
+In demand paging, memory is only allocated on demand by using \textbf{soft page faults} at the first memory usage.
 
 \newpar{}
 \ptitle{Example procedure}
@@ -789,21 +799,19 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
 \ptitle{Copy-On-Write (COW)}
 
 \begin{itemize}
-    \item \texttt{.bss} variables have same value for all processses i.e.\ zero
-    \item map ALL \texttt{.bss} sections to the same physical zero-page
-    \item writing is enabled by:
-          \begin{itemize}
-              \item kernel marks \textbf{all} virtual pages pointing to the zero-page as \textit{read-only first}
-              \item triggers a soft PF if one process tries to write
-              \item handle page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). Then resume with valid access.
-          \end{itemize}
+    \item map all \texttt{.bss} sections to the same physical zero-page (read-only)
+    \item upon first write access:
+          \begin{enumerate}
+              \item soft page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). 
+              \item Write with valid access.
+          \end{enumerate}
 \end{itemize}
 
 \paragraph{Page Swapping}
 Idea: move pages to SSD if all RAM is used
 \begin{itemize}
     \item unset present bit in the PTE. This triggers a PF on access
-    \item store SSD address in the PTE to find page later
+    \item store physical address on SSD in the PTE to find page later
 \end{itemize}
 
 \newpar{}
@@ -812,7 +820,7 @@ Idea: move pages to SSD if all RAM is used
 On a (soft) PF the kernel
 \begin{itemize}
     \item consults VMA to check whether it is indeed a soft PF
-    \item checks PTE to ensure page is indeed swapped out
+    \item checks PTE to find that page is indeed swapped out
     \item swaps out another victim page
     \item allocates the new free page, update PTE
 \end{itemize}
