@@ -1,10 +1,10 @@
 \section{Cache}
-Cache serves as an intermediate memory buffer between the CPU and DRAM. It is faster than DRAM but much smaller in size.
+Cache serves as an intermediate memory buffer between the CPU and DRAM. It is faster than DRAM ($\sim$3-50 ns vs.\ $\sim$100 ns) but much smaller in size.
 In general, cache can save the same type of memory as is stored in DRAM.
 \subsection{Principles}
 \ptitle{Hits and Misses}
 
-If the required memeory is found in cache the memory can be taken from there (\textbf{cache hit}, fast), else the memroy has to be loaded from DRAM (\textbf{cache miss}, slow).
+If the required memory is found in cache the memory can be taken from there (\textbf{cache hit}, fast), else the memory has to be loaded from DRAM (\textbf{cache miss}, slow).
 
 \newpar{}
 \ptitle{Locality}
@@ -24,9 +24,9 @@ The principles of locality are used to increase the cache hit rate:
 \end{itemize}
 
 \subsection{Page Translation}
-To decrease the computational cost arising from page table walks, a \textit{transitional lookaside buffer} can be used to store frequently accessed page table entries.
+To decrease the computational cost arising from page table walks, a \textit{translation lookaside buffer} can be used to store frequently accessed page table entries.
 
-\subsubsection{Transitional Lookaside Buffer (TLB)}
+\subsubsection{Translation Lookaside Buffer (TLB)}
 \begin{itemize}
     \item TLB hit $\to$ return TLB entry (physical address)
     \item TLB miss $\to$ page table walk $\to$ save found physical page to TLB
@@ -52,21 +52,24 @@ To decrease the computational cost arising from page table walks, a \textit{tran
 \newpar{}
 \ptitle{Eviction}
 
-If the TLB is full entries can be evicted using the \textit{least recently used} (LRU) strategy. This strategy complies tih PTL.
+If the TLB is full entries can be evicted using the \textit{least recently used} (LRU) strategy. This strategy complies with PTL.
 
 \newpar{}
-\textbf{Remark}
+\textbf{Remarks}
 \begin{itemize}
     \item The TLB is only valid in one virtual address space, i.e.\ the TLB needs to be flushed explicity when changing vmas!
+    \item Additionally, flush TLB in any cases where PT modification could lead to inconsistencies.
+    \item Located inside MMU, managed by MMU
     \item Storing larger pages, i.e.\ huge pages in the TLB improves the coverage of the TLB. This idea is guided by PSL.
+    \item Typical sizes: $\mathcal{O}(10)$ in small CPUs, $\mathcal{O}(100)$ in larger ones.  % TODO: what does this mean? O(100)=O(10)=O(1), why would a fixed data structure not be constant in size? Do you mean that their size is in the 10s/100s?
 \end{itemize}
 
 \subsection{Data/ Instruction Cache}
 
-\subsection{Structure}
+\subsubsection{Structure}
 \ptitle{Cache Line Size}
 
-In DDR4 a cache line has the size
+In DDR4 a cache line has due to \textit{read/write bursts} the size
 \noindent\begin{equation*}
     \underbrace{8}_{\textsf{pipelines}}\cdot \underbrace{8~\mathrm{byte}}_{\textsf{request size}} = 64 ~\mathrm{byte}
 \end{equation*}
@@ -77,27 +80,30 @@ In DDR4 a cache line has the size
 \end{itemize}
 
 \newpar{}
-\textbf{Remark}
+\textbf{Remarks}
 \begin{itemize}
-    \item Cache is accesed with physical addresses to avoid flushing the cache when switching vmas
+    \item In contrast to TLB cache, data/instruction cache is accessed with \textbf{physical} addresses to avoid flushing the cache when switching vmas.
+    \item In the case of TLB, the data remain in DRAM but the address translation is saved in cache. For data/instruction cache the actual data are cached using their physical addresses.
 \end{itemize}
 
-\subsection{Set-Associative Cache}
-In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g. 4-way 4-set associative).
+\subsubsection{Set-Associative Cache}
+In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g.\ 4-way 4-set associative).
 
-\ptitle{Properties}
+\ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
-    \item on typical workloads, most accesses do not cause eviction.
+    \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. %cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
+    \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate. %cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
+    \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookop time such that, on typical workloads, most accesses do not cause eviction.
+        % \item Has always less slot bits than direct-mapped cache. % For the same size of cache line this is true but also very trivial
+        % Removed comment about LRU since its duplicate. I think this should be an overview and the details are already in the subsection
 \end{itemize}
 
-\ptitle{Extreme cases}
-\begin{itemize}
-    \item \textbf{Direct-mapped}: 1-way n-set associative.
-    \item \textbf{Fully-associative}: n-way 1-set associative.
-\end{itemize}
-
-\subsubsection{Direct Mapped Cache}
+\paragraph{Direct Mapped Cache}
 In direct-mapped cache, every slot of the cache can only map to one place in DRAM.
+\begin{itemize}
+    \item Tag is the ``row'' in DRAM, ``slot'' the column.
+    \item The location in cache is solely determined by the slot. However, tag must be stored also to have a full reference to DRAM.
+\end{itemize}
 \newpar{}
 The 64-bit cache line consists of
 \begin{itemize}
@@ -106,18 +112,23 @@ The 64-bit cache line consists of
     \item \textbf{Tag} (22 bits: \fncode{tt..tt})
 \end{itemize}
 \includegraphics[width = \linewidth]{Cache.png}
-
+% TODO: The "cash miss" entry in the picture has tag 1 instead of >>1
 \newpar{}
 \ptitle{Properties}
 \begin{itemize}
     \item[+] simple design
-    \item[+] $\mathcal{O}(1)$
-    \item[-] Sparse population
-    \item[-] violating PTL
+    \item[+] $\mathcal{O}(1)$: check one tag to detect hit/miss
+    \item[-] sparse population
+    \item[-] violating PTL: a cache line can be evicted even though there is space left in the cache.
 \end{itemize}
 
-\subsubsection{Fully-Assiociative Cache}
-With fully-assiociative cache, every line from DRAM can go to every cache entry.
+\paragraph{Fully-Assiociative Cache}
+With fully-assiociative cache, every line from DRAM can go to every cache entry. 
+\begin{itemize}
+    \item There are no slot bits anymore.
+    \item Very small caches (e.g.\ small TLBs) use this approach.
+    \item Use LRU policy on eviction (PTL) as we ignore spatial context.
+\end{itemize}
 
 \newpar{}
 The 64-bit cache line consists of
@@ -126,21 +137,27 @@ The 64-bit cache line consists of
     \item \textbf{Tag} (26 bits: \fncode{tt..tt})
 \end{itemize}
 
+\newpar{}
 \ptitle{Properties}
 \begin{itemize}
     \item[+] Flexible
     \item[+] Dense population
+    \item[-] $\mathcal{O}(n)$ for lookup
     \item[-] Many tag bits
     \item[-] Search through all tags
 \end{itemize}
 
-\subsection{Loading vs. Storing}
+\subsubsection{Loading vs. Storing}
 \ptitle{Loading}
 \begin{itemize}
     \item If available, the memory can be read directly from cache
+    \begin{itemize}
+        \item Otherways, load from DRAM and evict if necessary
+    \end{itemize}
     \item Cached loads result in \textbf{clean} cache lines
 \end{itemize}
 
+\newpar{}
 \ptitle{Storing}
 \begin{itemize}
     \item Memory is first stored in cache alone, resulting in inconsistencies between cache and DRAM (\textbf{dirty} cache lines)
@@ -149,9 +166,9 @@ The 64-bit cache line consists of
               \item \textbf{clean} cache lines can be discarded
               \item \textbf{dirty} cache lines need to be written to DRAM before discarding:
                     \begin{itemize}
-                        \item \textbf{Write-back} policy:\newline write dirty cache line at \textbf{eviction time}
+                        \item \textbf{write-back} policy:\newline write dirty cache line at \textbf{eviction time}
                         \item \textbf{write-through} policy:\newline write dirty cache line at \textbf{store time}
-                        \item \textbf{Write-background} policy:\newline write dirty cache line in the \textbf{background}
+                        \item \textbf{write-background} policy:\newline write dirty cache line in the \textbf{background}
                     \end{itemize}
           \end{itemize}
 \end{itemize}

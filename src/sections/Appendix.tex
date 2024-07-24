@@ -112,15 +112,13 @@ In the this table \texttt{<p>} stands for \texttt{<path>}, \texttt{s} for \textt
 \renewcommand{\arraystretch}{1.3}
 \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{3pt}
 \begin{center}
-    \begin{tabularx}{0.78\linewidth}{@{}cc|cccccc@{}} %ChkTeX 44
-        \toprule
-        A & B & AND & NAND & OR & NOR & XOR & XNOR \\
-        \midrule
-        0 & 0 & 0   & 1    & 0  & 1   & 0   & 1    \\
-        0 & 1 & 0   & 1    & 1  & 0   & 1   & 0    \\
-        1 & 0 & 0   & 1    & 1  & 0   & 1   & 0    \\
-        1 & 1 & 1   & 0    & 1  & 0   & 0   & 1    \\
-        \bottomrule
+    \begin{tabularx}{0.78\linewidth}{@{}ccccccccc@{}}
+        A & B && AND & NAND & OR & NOR & XOR & XNOR \\
+        \cmidrule{1-2}\cmidrule{4-9}
+        0 & 0 && 0   & 1    & 0  & 1   & 0   & 1    \\
+        0 & 1 && 0   & 1    & 1  & 0   & 1   & 0    \\
+        1 & 0 && 0   & 1    & 1  & 0   & 1   & 0    \\
+        1 & 1 && 1   & 0    & 1  & 0   & 0   & 1    \\
     \end{tabularx}
 \end{center}
 

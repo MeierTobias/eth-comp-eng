@@ -1,13 +1,13 @@
 \section{RISC-V ISA}
-rtfm!
+% rtfm!
 
-\url{https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf}
+% \url{https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf}
 
-\newpar{}
+% \newpar{}
 
-The following tables are from the \textbf{RISC-V Reference Card} by \textit{James Zhu}, available on Github (with minor formatting changes).
+% The following tables are from the \textbf{RISC-V Reference Card} by \textit{James Zhu}, available on Github (with minor formatting changes and comments in the first table).
 
-\url{https://github.com/jameslzhu/riscv-card}
+% \url{https://github.com/jameslzhu/riscv-card}
 
 
 
@@ -26,7 +26,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         \instbitrange{19}{15}                                         &
         \instbitrange{14}{12}                                         &
         \instbitrange{11}{7}                                          &
-        \instbitrange{6}{0}                                           & \textbf{fmt} \\
+        \instbitrange{6}{0}                                           & \textbf{fmt}                                       \\
         \cline{2-11}
 
                                                                       &
@@ -35,7 +35,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & R-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & R-type (arithmetic)                                \\
         \cline{2-11}
 
                                                                       &
@@ -43,7 +43,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & I-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & I-type (loads \& immediate arithmetic)             \\
         \cline{2-11}
 
                                                                       &
@@ -52,7 +52,7 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{imm[4:0]}                                 &
-        \multicolumn{1}{c|}{opcode}                                   & S-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & S-type (stores)                                    \\
         \cline{2-11}
 
                                                                       &
@@ -61,101 +61,109 @@ The following tables are from the \textbf{RISC-V Reference Card} by \textit{Jame
         \multicolumn{1}{c|}{rs1}                                      &
         \multicolumn{1}{c|}{funct3}                                   &
         \multicolumn{1}{c|}{imm[4:1$\vert$11]}                        &
-        \multicolumn{1}{c|}{opcode}                                   & B-type       \\
-        \cline{2-11}
-
-                                                                      &
-        \multicolumn{8}{|c|}{imm[31:12]}                              &
-        \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & U-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & B-type (conditional branches, also called SB-type) \\
         \cline{2-11}
 
                                                                       &
         \multicolumn{8}{|c|}{imm[20$\vert$10:1$\vert$11$\vert$19:12]} &
         \multicolumn{1}{c|}{rd}                                       &
-        \multicolumn{1}{c|}{opcode}                                   & J-type       \\
+        \multicolumn{1}{c|}{opcode}                                   & J-type (unconditional jumps, also called UJ-type)  \\
+        \cline{2-11}
+
+                                                                      &
+        \multicolumn{8}{|c|}{imm[31:12]}                              &
+        \multicolumn{1}{c|}{rd}                                       &
+        \multicolumn{1}{c|}{opcode}                                   & U-type (upper immediate format)                    \\
         \cline{2-11}
     \end{tabular}
+
 \end{center}
+
+\newpar{}
+\ptitle{Remarks}
+\begin{itemize}
+    \item \texttt{fmt} is defined by the \texttt{opcode} bits
+    \item \texttt{funct} bits specify the exact instruction
+\end{itemize}
 
 \subsection{RV32I Base Integer Instructions}\label{riscv_isa}
 
 \begin{footnotesize}
     \renewcommand{\arraystretch}{1.2}
-    \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{2pt}
+    \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
     \begin{tabularx}{\linewidth}{@{}T  l  c  T  T  T  T  T  p{0.08\linewidth}@{}}
-        \toprule
-        \multicolumn{9}{c}{Base Integer Instructions: RV32I}                                                                                                       \\
-        \toprule
-        \rm Inst & Name                    & fmt & \rm Opcode & \rm funct3 & \rm funct7     & \rm Description (C)              & \rm Syntax         & \rm Note     \\
-        \midrule
-        add      & ADD                     & R   & 0110011    & 0x0        & 0x00           & rd = rs1 + rs2                   & add rd, rs1, rs2   &              \\
-        sub      & SUB                     & R   & 0110011    & 0x0        & 0x20           & rd = rs1 - rs2                   & sub rd, rs1, rs2   &              \\
-        xor      & XOR                     & R   & 0110011    & 0x4        & 0x00           & rd = rs1 \^{} rs2                & xor rd, rs1, rs2   &              \\
-        or       & OR                      & R   & 0110011    & 0x6        & 0x00           & rd = rs1 | rs2                   & or rd, rs1, rs2    &              \\
-        and      & AND                     & R   & 0110011    & 0x7        & 0x00           & rd = rs1 \& rs2                  & and rd, rs1, rs2   &              \\
-        sll      & Shift Left Logical      & R   & 0110011    & 0x1        & 0x00           & rd = rs1 << rs2           & sll rd, rs1, rs2   &              \\
-        srl      & Shift Right Logical     & R   & 0110011    & 0x5        & 0x00           & rd = rs1 >> rs2           & srl rd, rs1, rs2   &              \\
-        sra      & Shift Right Arith*      & R   & 0110011    & 0x5        & 0x20           & rd = rs1 >> rs2           & sra rd, rs1, rs2   & msb-extends  \\
-        slt      & Set Less Than           & R   & 0110011    & 0x2        & 0x00           & rd = (rs1 < rs2)?1:0             & slt rd, rs1, rs2   &              \\
-        sltu     & Set Less Than (U)       & R   & 0110011    & 0x3        & 0x00           & rd = (rs1 < rs2)?1:0             & sltu rd, rs1, rs2  & zero-extends \\
-        \midrule
-        addi     & ADD Immediate           & I   & 0010011    & 0x0        &                & rd = rs1 + imm                   & addi rd, rs1, imm  &              \\
-        xori     & XOR Immediate           & I   & 0010011    & 0x4        &                & rd = rs1 \^{} imm                & xori rd, rs1, imm  &              \\
-        ori      & OR Immediate            & I   & 0010011    & 0x6        &                & rd = rs1 | imm                   & ori rd, rs1, imm   &              \\
-        andi     & AND Immediate           & I   & 0010011    & 0x7        &                & rd = rs1 \& imm                  & andi rd, rs1, imm  &              \\
-        slli     & Shift Left Logical Imm  & I   & 0010011    & 0x1        & imm[5:11]=0x00 & rd = rs1 << imm[0:4]      & slli rd, rs1, imm  & zero-extend  \\
-        srli     & Shift Right Logical Imm & I   & 0010011    & 0x5        & imm[5:11]=0x00 & rd = rs1 >> imm[0:4]      & srli rd, rs1, imm  & zero-extend  \\
-        srai     & Shift Right Arith Imm   & I   & 0010011    & 0x5        & imm[5:11]=0x20 & rd = rs1 >> imm[0:4]      & srai rd, rs1, imm  & msb-extends  \\
-        slti     & Set Less Than Imm       & I   & 0010011    & 0x2        &                & rd = (rs1 < imm)?1:0             & slti rd, rs1, imm  &              \\
-        sltiu    & Set Less Than Imm (U)   & I   & 0010011    & 0x3        &                & rd = (rs1 < imm)?1:0             & sltiu rd, rs1, imm & zero-extends \\
-        \midrule
-        lb       & Load Byte               & I   & 0000011    & 0x0        &                & rd = M[rs1+imm][0:7]             & lb rd, imm(rs1)    &              \\
-        lh       & Load Half               & I   & 0000011    & 0x1        &                & rd = M[rs1+imm][0:15]            & lh rd, imm(rs1)    &              \\
-        lw       & Load Word               & I   & 0000011    & 0x2        &                & rd = M[rs1+imm][0:31]            & lw rd, imm(rs1)    &              \\
-        lbu      & Load Byte (U)           & I   & 0000011    & 0x4        &                & rd = M[rs1+imm][0:7]             & lbu rd, imm(rs1)   & zero-extends \\
-        lhu      & Load Half (U)           & I   & 0000011    & 0x5        &                & rd = M[rs1+imm][0:15]            & lhu rd, imm(rs1)   & zero-extends \\
-        \midrule
-        sb       & Store Byte              & S   & 0100011    & 0x0        &                & M[rs1+imm][0:7]  = rs2[0:7]      & sb rs2, imm(rs1)   &              \\
-        sh       & Store Half              & S   & 0100011    & 0x1        &                & M[rs1+imm][0:15] = rs2[0:15]     & sh rs2, imm(rs1)   &              \\
-        sw       & Store Word              & S   & 0100011    & 0x2        &                & M[rs1+imm][0:31] = rs2[0:31]     & sw rs2, imm(rs1)   &              \\
-        \midrule
-        beq      & Branch ==               & B   & 1100011    & 0x0        &                & if(rs1 == rs2) PC += imm         & beq rs1, rs2, imm  &              \\
-        bne      & Branch !=               & B   & 1100011    & 0x1        &                & if(rs1 != rs2) PC += imm         & bne rs1, rs2, imm  &              \\ %ChkTeX 26
-        blt      & Branch <                & B   & 1100011    & 0x4        &                & if(rs1 < \enspace rs2) PC += imm & blt rs1, rs2, imm  &              \\ %ChkTeX 1
-        bge      & Branch $\geq$           & B   & 1100011    & 0x5        &                & if(rs1 >= rs2) PC += imm         & bge rs1, rs2, imm  &              \\
-        bltu     & Branch < (U)            & B   & 1100011    & 0x6        &                & if(rs1 < \enspace rs2) PC += imm & bltu rs1, rs2, imm & zero-extends \\ %ChkTeX 1
-        bgeu     & Branch $\geq$ (U)       & B   & 1100011    & 0x7        &                & if(rs1 >= rs2) PC += imm         & bgeu rs1, rs2, imm & zero-extends \\
-        \midrule
-        jal      & Jump And Link           & J   & 1101111    &            &                & rd = PC+4; PC += imm             & jal  rd, imm       & \fncode{imm} $\leftarrow$ label              \\
-        jalr     & Jump And Link Reg       & I   & 1100111    & 0x0        &                & rd = PC+4; PC = rs1 + imm        & jalr rd, imm(rs1)  &              \\
-        \midrule
-        lui      & Load Upper Imm          & U   & 0110111    &            &                & rd = imm << 12            & lui rd, imm        &              \\
-        auipc    & Add Upper Imm to PC     & U   & 0010111    &            &                & rd = PC + (imm << 12)     & auipc rd, imm      &              \\
-        \midrule
-        ecall    & Environment Call        & I   & 1110011    & 0x0        & imm=0x0        & Transfer control to OS           &                    &              \\
-        ebreak   & Environment Break       & I   & 1110011    & 0x0        & imm=0x1        & Transfer control to debugger     &                    &              \\
-        \midrule
-        fence    & Synch thread            & I   &            &            &                &                                  &                    &              \\
-        fence.i  & Synch instr \& data     & I   &            &            &                &                                  &                    &              \\
-        \midrule
-        csrrw    & Read/Write              & I   &            &            &                &                                  &                    &              \\
-        csrrs    & Read \& Set Bit         & I   &            &            &                &                                  &                    &              \\
-        csrrc    & Read \& Clear Bit       & I   &            &            &                &                                  &                    &              \\
-        csrrwi   & Read/Write Imm          & I   &            &            &                &                                  &                    &              \\
-        csrrsi   & Read \& Set Bit Imm     & I   &            &            &                &                                  &                    &              \\
-        csrrci   & Read \& Clear Bit Imm   & I   &            &            &                &                                  &                    &              \\
-        \toprule
-        \multicolumn{9}{c}{Optional Multiply-Divide Insctruction Extension: RVM}                                                                                   \\
-        \toprule
-        mul      & Multiply                & R   &            &            &                & rd = rs1 * rs2                   & mul rd, rs1, rs2   &              \\
-        mulh     & Multiply High           & R   &            &            &                &                                  &                    &              \\
-        mulhsu   & Multiply High Sign/Uns  & R   &            &            &                &                                  &                    &              \\
-        mulHU    & Multiply High Uns       & R   &            &            &                &                                  &                    &              \\
-        div      & Divide                  & R   &            &            &                &                                  &                    &              \\
-        divu     & Divide Unsigned         & R   &            &            &                &                                  &                    &              \\
-        rem      & Remainder               & R   &            &            &                &                                  &                    &              \\
-        remu     & Remainder Unsigned      & R   &            &            &                &                                  &                    &              \\
+        \multicolumn{9}{c}{\textbf{Base Integer Instructions: RV32I}}                                                                                                                                                \\
+        \cmidrule{1-9}
+        \rm Inst & Name                    & fmt                 & \rm Opcode                & \rm funct3 & \rm funct7     & \rm Description (C)              & \rm Syntax         & \rm Note                        \\
+        \cmidrule{1-9}
+        add      & ADD                     & \multirow{10}{*}{R} & \multirow{10}{*}{0110011} & 0x0        & 0x00           & rd = rs1 + rs2                   & add rd, rs1, rs2   &                                 \\
+        sub      & SUB                     &                     &                           & 0x0        & 0x20           & rd = rs1 - rs2                   & sub rd, rs1, rs2   &                                 \\
+        xor      & XOR                     &                     &                           & 0x4        & 0x00           & rd = rs1 \^{} rs2                & xor rd, rs1, rs2   &                                 \\
+        or       & OR                      &                     &                           & 0x6        & 0x00           & rd = rs1 | rs2                   & or rd, rs1, rs2    &                                 \\
+        and      & AND                     &                     &                           & 0x7        & 0x00           & rd = rs1 \& rs2                  & and rd, rs1, rs2   &                                 \\
+        sll      & Shift Left Logical      &                     &                           & 0x1        & 0x00           & rd = rs1 << rs2                  & sll rd, rs1, rs2   &                                 \\
+        srl      & Shift Right Logical     &                     &                           & 0x5        & 0x00           & rd = rs1 >> rs2                  & srl rd, rs1, rs2   &                                 \\
+        sra      & Shift Right Arith*      &                     &                           & 0x5        & 0x20           & rd = rs1 >> rs2                  & sra rd, rs1, rs2   & msb-extends                     \\
+        slt      & Set Less Than           &                     &                           & 0x2        & 0x00           & rd = (rs1 < rs2)?1:0             & slt rd, rs1, rs2   &                                 \\
+        sltu     & Set Less Than (U)       &                     &                           & 0x3        & 0x00           & rd = (rs1 < rs2)?1:0             & sltu rd, rs1, rs2  & zero-extends                    \\
+        \cmidrule{1-9}
+        addi     & ADD Immediate           & \multirow{9}{*}{I}  & \multirow{9}{*}{0010011}  & 0x0        &                & rd = rs1 + imm                   & addi rd, rs1, imm  &                                 \\
+        xori     & XOR Immediate           &                     &                           & 0x4        &                & rd = rs1 \^{} imm                & xori rd, rs1, imm  &                                 \\
+        ori      & OR Immediate            &                     &                           & 0x6        &                & rd = rs1 | imm                   & ori rd, rs1, imm   &                                 \\
+        andi     & AND Immediate           &                     &                           & 0x7        &                & rd = rs1 \& imm                  & andi rd, rs1, imm  &                                 \\
+        slli     & Shift Left Logical Imm  &                     &                           & 0x1        & imm[5:11]=0x00 & rd = rs1 << imm[0:4]             & slli rd, rs1, imm  & zero-extend                     \\
+        srli     & Shift Right Logical Imm &                     &                           & 0x5        & imm[5:11]=0x00 & rd = rs1 >> imm[0:4]             & srli rd, rs1, imm  & zero-extend                     \\
+        srai     & Shift Right Arith Imm   &                     &                           & 0x5        & imm[5:11]=0x20 & rd = rs1 >> imm[0:4]             & srai rd, rs1, imm  & msb-extends                     \\
+        slti     & Set Less Than Imm       &                     &                           & 0x2        &                & rd = (rs1 < imm)?1:0             & slti rd, rs1, imm  &                                 \\
+        sltiu    & Set Less Than Imm (U)   &                     &                           & 0x3        &                & rd = (rs1 < imm)?1:0             & sltiu rd, rs1, imm & zero-extends                    \\
+        \cmidrule{1-9}
+        lb       & Load Byte               & \multirow{5}{*}{I}  & \multirow{5}{*}{0000011}  & 0x0        &                & rd = M[rs1+imm][0:7]             & lb rd, imm(rs1)    &                                 \\
+        lh       & Load Half               &                     &                           & 0x1        &                & rd = M[rs1+imm][0:15]            & lh rd, imm(rs1)    &                                 \\
+        lw       & Load Word               &                     &                           & 0x2        &                & rd = M[rs1+imm][0:31]            & lw rd, imm(rs1)    &                                 \\
+        lbu      & Load Byte (U)           &                     &                           & 0x4        &                & rd = M[rs1+imm][0:7]             & lbu rd, imm(rs1)   & zero-extends                    \\
+        lhu      & Load Half (U)           &                     &                           & 0x5        &                & rd = M[rs1+imm][0:15]            & lhu rd, imm(rs1)   & zero-extends                    \\
+        \cmidrule{1-9}
+        sb       & Store Byte              & \multirow{3}{*}{S}  & \multirow{3}{*}{0100011}  & 0x0        &                & M[rs1+imm][0:7]  = rs2[0:7]      & sb rs2, imm(rs1)   &                                 \\
+        sh       & Store Half              &                     &                           & 0x1        &                & M[rs1+imm][0:15] = rs2[0:15]     & sh rs2, imm(rs1)   &                                 \\
+        sw       & Store Word              &                     &                           & 0x2        &                & M[rs1+imm][0:31] = rs2[0:31]     & sw rs2, imm(rs1)   &                                 \\
+        \cmidrule{1-9}
+        beq      & Branch ==               & \multirow{6}{*}{B}  & \multirow{6}{*}{1100011}  & 0x0        &                & if(rs1 == rs2) PC += imm         & beq rs1, rs2, imm  &                                 \\
+        bne      & Branch !=               &                     &                           & 0x1        &                & if(rs1 != rs2) PC += imm         & bne rs1, rs2, imm  &                                 \\ %ChkTeX 26
+        blt      & Branch <                &                     &                           & 0x4        &                & if(rs1 < \enspace rs2) PC += imm & blt rs1, rs2, imm  &                                 \\ %ChkTeX 1
+        bge      & Branch $\geq$           &                     &                           & 0x5        &                & if(rs1 >= rs2) PC += imm         & bge rs1, rs2, imm  &                                 \\
+        bltu     & Branch < (U)            &                     &                           & 0x6        &                & if(rs1 < \enspace rs2) PC += imm & bltu rs1, rs2, imm & zero-extends                    \\ %ChkTeX 1
+        bgeu     & Branch $\geq$ (U)       &                     &                           & 0x7        &                & if(rs1 >= rs2) PC += imm         & bgeu rs1, rs2, imm & zero-extends                    \\
+        \cmidrule{1-9}
+        jal      & Jump And Link           & J                   & 1101111                   &            &                & rd = PC+4; PC += imm             & jal  rd, imm       & \fncode{imm} $\leftarrow$ label \\
+        jalr     & Jump And Link Reg       & I                   & 1100111                   & 0x0        &                & rd = PC+4; PC = rs1 + imm        & jalr rd, imm(rs1)  &                                 \\
+        \cmidrule{1-9}
+        lui      & Load Upper Imm          & \multirow{2}{*}{U}  & \multirow{2}{*}{0010111}  &            &                & rd = imm << 12                   & lui rd, imm        &                                 \\
+        auipc    & Add Upper Imm to PC     &                     &                           &            &                & rd = PC + (imm << 12)            & auipc rd, imm      &                                 \\
+        \cmidrule{1-9}
+        ecall    & Environment Call        & \multirow{2}{*}{I}  & \multirow{2}{*}{1110011}  & 0x0        & imm=0x0        & Transfer control to OS           &                    &                                 \\
+        ebreak   & Environment Break       &                     &                           & 0x0        & imm=0x1        & Transfer control to debugger     &                    &                                 \\
+        \cmidrule{1-9}
+        fence    & Synch thread            & \multirow{2}{*}{I}  &                           &            &                &                                  &                    &                                 \\
+        fence.i  & Synch instr \& data     &                     &                           &            &                &                                  &                    &                                 \\
+        \cmidrule{1-9}
+        csrrw    & Read/Write              & \multirow{6}{*}{I}  &                           &            &                &                                  &                    &                                 \\
+        csrrs    & Read \& Set Bit         &                     &                           &            &                &                                  &                    &                                 \\
+        csrrc    & Read \& Clear Bit       &                     &                           &            &                &                                  &                    &                                 \\
+        csrrwi   & Read/Write Imm          &                     &                           &            &                &                                  &                    &                                 \\
+        csrrsi   & Read \& Set Bit Imm     &                     &                           &            &                &                                  &                    &                                 \\
+        csrrci   & Read \& Clear Bit Imm   &                     &                           &            &                &                                  &                    &                                 \\
+
+        \\[.5em]
+        \multicolumn{9}{c}{\textbf{Optional Multiply-Divide Insctruction Extension: RVM}}                                                                                                                            \\
+        \cmidrule{1-9}
+        mul      & Multiply                & \multirow{8}{*}{R}  &                           &            &                & rd = rs1 * rs2                   & mul rd, rs1, rs2   &                                 \\
+        mulh     & Multiply High           &                     &                           &            &                &                                  &                    &                                 \\
+        mulhsu   & Multiply High Sign/Uns  &                     &                           &            &                &                                  &                    &                                 \\
+        mulHU    & Multiply High Uns       &                     &                           &            &                &                                  &                    &                                 \\
+        div      & Divide                  &                     &                           &            &                &                                  &                    &                                 \\
+        divu     & Divide Unsigned         &                     &                           &            &                &                                  &                    &                                 \\
+        rem      & Remainder               &                     &                           &            &                &                                  &                    &                                 \\
+        remu     & Remainder Unsigned      &                     &                           &            &                &                                  &                    &                                 \\
     \end{tabularx}
     \renewcommand{\arraystretch}{1}
     \setlength{\tabcolsep}{\oldtabcolsep}
