@@ -122,20 +122,20 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
 \paragraph[Bitmap-Based Allocations]{Out-Of-Band Metadata:\newline Bitmap-Based Allocations}
 \begin{itemize}
     \item Every bit can tell whether $N$ bytes of the heap are free
-    \begin{itemize}
-        \item Can be more wasteful than LL metadata: inflexible block size
-        \item Internal fragmentation    % TODO: In the book it says that variable-size allocations in bitmap allocators cause internal fragmentation. But isn't there also external fragmentation in bitmap allocators?
-    \end{itemize}
+          \begin{itemize}
+              \item Can be more wasteful than LL metadata: inflexible block size
+              \item Internal fragmentation    % TODO: In the book it says that variable-size allocations in bitmap allocators cause internal fragmentation. But isn't there also external fragmentation in bitmap allocators?
+          \end{itemize}
     \item One needs \textbf{additional} data to keep track of the total allocation sizes (as we only know status of our $N$ byte units)
     \item \code{malloc()} scans the bitmap for free space %ChkTex 36
-    \begin{itemize}
-        \item Update allocation size in additional metadata
-    \end{itemize}
+          \begin{itemize}
+              \item Update allocation size in additional metadata
+          \end{itemize}
     \item \code{free()} flips the right bits in the bitmap to zero %ChkTex 36
-    \begin{itemize}
-        \item Get size to free from additional metadata
-        \item Coalescing comes for free
-    \end{itemize}
+          \begin{itemize}
+              \item Get size to free from additional metadata
+              \item Coalescing comes for free
+          \end{itemize}
 \end{itemize}
 
 \ptitle{Fragmentation vs. Performance}
@@ -155,15 +155,15 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
     \item Each slab contains e.g. 12/16/256-byte entries
     \item Applications' allocators ask kernel for memory
     \item Built \textit{on top} of low-level allocator:
-    \begin{itemize}
-        \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
-        \item Slab allocator for small memory requests within pages
-    \end{itemize}
+          \begin{itemize}
+              \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
+              \item Slab allocator for small memory requests within pages
+          \end{itemize}
     \item Implementation:
-    \begin{itemize}
-        \item LL: No coalescing, fast malloc but extra metadata
-        \item Bitmap: Single bit metadata but slower malloc due to scanning
-    \end{itemize}
+          \begin{itemize}
+              \item LL: No coalescing, fast malloc but extra metadata
+              \item Bitmap: Single bit metadata but slower malloc due to scanning
+          \end{itemize}
 \end{itemize}
 
 \ptitle{Pros and Cons}
@@ -171,18 +171,18 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
     \item[+] Flexible (various allocation sizes, growing/shrinking)
     \item[-] Some internal fragmentation
     \item[-] External fragmentation: \textit{Fragmentation across slabs} (not optimized for full utilization): Can't move memory between slabs as they become full/empty
-    \begin{itemize}
-        \item Solution: Use page allocation to move pages between different slabs
-    \end{itemize}
+          \begin{itemize}
+              \item Solution: Use page allocation to move pages between different slabs
+          \end{itemize}
 \end{itemize}
 \paragraph{Page Allocation: Buddy Allocator}
 Page Allocation optimizes for \textbf{full utilization}.
 \begin{itemize}
     \item A page is a \textbf{contiguous area of memory} aligned to the page size (4 KB)
     \item Blocks can have a size that scales with power-of-two wrt.\ the page size, this power is also called the \textbf{order}.
-    \begin{itemize}
-        \item Code, stack, heap are at least 1 page each.
-    \end{itemize}
+          \begin{itemize}
+              \item Code, stack, heap are at least 1 page each.
+          \end{itemize}
     \item Each page has a \textit{buddy} with the same size.
           \begin{itemize}
               \item If a page is split, a new page and a buddy with order - 1 are generated.
@@ -269,9 +269,9 @@ static struct block *buddy_free_lists[BUDDY_MAX_ORDER + 1];
 \begin{itemize}
     \item Static heap size assumed in Jake: \texttt{buddy\_blocks} in \texttt{.bss}
     \item Static assumption not used in general OS (variable heap size per system)
-    \begin{itemize}
-        \item Use bootmem allocator
-    \end{itemize}
+          \begin{itemize}
+              \item Use bootmem allocator
+          \end{itemize}
     \item \texttt{buddy\_free\_lists} to avoid bitmap scans: cheap malloc
 \end{itemize}
 
@@ -313,7 +313,7 @@ static void buddy_push(struct block *block, unsigned order)
 \newpar{}
 \ptitle{Pop}
 
-Pop to the front of \code{buddy\_free\_lists}
+Pop from the front of \code{buddy\_free\_lists}
 \begin{lstlisting}[style=bright_C++]
 static struct block *buddy_pop(unsigned order)
 {
@@ -322,13 +322,13 @@ static struct block *buddy_pop(unsigned order)
     struct block *block = buddy_free_lists[order];
 
     /* update list and pop front of linked list */
-	if (block->next != NULL) {
-		buddy_free_lists[order] = block->next;
-		block->next = NULL;
-	} else {
-		buddy_free_lists[order] = NULL;
-	}
-	block->refcnt++;
+    if (block->next != NULL) {
+        buddy_free_lists[order] = block->next;
+        block->next = NULL;
+    } else {
+        buddy_free_lists[order] = NULL;
+    }
+    block->refcnt++;
 
     return block;
 }
@@ -337,7 +337,7 @@ static struct block *buddy_pop(unsigned order)
 \newpar{}
 \ptitle{Remove}
 
-Find \code{block} in  \code{buddy\_free\_lists} and \code{pop}.
+Find \code{block} in  \code{buddy\_free\_lists}, move to front and \code{pop}.
 \begin{lstlisting}[style=bright_C++]
 static struct block *buddy_remove(struct block *block, unsigned order)
 {
@@ -365,7 +365,7 @@ static struct block *buddy_remove(struct block *block, unsigned order)
 }
 \end{lstlisting}
 
-\newpar{}
+\paragraph{Buddy Allocator: Moving Memory Accross Levels}
 \ptitle{Split}
 \begin{lstlisting}[style=bright_C++]
 static int buddy_split(unsigned smallest_free_order, unsigned desired_order)
@@ -412,9 +412,6 @@ static void __buddy_try_merge(struct block *block)
     /* Get buddy of block */
     struct block *buddy = block2buddy(block, block->order);
 
-    ////////////////////
-    // TBD: how could this happen?
-    ////////////////////
     if (block->order != buddy->order) return;
 
     if (is_block_free(block) && is_block_free(buddy)) {
@@ -449,7 +446,7 @@ static struct block *__buddy_merge(struct block *block, struct block *buddy)
 \begin{itemize}
     \item Applications request memory from the kernel.
     \item Then, internally, they have themselves a variety of allocators to manage it.
-\end{itemize} 
+\end{itemize}
 
 \subsection{Virtual Memory}
 % Segmentation and x86 history left out on purpose
@@ -473,9 +470,9 @@ Solves issues arising from segmentation.
 \begin{itemize}
     \item translates the virtual page into a physical one
     \item In RISC-V, Pages have 4 KB (12 bit) granularity
-    \begin{itemize}
-        \item Reason for buddy page size
-    \end{itemize}
+          \begin{itemize}
+              \item Reason for buddy page size
+          \end{itemize}
     \item Kernel allocates pages (buddy)
     \item CPU's MMU translates addresses using the page table
 \end{itemize}
@@ -484,14 +481,14 @@ Solves issues arising from segmentation.
 \begin{itemize}
     \item stored in CPU
     \item large unused parts (virtual $>>$ physical)
-    \begin{itemize}
-        \item wastes physical memory
-    \end{itemize}
+          \begin{itemize}
+              \item wastes physical memory
+          \end{itemize}
     \item simple
     \item virtual address is index to page table
-    \begin{itemize}
-        \item virtual offset = physical offset within page
-    \end{itemize}
+          \begin{itemize}
+              \item virtual offset = physical offset within page
+          \end{itemize}
 \end{itemize}
 
 \ptitle{Dimensions}
@@ -526,13 +523,13 @@ Solves issues arising from segmentation.
               \item 4 levels
               \item page table entry (PTE) is 8 bytes (64 bit)
               \item page is 4 KB $\to \frac{\text{4 KB}}{\text{8 B / entry}} = 512$ entries
-              \begin{itemize}
-                \item $\log_{2}(512) = 9$ bits required to index page table to get a PTE
-              \end{itemize}
+                    \begin{itemize}
+                        \item $\log_{2}(512) = 9$ bits required to index page table to get a PTE
+                    \end{itemize}
               \item virtual page number: 4 (levels) $\cdot$ 9 bits = 36 bits
-              \begin{itemize}
-                \item the remaining $48-36=12$ bits are used to index the ${2}^{12} = 4$ KB of physical bytes
-              \end{itemize}
+                    \begin{itemize}
+                        \item the remaining $48-36=12$ bits are used to index the ${2}^{12} = 4$ KB of physical bytes
+                    \end{itemize}
           \end{itemize}
 \end{itemize}
 
@@ -566,11 +563,11 @@ Solves issues arising from segmentation.
 \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
 
 \begin{tabularx}{\linewidth}{@{}llcll@{}}
-    V & valid     &  & G    & accessed \\
-    R & read      &  & D    & dirty    \\
-    W & write     &  & PBMT & IO       \\
-    X & execute   &  & N    & TLBOPT   \\
-    U & user mode &  &
+    V & valid     &  & G    & global (vma)  \\
+    R & read      &  & A    & accessed      \\
+    W & write     &  & D    & dirty (write) \\
+    X & execute   &  & PBMT & IO            \\
+    U & user mode &  & N    & TLBOPT
 \end{tabularx}
 
 \begin{tabularx}{\linewidth}{@{}cccl@{}}
@@ -593,6 +590,7 @@ Solves issues arising from segmentation.
 \ptitle{satp}
 \begin{itemize}
     \item \code{satp} (supervisor address translation and protection) register points to the root of the page table
+    \item \code{mode} turns on and specifies the MMU type
 \end{itemize}
 \begin{center}
     \includegraphics[width = \linewidth]{kernel_satp.png}
@@ -621,25 +619,25 @@ To determine if the current page table entry points to a next page table or to a
 \begin{itemize}
     \item The MMU is a HW component
     \item After starting it, MMU interposes on each memory access:
-    \begin{itemize}
-        \item Lookup TLB. If cache hit: done. If cache miss: continue
-        \item Go to DRAM page at (phys.) address stored in \code{satp}
-        \item Execute a memory walk to the physical address that corresponds to the given virtual address
-        \item Store translation in TLB
-    \end{itemize}
+          \begin{itemize}
+              \item Lookup TLB. If cache hit: done. If cache miss: continue
+              \item Go to DRAM page at (phys.) address stored in \code{satp}
+              \item Execute a memory walk to the physical address that corresponds to the given virtual address
+              \item Store translation in TLB
+          \end{itemize}
     \item During the memory walk the MMU
-    \begin{itemize}
-        \item Checks:
-        \begin{itemize}
-            \item validity using the \code{V} bit
-            \item permissions depending on the \code{R/W/X} bits
-            \item kernel/user permissions depending on the \code{U} bit
-            \begin{itemize}
-                \item \texttt{sstatus} stores processor's state (kernel/user)
-            \end{itemize}
-        \end{itemize}
-        \item Raises exceptions if validity or permissions are not given (page faults)
-    \end{itemize}
+          \begin{itemize}
+              \item Checks:
+                    \begin{itemize}
+                        \item validity using the \code{V} bit
+                        \item permissions depending on the \code{R/W/X} bits
+                        \item kernel/user permissions depending on the \code{U} bit
+                              \begin{itemize}
+                                  \item \texttt{sstatus} stores processor's state (kernel/user)
+                              \end{itemize}
+                    \end{itemize}
+              \item Raises exceptions if validity or permissions are not given (page faults)
+          \end{itemize}
     \item Note that the kernel executes a similar PT walk in software when setting up/manipulating PTEs
 \end{itemize}
 
@@ -671,11 +669,11 @@ The kernel memory space contains five regions:
 \newpar{}
 \ptitle{Remark}
 
-\texttt{ID} 
+\texttt{ID}
 \begin{itemize}
     \item maps the entire physical memory left
     \item is required for manipulating page tables
-    % TODO: Additional purposes?
+          % TODO: Additional purposes?
 \end{itemize}
 
 \renewcommand{\arraystretch}{1}
@@ -693,10 +691,10 @@ This is tackled by
 \begin{enumerate}
     \item Double mapping the kernel before the MMU starts.
     \item Update pointers
-    \begin{itemize}
-        \item \texttt{sp} etc. % TODO: ra too? pc automatically
-    \end{itemize}
-    and JALR to high address space
+          \begin{itemize}
+              \item \texttt{sp} etc. % TODO: ra too? pc automatically
+          \end{itemize}
+          and JALR to high address space
     \item Remove the double mapped kernel.
 \end{enumerate}
 
@@ -723,15 +721,15 @@ Their creation is triggered by \texttt{mmap}, removing by \texttt{munmap}.
 \ptitle{Benefits for Memory Regions}
 \begin{itemize}
     \item \texttt{.code}
-    \begin{itemize}
-        \item apps have many functions: not all used at the same time.
-        \item only allocate pages currently used functions
-    \end{itemize}
+          \begin{itemize}
+              \item apps have many functions: not all used at the same time.
+              \item only allocate pages currently used functions
+          \end{itemize}
     \item \texttt{heap}
-    \begin{itemize}
-        \item often sparsely-used
-        \item in contrast to code: just zero phys.\ page before mapping it
-    \end{itemize}
+          \begin{itemize}
+              \item often sparsely-used
+              \item in contrast to code: just zero phys.\ page before mapping it
+          \end{itemize}
     \item \texttt{stack}: often sparsely-used
 \end{itemize}
 
@@ -744,10 +742,10 @@ Their creation is triggered by \texttt{mmap}, removing by \texttt{munmap}.
     \item The MMU walks the pages and gets to an entry with the valid bit set to zero.~\texttt{stvec} is called.
     \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue with 4.
     \item Then the page gets allocated
-    \begin{itemize}
-        \item permissions according to the VMA
-        \item page type (normal, huge etc.) according to the VMA
-    \end{itemize}
+          \begin{itemize}
+              \item permissions according to the VMA
+              \item page type (normal, huge etc.) according to the VMA
+          \end{itemize}
     \item The store instruction is re-executed at \texttt{sepc}
 \end{enumerate}
 
@@ -765,9 +763,9 @@ There are 3 common use cases for page sharing.
 \begin{itemize}
     \item mapping same physical page to the virtual pages of multiple processes
     \item all processes have r/w permissions or some have r, other w
-    \begin{itemize}
-        \item intended to modify other's contents for communcation
-    \end{itemize}
+          \begin{itemize}
+              \item intended to modify other's contents for communcation
+          \end{itemize}
 \end{itemize}
 
 \newpar{}
@@ -780,20 +778,20 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
 
 \begin{itemize}
     \item \texttt{.bss} variables have same value for all processses i.e.\ zero
-    \item map ALL \texttt{.bss} sections to the same physical zero-page 
+    \item map ALL \texttt{.bss} sections to the same physical zero-page
     \item writing is enabled by:
-    \begin{itemize}
-        \item kernel marks \textbf{all} virtual pages pointing to the zero-page as \textit{read-only first}
-        \item triggers a soft PF if one process tries to write
-        \item handle page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). Then resume with valid access.
-    \end{itemize}
+          \begin{itemize}
+              \item kernel marks \textbf{all} virtual pages pointing to the zero-page as \textit{read-only first}
+              \item triggers a soft PF if one process tries to write
+              \item handle page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). Then resume with valid access.
+          \end{itemize}
 \end{itemize}
 
 \paragraph{Page Swapping}
 Idea: move pages to SSD if all RAM is used
 \begin{itemize}
     \item unset present bit in the PTE. This triggers a PF on access
-    \item store SSD address in the PTE to find page later 
+    \item store SSD address in the PTE to find page later
 \end{itemize}
 
 \newpar{}
@@ -813,9 +811,9 @@ On a (soft) PF the kernel
 \begin{itemize}
     \item various, e.g.\ LRU
     \item support from paging HW: level-0 PTEs have recently-accessesed bit
-    \begin{itemize}
-        \item don't swap these pages out
-    \end{itemize}
+          \begin{itemize}
+              \item don't swap these pages out
+          \end{itemize}
 \end{itemize}
 
 \subsection{Exceptions}\label{exceptions}
