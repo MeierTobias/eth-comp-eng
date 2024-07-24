@@ -1,7 +1,7 @@
 \section{Kernel}
 Privileged software that is in charge of securely multiplexing hardware resources between competing processes.
 
-\subsection{Memory Management}
+\subsection{Phsyical Memory Management}
 \begin{itemize}
     \item Memory is usually DRAM (capacitors that need to be refreshed periodically)
     \item Last parallel bus (64/72 Bit) in modern computers
@@ -48,14 +48,19 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
     \item Used also for large allocations
 \end{itemize}
 
-\subsubsection{Managing the Heap}
+\subsubsection{Memory Allocators in Jake}
+\begin{center}
+    \includegraphics[width=\linewidth]{Allocators.png}
+\end{center}
+
+\subsubsection{Dynamic Memory Management (Heap)}
 \begin{itemize}
     \item Heap suffers \textbf{fragmentation} at runtime: causes non-contiguous memory
           \noindent\begin{itemize}
               \item \textbf{External fragmentation} is caused by disadvantageous sequences of allocations/freeings (there would be enough free heap but it is not contiguous)
               \item \textbf{Internal fragmentation} is caused by having large heap units where small allocations waste memory
           \end{itemize}
-    \item Fragmentation and finding free memory must be handled
+          % \item Fragmentation and finding free memory must be handled
     \item \textbf{Heap metadata} are used to keep track of free memory and for sanity checks
           \noindent\begin{itemize}
               \item \textbf{In-band heap metadata} are stored inside the heap
@@ -63,55 +68,56 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
           \end{itemize}
 \end{itemize}
 
-\paragraph{In-Band Metadata: Linked List (LL)}
+\subsubsection{Linked List (LL): In-Band Metadata}
+
+\ptitle{Data Structure}
+\begin{lstlisting}[language={C}]
+    typedef struct __node_t {
+        int size;                           // allocation size
+        union {                             // contains either:
+            int magic;                      // sanity check or
+            struct __node_t *next;          // next free section
+        } u;
+    } node_t;         
+    \end{lstlisting}
+
 \includegraphics[width = \linewidth]{free_linked_list.png}
 
 \begin{itemize}
+    \item Nodes (8 B) stored at start of each free heap section contain information about size and status
     \item Use a LL to keep track of \textbf{free} heap sections
-    \item Nodes stored at start of each free heap section
     \item External fragmentation but no internal fragmentation
 \end{itemize}
 
-\begin{lstlisting}[language={C}]
-typedef struct __node_t {
-    int size;                           // allocation size
-    union {
-        int magic;                      // sanity check
-        struct __node_t *next;          // next free section
-    } u;
-} node_t;         
-\end{lstlisting}
-\textbf{Remark}
-
-Union represents either \code{magic} value \textbf{or} \code{*next} node variable.
-\begin{itemize}
-    \item \code{magic} value for allocated areas.
-    \item \code{*next} node for free elements.
-\end{itemize}
-
+\newpar{}
 \ptitle{Malloc}
+\begin{enumerate}
+    \item Walk the linked list to find free space
+    \item set magic value und remove node from free LL (update pointers)
+    \item return pointer to allocated heap
+\end{enumerate}
 
+\newpar{}
 \begin{itemize}
-    \item Walk the linked list at \code{malloc()} %ChkTex 36
-          \begin{itemize}
-              \item \textbf{First fit}: take first free slot that is big enough
-              \item \textbf{Best fit}: take slot matching the required size the best (slow: walk entire list)
-          \end{itemize}
-    \item First fit uses space more efficiently than best fit (small losses at each allocation!)
-    \item As slot is selected: set magic value / remove corresponding node from list, update pointers, return pointer to free heap
+    \item \textbf{First fit}: take first free slot that is big enough (more space efficient <- small losses at each allocation!) % TODO: check if this is correct
+    \item \textbf{Best fit}: take slot matching the required size the best (slow: walk entire list)
 \end{itemize}
 
-\ptitle{Free}
+\newpar{}
+\ptitle{\code{free(a)}}%ChkTex 36
 
-\begin{itemize}
-    \item \code{free(a)}%ChkTex 36
-    \item Allocate a new \code{\_\_node\_t} data structure
+\begin{enumerate}
     \item Check magic value. If it has been overwritten: out-of-bound software bug
-    \item Let \code{ \_\_node\_t *next} point to previous \code{head}
-    \item Make the new node the new \code{head}
-    \item A \textit{doubly linked list} can be used for convenient unlinking
-\end{itemize}
+    \item Allocate a new free node
+    \item Insert node to the front of the free LL:
+    \begin{itemize}
+        \item \code{*next = head}
+        \item \code{head = node}
+    \end{itemize}
+\end{enumerate}
+A \textit{doubly linked list} can be used for convenient unlinking
 
+\newpar{}
 \ptitle{Handling Fragmentation}
 
 \begin{itemize}
@@ -119,12 +125,12 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
     \item Walk the list, find adjacent free items and merge them
 \end{itemize}
 
-\paragraph[Bitmap-Based Allocations]{Out-Of-Band Metadata:\newline Bitmap-Based Allocations}
+\subsubsection[Bitmap-Based Allocations]{Bitmap-Based Allocations: Out-Of-Band Metadata}
 \begin{itemize}
     \item Every bit can tell whether $N$ bytes of the heap are free
           \begin{itemize}
               \item Can be more wasteful than LL metadata: inflexible block size
-              \item Internal fragmentation    % TODO: In the book it says that variable-size allocations in bitmap allocators cause internal fragmentation. But isn't there also external fragmentation in bitmap allocators?
+              \item Internal fragmentation    % TODO: In the book it says that variable-size allocations in bitmap allocators cause internal fragmentation. But isn't there also external fragmentation in bitmap allocators? % Answer: I think theres also external fragmentation but its less dramatic than in LL.
           \end{itemize}
     \item One needs \textbf{additional} data to keep track of the total allocation sizes (as we only know status of our $N$ byte units)
     \item \code{malloc()} scans the bitmap for free space %ChkTex 36
@@ -138,27 +144,31 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
           \end{itemize}
 \end{itemize}
 
-\ptitle{Fragmentation vs. Performance}
+\newpar{}
+\ptitle{Bitmap Granularity}
 
 \begin{itemize}
-    \item Coalescing is very cheap (flipping bits)
-    \item \code{malloc()} is more expensive (scan the bitmap), depending on how coarse the bitmap is %ChkTex 36
-    \item In a \textbf{fine bitmap} one has precise allocations (low internal fragmentation) but expensive \code{malloc()} %ChkTex 36
-    \item In a \textbf{coarse bitmap} one has more bytes per bit, hence less precise allocations (high internal frag) but cheap \lstinline{malloc()} %ChkTex 36
+    % \item Coalescing is very cheap (flipping bits) % done automatically
+    \item Depending on the bitmaps granularity, there is a tradeoff between \textbf{fragmentation} and \textbf{performance}:%ChkTex 36
+          \begin{itemize}
+              \item \textbf{fine bitmap}: low internal fragmentation but expensive \code{malloc()} %ChkTex 36
+              \item \textbf{coarse bitmap}:high internal frag but cheap \code{malloc()} %ChkTex 36
+          \end{itemize}
 \end{itemize}
 
 
-\paragraph{In-/Out-Of-Band Megadata: Slab Allocation}
+\subsubsection{Slab Allocatior: In-/Out-Of-Band Metadata}
 
 \begin{itemize}
     \item Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fragmentation
-    \item Each slab contains e.g. 12/16/256-byte entries
-    \item Applications' allocators ask kernel for memory
-    \item Built \textit{on top} of low-level allocator:
-          \begin{itemize}
-              \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
-              \item Slab allocator for small memory requests within pages
-          \end{itemize}
+    \item Each slab contains e.g. 12/16$\dots$ 256-byte entries
+          %%% The following bullet points are not specific to slab allocation and are featured in section "memory allocators in Jake"
+          % \item Applications' allocators ask kernel for memory
+          % \item Built \textit{on top} of low-level allocator:
+          %       \begin{itemize}
+          %           \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
+          %           \item Slab allocator for small memory requests within pages
+          %       \end{itemize}
     \item Implementation:
           \begin{itemize}
               \item LL: No coalescing, fast malloc but extra metadata
@@ -171,22 +181,23 @@ Union represents either \code{magic} value \textbf{or} \code{*next} node variabl
     \item[+] Flexible (various allocation sizes, growing/shrinking)
     \item[-] Some internal fragmentation
     \item[-] External fragmentation: \textit{Fragmentation across slabs} (not optimized for full utilization): Can't move memory between slabs as they become full/empty
-          \begin{itemize}
-              \item Solution: Use page allocation to move pages between different slabs
-          \end{itemize}
+        %   \begin{itemize}
+        %       \item Solution: Use page allocation to move pages between different slabs (Buddy Paging)
+        %   \end{itemize}
 \end{itemize}
-\paragraph{Page Allocation: Buddy Allocator}
-Page Allocation optimizes for \textbf{full utilization}.
+
+\subsubsection{Page Allocation: Buddy Allocator}
+Page allocation optimizes for \textbf{full utilization}.
 \begin{itemize}
     \item A page is a \textbf{contiguous area of memory} aligned to the page size (4 KB)
-    \item Blocks can have a size that scales with power-of-two wrt.\ the page size, this power is also called the \textbf{order}.
+    \item Blocks can have a size that scales with power-of-two wrt.\ the page size, this power is also called the \code{order}.
           \begin{itemize}
               \item Code, stack, heap are at least 1 page each.
           \end{itemize}
     \item Each page has a \textit{buddy} with the same size.
           \begin{itemize}
-              \item If a page is split, a new page and a buddy with order - 1 are generated.
-              \item If a page is freed and its buddy is also free, these two pages are merged into a page with order + 1.
+              \item If a page is split, a new page and a buddy with \code{order - 1} are generated.
+              \item If a page is freed and its buddy is also free, these two pages are merged into a page with \code{order + 1}.
           \end{itemize}
     \item Page allocation finds tradeoff between performance and efficient memory usage
 \end{itemize}
@@ -297,7 +308,7 @@ static int __buddy_find_smallest_free_order(unsigned order)
 }
 \end{lstlisting}
 
-\newpar{}
+\paragraph{Buddy Allocator: Managing the Free LL}
 \ptitle{Push}
 
 Push to the front of \code{buddy\_free\_lists}
@@ -441,12 +452,13 @@ static struct block *__buddy_merge(struct block *block, struct block *buddy)
 }
 \end{lstlisting}
 
-\paragraph{In-Application Memory Management}
+%% Redundant with the diagram in Section "Memory allocators in Jake"
+% \paragraph{In-Application Memory Management}
 
-\begin{itemize}
-    \item Applications request memory from the kernel.
-    \item Then, internally, they have themselves a variety of allocators to manage it.
-\end{itemize}
+% \begin{itemize}
+%     \item Applications request memory from the kernel.
+%     \item Then, internally, they have themselves a variety of allocators to manage it.
+% \end{itemize}
 
 \subsection{Virtual Memory}
 % Segmentation and x86 history left out on purpose
