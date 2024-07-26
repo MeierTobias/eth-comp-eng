@@ -13,8 +13,8 @@ Pipeline registers allow holding temporary information about different stages an
 Examples of data that are commonly preserved using pipeline registers are
 \begin{enumerate}
     \item PC for later PC-relative branch. Branch outcome known first after register stage (assuming shortcut:~\ref{shortcut}).\\
-    Instruction word. Also contains indices of registers used per instruction (needed e.g.\ for hazard detection or final WB).
-    % TODO: Razavi told in lecture that the entire instruction word is pushed. Can we assume that the opcode and funct bits are thrown away after the IF/ID stage? At this point, we calculated the control bits and only need the register indices and immediates for later.
+          Instruction word. Also contains indices of registers used per instruction (needed e.g.\ for hazard detection or final WB).
+          % TODO: Razavi told in lecture that the entire instruction word is pushed. Can we assume that the opcode and funct bits are thrown away after the IF/ID stage? At this point, we calculated the control bits and only need the register indices and immediates for later.
     \item Data read from register file (for EX \textit{and} MEM stage).
     \item ALU results (Used as address for MEM or as data for WB).
     \item Buffer for MEM/WB (yields 5 short stages instead of 4 long ones).
@@ -27,7 +27,7 @@ The control bits of the individual stages are then stored in an extension of the
     \item[+] shorter clock cycle
     \item[+] fewer bits in the pipeline registers (instruction not passed along)
     \item[-] redundant control information
-    % TODO: Which bits are redundant? Are the MEM&WB bits meant (as they are also available in the ID/EX stage. If we don't push them we loose them so they are not really redundant in my opinion.)? 
+          % TODO: Which bits are redundant? Are the MEM&WB bits meant (as they are also available in the ID/EX stage. If we don't push them we loose them so they are not really redundant in my opinion.)? 
 \end{itemize}
 
 \begin{center}
@@ -36,9 +36,9 @@ The control bits of the individual stages are then stored in an extension of the
 
 Three stages need control bits
 \begin{enumerate}
-    \item EX: \texttt{ALUSrc, ALUOp}
-    \item MEM: \texttt{Branch, MemWrite, MemRead}
-    \item WB: \texttt{MemtoReg, RegWrite}
+    \item EX: \code{ALUSrc, ALUOp}
+    \item MEM: \code{Branch, MemWrite, MemRead}
+    \item WB: \code{MemtoReg, RegWrite}
 \end{enumerate}
 
 \subsection{Hazards}
@@ -60,6 +60,24 @@ Both steps need to access the memory. To fix this, individual resources can be a
 \end{center}
 
 \subsubsection{Data Hazards}\label{data hazards}
+\ptitle{Data Hazard Types}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
+
+\begin{tabularx}{\linewidth}{@{}lllX@{}}
+    Forwarding                     & Stalls & Type & Comment                                      \\
+    \midrule
+    no                             & 2      & -    & assuming reg-write takes second half, else 3 \\
+    \code{EX/MEM} $\to$ \code{EX}  & 0      & 1    & no memory load                               \\
+    \code{MEM/WB} $\to$ \code{EX}  & 1      & 2    & memory load                                  \\
+    \code{MEM/WB} $\to$ \code{MEM} & 0      & 2    & memory load                                  % TODO: not sure if this is right
+\end{tabularx}
+
+\renewcommand{\arraystretch}{1}
+\setlength\tabcolsep{\oldtabcolsep}
+
+\newpar{}
+\ptitle{Dependency Types}
 
 A subsequent instruction needs data or a register that is not yet ready.
 
@@ -86,81 +104,95 @@ The \textbf{WAR} and \textbf{WAW} hazard does not apply to the design showed at 
 \newpar{}
 \ptitle{Detecting RAW hazards in the Pipeline}
 
-The pipeline registers can be used to check if an earlier instruction (later in the pipeline) has data needed for the current instruction:
-If a current \code{src} register (\code{rs1/rs2}) is found in any later pipeline register a data hazard exists.
+The pipeline registers are used to check if a current \code{src} register (\code{rs1/rs2}) is found in any earlier instruction/later pipeline register.
 \begin{lstlisting}
 PipelineID/EX.rs1/2 == PipelineEX/MEM.rd
 PipelineID/EX.rs1/2 == PipelineMEM/WB.rd
-    \end{lstlisting}
+\end{lstlisting}
+
+\newpar{}
+Depending on the relative order, either the \code{EX/MEM} or the \code{MEM/WB} pipeline register has to be checked.
+
+\begin{center}
+    \includegraphics[width=0.8\linewidth]{example_hazard_detection.png}
+\end{center}
 
 \newpar{}
 \ptitle{Remarks}
 \begin{itemize}
-    \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd})
+    \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd}) % TODO: store has no rd
     \item 3 components of hardware logic are required to handle data hazards:
-    \begin{enumerate}
-        \item Hazard detection logic (detect that there \textit{actually is} a hazard)
-        \item Forwarding logic 
-        \item Stalling logic
-    \end{enumerate}
+          \begin{enumerate}
+              \item Hazard detection logic (detect that there \textit{actually is} a hazard)
+              \item Forwarding logic
+              \item Stalling logic
+          \end{enumerate}
 \end{itemize}
 
-\begin{examplesection}[Example]\label{example_hazard_detection}
-    Even though the \texttt{and} and the \texttt{or} instruction face a similar hazard, the comparison required to detect the hazard is specific to their relative location w.r.t.\ the \texttt{sub} instruction.
+%TODO: I find this example confusing: it suggests that and/or have to be managed differently even though they are the same and only their position is relevant.
+% Additionally, I don't see it adding value if one understands the previous subsubsection
 
-    \includegraphics[width=\linewidth]{example_hazard_detection.png}
-\end{examplesection}
+% \begin{examplesection}[Example]\label{example_hazard_detection}
+%     Even though the \code{and} and the \code{or} instruction face a similar hazard, the comparison required to detect the hazard is specific to their relative location w.r.t.\ the \code{sub} instruction.
+    
+%     \includegraphics[width=\linewidth]{example_hazard_detection.png}
+% \end{examplesection}
 
 \paragraph{Solution: Forwarding}
-By passing the result of the execution stage directly into the input of the next execution stage the \texttt{add}\textleftarrow\texttt{sub} RAW hazard can be avoided.
+\textbf{Type 1} data hazards (not containing a memory load) can be resolved by forwarding data from an earlier instruction.
+
+\newpar{}
+For example, the data in the \code{EX/MEM} pipeline register can be forwarded to the \code{EX} stage.
+
+% By passing the result of the execution stage directly into the input of the next execution stage the \code{add}\textleftarrow\code{sub} RAW hazard can be avoided.
 
 \includegraphics[width=\linewidth]{cpu_pipelining_raw.png}
 
-The \textit{forwarding unit} decides which registers from which stages are used by the \textit{ALU}. This decision is affected and meant to resolve \textbf{type 1 data hazards} (no memory load involved).
+% The \textit{forwarding unit} decides which registers from which stages are used by the \textit{ALU}. This decision is affected and meant to resolve \textbf{type 1 data hazards} (no memory load involved).
 
+\ptitle{Forwarding Unit}
 \begin{center}
     \includegraphics[width=.7\linewidth]{cpu_pipelining_forwarding_simple.png}
 \end{center}
-As seen in Example~\ref{example_hazard_detection} the comparison must either happen with the \texttt{EX/MEM} or with the \texttt{MEM/WB} stage depending on the instruction order.
+The comparison must either happen with the \code{EX/MEM} or with the \code{MEM/WB} stage depending on the instruction order.
 
 \begin{footnotesize}
     \renewcommand{\arraystretch}{1.4}
     \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
-
+    
     \begin{tabularx}{\linewidth}{@{}T Z Z X @{}}
-                                                                                 & MUX Control   & Source & Explanation                            \\
+                                                                                  & MUX Control   & Source & Explanation                            \\
         \cmidrule{2-4}
         \multirow{3}{*}{\begin{sideways}\begin{scriptsize}1.\ ALU op\end{scriptsize}\end{sideways}} & ForwardA = 00 & ID/EX  & From register file                     \\
-                                                                                 & ForwardA = 10 & EX/MEM & From prior ALU result                  \\
-                                                                                 & ForwardA = 01 & MEM/WB & From data memory or earlier ALU result \\[1.5em]
+                                                                                  & ForwardA = 10 & EX/MEM & From prior ALU result                  \\
+                                                                                  & ForwardA = 01 & MEM/WB & From data memory or earlier ALU result \\[1.5em]
         \multirow{3}{*}{\begin{sideways}\begin{scriptsize}2.\ ALU op\end{scriptsize}\end{sideways}} & ForwardB = 00 & ID/EX  & From register file                     \\
-                                                                                 & ForwardB = 10 & EX/MEM & From prior ALU result                  \\
-                                                                                 & ForwardB = 01 & MEM/WB & From data memory or earlier ALU result \\
+                                                                                  & ForwardB = 10 & EX/MEM & From prior ALU result                  \\
+                                                                                  & ForwardB = 01 & MEM/WB & From data memory or earlier ALU result \\
     \end{tabularx}
-
+    
     \renewcommand{\arraystretch}{1}
     \setlength{\tabcolsep}{\oldtabcolsep}
 \end{footnotesize}
 
 \paragraph{Solution: Stalling}
-For some instructions this is insufficient. In these cases an extra stall/bubble step needs to be performed.
+For \textbf{Type 2} hazards (containing a memory load) which need forwarding to the \code{EX} stage, forwarding alone is not sufficient and one additional stall has to be added.
 
 \includegraphics[width=\linewidth]{cpu_pipelining_raw_stall.png}
 
-% TODO: I guess I added this remark once? You can delete it if you want.
-\ptitle{Remark:}
-The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
+% \ptitle{Remark:}
+% The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
 
 \newpar{}
-As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \textbf{NOP} instruction into the pipeline. 
-\begin{itemize}
-    \item To achieve this, the hazard detection unit selects the zero input of the multiplexer yielding zero control registers.
-    \item Therefore subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction. This mechanism is meant to resolve \textbf{type 2 data hazards} (memory load involved).
-\end{itemize}
+As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \code{NOP} instruction into the pipeline, resulting in a temporary pause of the CPU. 
+% \begin{itemize}
+%     % \item To achieve this, the hazard detection unit selects the zero input of the multiplexer yielding zero control registers.
+%     \item Therefore subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction. This mechanism is meant to resolve \textbf{type 2 data hazards} (memory load involved).
+% \end{itemize}
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipelining_NOP.png}
 \end{center}
-Note that the comparison already happens at the \texttt{ID/EX} stage and that the PC is mainpulated!
+% Note that the comparison already happens at the \code{ID/EX} stage and that the PC is mainpulated! % TODO: don't all copmarisons happen at ID/EX stage?
 
 \subsubsection{Control Hazards}\label{control hazards}
 
@@ -173,12 +205,12 @@ lw t6, 400(t0)
 
 There are three ways to solve this problem
 \begin{itemize}
-    \item~\ref{bubble} Bubble
+    \item~\ref{contr_stalling} Bubble
     \item~\ref{shortcut} Shortcut
     \item~\ref{prediction} Prediction
 \end{itemize}
 
-\paragraph{Bubble}\label{bubble}
+\paragraph{Stalling}\label{contr_stalling}
 
 Wait until the outcome is known.
 \begin{itemize}
@@ -206,20 +238,20 @@ Wait less by adding additional logic to calculate the branch outcome sooner.
 Predict the outcome of a branch instruction and roll back if the prediction was wrong.
 \begin{itemize}
     \item The previous solutions waited for the branch outcome before the first action was taken.
-    \begin{itemize}
-        \item Now action is taken before the result is known.
-    \end{itemize}
-    \item In general: 
-    \begin{itemize}
-        \item Simple prediction needs less HW but is less reliable.
-        \item Advanced prediction needs complex HW but is more reliable.
-    \end{itemize}
+          \begin{itemize}
+              \item Now action is taken before the result is known.
+          \end{itemize}
+    \item In general:
+          \begin{itemize}
+              \item Simple prediction needs less HW but is less reliable.
+              \item Advanced prediction needs complex HW but is more reliable.
+          \end{itemize}
 \end{itemize}
 
 \newpar{}
 \ptitle{Pipeline Flush}
 
-Is a \textit{mechanism} to clear out the executed parts of the followup instruction if the prediction was wrong. This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption). If the shortcut unit presented in~\ref{shortcut} detects a branch, the hazard detection unit flushes the wrongly fetched instruction and adds the immediate (given by the branch) to the PC yielding the right instruction in the next cycle (creates 1 bubble).
+Is a \textit{mechanism} to clear out the executed parts of the followup instruction if the prediction was wrong (or in case of an interrupt/ exception). This has to happen before the downstream instructions reach the MEM or WB stage (DRAM corruption). If the shortcut unit presented in~\ref{shortcut} detects a branch, the hazard detection unit flushes the wrongly fetched instruction and adds the immediate (given by the branch) to the PC yielding the right instruction in the next cycle (creates \textbf{1 bubble}).
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipeline_flush.png}
 \end{center}
@@ -230,7 +262,7 @@ Static prediction assumes that the branch is \textbf{not taken} and just continu
 \begin{center}
     \includegraphics[width=\linewidth]{static_prediction.png}
 \end{center}
-The example assumes the shortcut logic~\ref{shortcut} to enable \texttt{ID}$\to$\texttt{IF} forwarding (orange arrow).
+The example assumes the shortcut logic~\ref{shortcut} to enable \code{IF/ID}$\to$\code{IF} forwarding (orange arrow).
 
 \newpar{}
 \ptitle{Dynamic Prediction}
