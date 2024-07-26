@@ -105,14 +105,13 @@ In direct-mapped cache, every slot of the cache can only map to one place in DRA
     \item The location in cache is solely determined by the slot. However, tag must be stored also to have a full reference to DRAM.
 \end{itemize}
 \newpar{}
-The 64-bit cache line consists of
+The 32-bit address consists of
 \begin{itemize}
     \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
     \item \textbf{Slot} (for 16/$2^4$ slots we need 4 bits: \fncode{ssss})
     \item \textbf{Tag} (22 bits: \fncode{tt..tt})
 \end{itemize}
 \includegraphics[width = \linewidth]{Cache.png}
-% TODO: The "cash miss" entry in the picture has tag 1 instead of >>1
 \newpar{}
 \ptitle{Properties}
 \begin{itemize}
