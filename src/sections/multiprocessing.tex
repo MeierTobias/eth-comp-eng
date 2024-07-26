@@ -17,22 +17,24 @@ The data structure gets updated when the process
 \newpar{}
 \ptitle{Process Data structure in Jake}
 \begin{lstlisting}[style=bright_C++]
-    enum PROCESS_STATUS {
-        PROCESS_FREE_SLOT, 	// Slot free to be used
-        PROCESS_RUNNING, 	    // Usermode runs process
-        PROCESS_PAUSED, 	    // Process will be scheduled to run in usermode
-        PROCESS_RESERVED,
+struct process {
+    unsigned int pid;
+    enum PROCESS_STATUS status; 
+    struct node *uvmas;         // user VMAs
+    struct trap_frame tf;       // user registers
+    unsigned long satp;         // process' root PT
+    unsigned long heap_end_vpn;
+    struct elf_jake elf;        // where program instructions are stored
     };
-
-    struct process {
-        unsigned int pid;
-        enum PROCESS_STATUS status; 
-        struct node *uvmas;         // user VMAs
-        struct trap_frame tf;       // user registers
-        unsigned long satp;         // process' root PT
-        unsigned long heap_end_vpn;
-        struct elf_jake elf;        // where program instructions are stored
-    };
+\end{lstlisting}
+\newpar{}
+\begin{lstlisting}[style=bright_C++]
+enum PROCESS_STATUS {
+    PROCESS_FREE_SLOT, 	    // Slot free to be used
+    PROCESS_RUNNING, 	    // Usermode runs process
+    PROCESS_PAUSED, 	    // Process will be scheduled to run in usermode
+    PROCESS_RESERVED,
+};
 \end{lstlisting}
 
 \subsection{Starting a New Process}
@@ -52,15 +54,15 @@ The data structure gets updated when the process
 \begin{center}
     \includegraphics[width = .5\linewidth]{ELF.png}
 \end{center}
-Defines where \texttt{.text}/\texttt{.data}/\texttt{.bss} sections
+Defines where \code{.text}/\code{.data}/\code{.bss} sections
 \begin{itemize}
     \item are located inside the executable file
     \item should be loaded in (virtual) memory
-    \item \texttt{.text} entry address would define the first instruction of the program
-\end{itemize} 
+    \item \code{.text} entry address would define the first instruction of the program
+\end{itemize}
 
 \newpar{}
-\ptitle{Preparing \texttt{.text} VMA in Jake}
+\ptitle{Preparing \code{.text} VMA in Jake}
 
 After starting the new process, its first instruction will cause a page fault (no mapped yet). Since Jake does not have access to the user-mode virtual memory, it uses \textit{physmap} instead which allows for modification to page tables for creating new virtual mappings by mapping the entire physical memory to virtual memory.
 
@@ -72,7 +74,7 @@ Common OS start special first process (init process) which starts other processe
     \item Select a pid
     \item Copy the kernel page tables of the process (kernel is mapped to each user address space)
     \item Initialize the VMAs
-    \item Information for the \texttt{.text} VMA
+    \item Information for the \code{.text} VMA
 \end{itemize}
 
 \newpar{}
@@ -82,7 +84,7 @@ Common OS start special first process (init process) which starts other processe
 \end{center}
 To start a process, the kernel needs to know
 \begin{itemize}
-    \item the \texttt{.text} section of the application (where it lies)
+    \item the \code{.text} section of the application (where it lies)
     \item Address of 1st instruction (from ELF)
 \end{itemize}
 One can then switch to usermode after
@@ -90,7 +92,7 @@ One can then switch to usermode after
     \item Initializing user mode registers to zero (hide kernel registers)
     \item Set SEPC to first instruction of the program
     \item Set user-mode SP (can happen in kernel (e.g.\ Jake) or user-mode)
-    \item call \texttt{sret}
+    \item call \code{sret} with \code{sstatus.spp = 0}
 \end{itemize}
 
 \subsubsection{Multiprocessing}
@@ -109,14 +111,14 @@ Just calling \textit{fork} can be useful sometimes (e.g.\ running same process o
 \ptitle{Exec System Call}
 \begin{itemize}
     \item Typically called in the \textbf{child right after a fork}
-    \item Replaces VMAs of child. 
-    \item For \texttt{.text} VMA, it takes an executable file (e.g., ELF)
+    \item Replaces VMAs of child.
+    \item For \code{.text} VMA, it takes an executable file (e.g., ELF)
 \end{itemize}
 
 \newpar{}
 \ptitle{Example: Combined System Call in Jake}
 
-In jake, \texttt{fork} and \texttt{exec} are combined to \texttt{execv}
+In jake, \code{fork} and \code{exec} are combined to \code{execv}
 \begin{lstlisting}[style=bright_C++]
 // a1: identifies next application to be run
 // a2: main() argument for next process
@@ -161,7 +163,7 @@ After creating the compatibility for running multiple processes one can virtuali
 \end{itemize}
 \subsubsection{Context Switching}
 \begin{itemize}
-    \item The process' context is \textbf{stored} in the \texttt{trap frame} data structure inside the process data structure.
+    \item The process' context is \textbf{stored} in the \code{trap frame} data structure inside the process data structure.
     \item CPU cache needs to be flushed (contains old address space)
 \end{itemize}
 
@@ -198,20 +200,20 @@ Starvation in priority-based RR:
 To avoid this, one moves all jobs to high-priority queue once in a while.
 
 \paragraph{Scheduling Modes}
-The kernel needs to run to be able to make a scheduling decision. 
+The kernel needs to run to be able to make a scheduling decision.
 
 \newpar{}
 \ptitle{Cooperative (Non-Preemptive) Scheduling}
 
 \begin{itemize}
     \item High-performance computing usually uses cooperative scheduling (less overhead).
-    \item System call for cooperative scheduling: \texttt{yield}.
-    \item On \texttt{yield}, the kernel performance a context switch to another process:
-    \begin{enumerate}
-        \item Store the registers in the old process trap frame
-        \item Load the registers of the new process from its trap frame
-        \item call \texttt{sret}
-    \end{enumerate}
+    \item System call for cooperative scheduling: \code{yield}.
+    \item On \code{yield}, the kernel performance a context switch to another process:
+          \begin{enumerate}
+              \item Store the registers in the old process trap frame
+              \item Load the registers of the new process from its trap frame
+              \item call \code{sret}
+          \end{enumerate}
 \end{itemize}
 Pros/cons:
 \begin{itemize}
@@ -227,7 +229,7 @@ Pros/cons:
     \item Standard systems (e.g., phones, laptops, etc.) have non-cooperative scheduling (better responsiveness)
     \item Uses a timer connected to CPU to periodically generate \textbf{interrupts} (same as exception or trap)
     \item Kernel periodically preempts processes on each interrupt
-    \item Exception handling: kernel checks on interrupt whether a context switch is necessary and executes it if 
+    \item Exception handling: kernel checks on interrupt whether a context switch is necessary and executes it if
 \end{itemize}
 Pros/cons:
 \begin{itemize}
@@ -252,10 +254,10 @@ MMIO enables interaction with devices through memory accesses: access \textbf{de
 
 \begin{itemize}
     \item Current QEMU version only supports machine-mode timers
-    \begin{itemize}
-        \item Timers can only be configured in machine mode
-        \item The interrupts will \textbf{always} be delivered to machine mode (non-maskable)
-    \end{itemize}
+          \begin{itemize}
+              \item Timers can only be configured in machine mode
+              \item The interrupts will \textbf{always} be delivered to machine mode (non-maskable)
+          \end{itemize}
     \item We need to mret to supervisor mode for scheduling
 \end{itemize}
 \begin{center}
