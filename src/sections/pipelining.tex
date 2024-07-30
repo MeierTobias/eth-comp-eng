@@ -184,7 +184,7 @@ For \textbf{Type 2} hazards (containing a memory load) which need forwarding to 
 % The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
 
 \newpar{}
-As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \code{NOP} instruction into the pipeline, resulting in a temporary pause of the CPU. 
+As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \code{NOP} instruction into the pipeline, resulting in a temporary pause of the CPU.
 % \begin{itemize}
 %     % \item To achieve this, the hazard detection unit selects the zero input of the multiplexer yielding zero control registers.
 %     \item Therefore subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction. This mechanism is meant to resolve \textbf{type 2 data hazards} (memory load involved).
@@ -192,7 +192,7 @@ As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, Reg
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipelining_NOP.png}
 \end{center}
-% Note that the comparison already happens at the \code{ID/EX} stage and that the PC is mainpulated! % TODO: don't all copmarisons happen at ID/EX stage?
+% Note that the comparison already happens at the \code{ID/EX} stage and that the PC is manipulated! % TODO: don't all comparisons happen at ID/EX stage?
 
 \subsubsection{Control Hazards}\label{control hazards}
 

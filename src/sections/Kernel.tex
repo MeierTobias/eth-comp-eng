@@ -1,7 +1,7 @@
 \section{Kernel}
 Privileged software that is in charge of securely multiplexing hardware resources between competing processes.
 
-\subsection{Phsyical Memory Management}
+\subsection{Physical Memory Management}
 \begin{itemize}
     \item Memory is usually DRAM (capacitors that need to be refreshed periodically)
     \item Last parallel bus (64/72 Bit) in modern computers
@@ -713,7 +713,7 @@ This is tackled by
               \item \code{sp, ra} etc.\ (heap)
           \end{itemize}
           and JALR to high address space
-    \item Change the \code{mode} bit to tur on the MMU
+    \item Change the \code{mode} bit to turn on the MMU
     \item Remove the double mapped kernel.
 \end{enumerate}
 
@@ -791,14 +791,14 @@ There are 3 common use cases for page sharing.
     \item mapping same physical page to the virtual pages of multiple processes
     \item all processes have r/w permissions or some have r, other w
           \begin{itemize}
-              \item intended to modify other's contents for communcation
+              \item intended to modify other's contents for communication
           \end{itemize}
 \end{itemize}
 
 \newpar{}
 \ptitle{Shared Libraries}
 
-Map virtual addresses of multiple processes to same copy of a library. Execute-only permisson for security.
+Map virtual addresses of multiple processes to same copy of a library. Execute-only permission for security.
 
 \newpar{}
 \ptitle{Copy-On-Write (COW)}
@@ -807,7 +807,7 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
     \item map all \texttt{.bss} sections to the same physical zero-page (read-only)
     \item upon first write access:
           \begin{enumerate}
-              \item soft page fault: allocate new page, set it to zero but with write permissons (validity checked via VMA). 
+              \item soft page fault: allocate new page, set it to zero but with write permissions (validity checked via VMA). 
               \item Write with valid access.
           \end{enumerate}
 \end{itemize}
@@ -835,7 +835,7 @@ On a (soft) PF the kernel
 
 \begin{itemize}
     \item various, e.g.\ LRU
-    \item support from paging HW: level-0 PTEs have recently-accessesed bit
+    \item support from paging HW: level-0 PTEs have recently-accessed bit
           \begin{itemize}
               \item don't swap these pages out
           \end{itemize}
@@ -884,5 +884,5 @@ STVAL will provide extended information about the exception (e.g., page fault's 
 \newpar{}
 \ptitle{Example}
 
-On a soft PF the CPU jumps to STVEC. The handler routine sees which instruction caused the PF (the instruction at SEPC), knows from SCAUSE that the reason was a PF and finds the (user mode virtual) address (page number) at which the exception occured in STVAL. A routine can then be called to load the missing code page to the address stored in STVAL.
+On a soft PF the CPU jumps to STVEC. The handler routine sees which instruction caused the PF (the instruction at SEPC), knows from SCAUSE that the reason was a PF and finds the (user mode virtual) address (page number) at which the exception occurred in STVAL. A routine can then be called to load the missing code page to the address stored in STVAL.
 % TODO: how is this not the exact same as above?

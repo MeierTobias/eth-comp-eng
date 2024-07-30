@@ -14,7 +14,7 @@
               \item Use 2 wires. If both =0: Turn power off when it is not required.
                     % Question: I think for MemRead one could have an "X" in the cases R-format and beq (would still run but waste power). Must it be 0 in the sw case (guess BUS is duplex)?
                     % TODO: Answer: I don't think this will work: if MemRead is 1 (valid for X) then the memory block will try to read at the address that the ALU produced, which is not a valid address -> bad things happen. 
-                    % TODO: For sw the memory block only gets one address, if MemRead and MemWrite are both 1, then the memory block will both write and read from the same address -> undefined behaviour
+                    % TODO: For sw the memory block only gets one address, if MemRead and MemWrite are both 1, then the memory block will both write and read from the same address -> undefined behavior
                     % Question: I think for MemWrite we could never have an "X".
                     % TODO: Answer: Thats probably why there is no C in the table ;)
           \end{itemize}

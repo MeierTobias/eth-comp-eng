@@ -14,9 +14,9 @@ The principles of locality are used to increase the cache hit rate:
     \item \textbf{Principle of temporal locality (PTL)}:
           \begin{itemize}
               \item Information that was accessed recently, will likely be accessed soon again
-              \item Example: variables in a for looop
+              \item Example: variables in a for loop
           \end{itemize}
-    \item \textbf{Priciple of spatial locality (PSL)}
+    \item \textbf{Principle of spatial locality (PSL)}
           \begin{itemize}
               \item Information that is close in memory space, will be accessed together.
               \item Examples: Array, linked lists etc.\
@@ -57,7 +57,7 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
 \newpar{}
 \textbf{Remarks}
 \begin{itemize}
-    \item The TLB is only valid in one virtual address space, i.e.\ the TLB needs to be flushed explicity when changing vmas!
+    \item The TLB is only valid in one virtual address space, i.e.\ the TLB needs to be flushed explicitly when changing vmas!
     \item Additionally, flush TLB in any cases where PT modification could lead to inconsistencies.
     \item Located inside MMU, managed by MMU
     \item Storing larger pages, i.e.\ huge pages in the TLB improves the coverage of the TLB. This idea is guided by PSL.
@@ -93,7 +93,7 @@ In set-associative cache, a DRAM entry can go to any slot in their set. The \tex
 \begin{itemize}
     \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. %cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
     \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate. %cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
-    \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookop time such that, on typical workloads, most accesses do not cause eviction.
+    \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookup time such that, on typical workloads, most accesses do not cause eviction.
         % \item Has always less slot bits than direct-mapped cache. % For the same size of cache line this is true but also very trivial
         % Removed comment about LRU since its duplicate. I think this should be an overview and the details are already in the subsection
 \end{itemize}
@@ -122,7 +122,7 @@ The 32-bit address consists of
 \end{itemize}
 
 \paragraph{Fully-Assiociative Cache}
-With fully-assiociative cache, every line from DRAM can go to every cache entry. 
+With fully-associative cache, every line from DRAM can go to every cache entry. 
 \begin{itemize}
     \item There are no slot bits anymore.
     \item Very small caches (e.g.\ small TLBs) use this approach.
@@ -151,7 +151,7 @@ The 64-bit cache line consists of
 \begin{itemize}
     \item If available, the memory can be read directly from cache
     \begin{itemize}
-        \item Otherways, load from DRAM and evict if necessary
+        \item Otherwise, load from DRAM and evict if necessary
     \end{itemize}
     \item Cached loads result in \textbf{clean} cache lines
 \end{itemize}

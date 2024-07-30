@@ -84,7 +84,7 @@ The RISC-V mode with sandboxed execution. The kernel switches to this mode every
 \ptitle{Terminology Example: Returning From S to U}
 \begin{itemize}
     \item SPP: Supervisor Previous Privilege = 0. This means that, returning (via \texttt{sret}) from S, the previous privilege was the user mode. When ``returning'' from S to S this would be 1.
-    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the usermode app will continue at SP=SEPC.
+    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the user mode app will continue at SP=SEPC.
 \end{itemize}
 
 
@@ -102,8 +102,3 @@ If the user-mode process requests a service in a controlled manner it is called 
 \end{itemize}
 
 RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service.
-
-\newpar{}
-% TODO: Supervisor mode to machine mode (next lecture)
-
-% TODO: Interrupts (next lecture more)
