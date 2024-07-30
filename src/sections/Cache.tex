@@ -61,7 +61,7 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
     \item Additionally, flush TLB in any cases where PT modification could lead to inconsistencies.
     \item Located inside MMU, managed by MMU
     \item Storing larger pages, i.e.\ huge pages in the TLB improves the coverage of the TLB. This idea is guided by PSL.
-    \item Typical sizes: $\mathcal{O}(10)$ in small CPUs, $\mathcal{O}(100)$ in larger ones.  % TODO: what does this mean? O(100)=O(10)=O(1), why would a fixed data structure not be constant in size? Do you mean that their size is in the 10s/100s?
+    \item Typical sizes: $\approx 10$ in small CPUs, $\approx 100$ in larger ones.
 \end{itemize}
 
 \subsection{Data/ Instruction Cache}
