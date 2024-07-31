@@ -87,7 +87,7 @@ In DDR4 a cache line has due to \textit{read/write bursts} the size
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
-In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g.\ 4-way 4-set associative).
+In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of slots per set (e.g.\ 2-way 8-set associative).
 
 \ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
@@ -105,10 +105,10 @@ In direct-mapped cache, every slot of the cache can only map to one place in DRA
     \item The location in cache is solely determined by the slot. However, tag must be stored also to have a full reference to DRAM.
 \end{itemize}
 \newpar{}
-The 32-bit address consists of
+The 32-bit address of a 16-set, 64 byte cache line, direct mapped cache consists of
 \begin{itemize}
     \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
-    \item \textbf{Slot} (for 16/$2^4$ slots we need 4 bits: \fncode{ssss})
+    \item \textbf{Slot} (for 16 sets we need 4 bits: \fncode{ssss})
     \item \textbf{Tag} (22 bits: \fncode{tt..tt})
 \end{itemize}
 \includegraphics[width = \linewidth]{Cache.png}
