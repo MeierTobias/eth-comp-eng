@@ -791,13 +791,19 @@ In demand paging, memory is only allocated on demand by using \textbf{soft page 
     \item Application tries to store data
           \texttt{sw t0, 0(t1)}
     \item The MMU walks the pages and gets to an entry with the valid bit set to zero.~\texttt{stvec} is called.
+    \item The kernel pushes the user registers (TF) to the kernel stack.
     \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue with 4.
     \item Then the page gets allocated
           \begin{itemize}
               \item permissions according to the VMA
               \item page type (normal, huge etc.) according to the VMA
+              \item kernel knows from \texttt{scause} that the reason was a PF and finds the (user mode virtual) address (page number) at which the exception occurred in \texttt{stval}.
           \end{itemize}
-    \item The store instruction is re-executed at \texttt{sepc}
+    \item Exception handler restores TF, then calls \texttt{sret}
+    \begin{itemize}
+        \item Privilege mode to switch back to is given by \texttt{sstatus.SPP}
+        \item Next pc given by \texttt{sepc} (\texttt{sw} is re-executed there)
+    \end{itemize}
 \end{enumerate}
 
 \newpar{}
@@ -904,9 +910,3 @@ SCAUSE will tell why the exception happened (e.g., a page fault)
 \ptitle{STVAL} Supervisor Trap Value register
 
 STVAL will provide extended information about the exception (e.g., page fault's address)
-
-\newpar{}
-\ptitle{Example}
-
-On a soft PF the CPU jumps to STVEC. The handler routine sees which instruction caused the PF (the instruction at SEPC), knows from SCAUSE that the reason was a PF and finds the (user mode virtual) address (page number) at which the exception occurred in STVAL. A routine can then be called to load the missing code page to the address stored in STVAL.
-% TODO: how is this not the exact same as above?
