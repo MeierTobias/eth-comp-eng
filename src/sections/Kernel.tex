@@ -604,6 +604,13 @@ Solves issues arising from segmentation.
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
 
+\begin{itemize}
+    \item \texttt{V} Stores whether the memory has already been mapped. Can also be $0$ on valid access (soft PF).
+    \item \texttt{G} pages are not flushed by TLB as they are globally valid.
+    \item \texttt{A} indicates accesses (e.g.\ useful for swapping policy).
+    \item \texttt{D} indicates write accesses (e.g.\ useful for TLB).
+\end{itemize}
+
 \newpar{}
 \ptitle{satp}
 \begin{itemize}
@@ -631,8 +638,11 @@ One page table has 512 entries ($2^9$).
     \text{Giant page} & = & 512^3 * 4\text{~KB} & = & 512\text{~GB}
 \end{align*}
 
-To determine if the current page table entry points to a next page table or to a bigger page size the X, W, R flags in are used (all 0 = next level of page table). In case of e.g.\ a huge page the \code{V} bit is set at level 1 already instead of level 0.
-
+\begin{itemize}
+    \item To determine if the current page table entry points to a next page table or to a bigger page size the X, W, R flags in are used (all 0 = next level of page table). 
+    \item In case of e.g.\ a huge page the permission bits are already set at level 1 instead of level 0.
+    \item Address alignment must be respected on physical memory allocation.
+\end{itemize}
 \paragraph{The MMU}
 \begin{itemize}
     \item The MMU is a HW component
@@ -656,7 +666,6 @@ To determine if the current page table entry points to a next page table or to a
                     \end{itemize}
               \item Raises exceptions if validity or permissions are not given (page faults)
           \end{itemize}
-          % \item Note that the kernel executes a similar PT walk in software when setting up/manipulating PTEs % Clearer formulated in page fault subsection
 \end{itemize}
 
 \subsubsection{Virtual Memory Management}
@@ -697,6 +706,14 @@ The kernel memory space contains five regions:
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
 
+\paragraph{Booting Jake}
+\begin{enumerate}
+    \item Bootloader loads kernel binary from SSD to beginning of DRAM
+    \item Kernel assigns some physical memory as kernel stack   
+    % TODO: Creates buddy datastructures on kernel stack?
+    \item Enable virtual memory (turn the MMU on)
+\end{enumerate}
+
 \paragraph{MMU Start-Up}
 
 For backward compatibility reasons the kernel is located in the upper part of the virtual memory. This introduces a problem with the PC when the MMU starts. First the PC is pointing to the physical address of the kernel code. But after the MMU initialized the virtual memory space the PC points to the wrong address.
@@ -707,15 +724,22 @@ For backward compatibility reasons the kernel is located in the upper part of th
 
 This is tackled by
 \begin{enumerate}
-    \item Double mapping the kernel before the MMU starts.
-    \item Update pointers
+    \item Double mapping the kernel before the MMU starts (create PTEs).
+    \item Update pointers (add virtual base)
           \begin{itemize}
-              \item \code{sp, ra} etc.\ (heap)
+              \item Buddy allocator's heap metadata
+              \item \code{sp, ra} etc.\
           \end{itemize}
           and JALR to high address space
     \item Change the \code{mode} bit to turn on the MMU
     \item Remove the double mapped kernel.
 \end{enumerate}
+
+\newpar{}
+\ptitle{Remarks}
+\begin{itemize}
+    \item MMU start is triggered by writing an Sv48-specific value to \texttt{satp}.
+\end{itemize}
 
 \subsubsection{VMAs}
 % If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For more details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
@@ -733,17 +757,17 @@ The kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (
 
 
 \newpar{}
-\ptitle{Benefits of Memory Regions}
+\ptitle{Benefits for Different Memory Regions}
 \begin{itemize}
     \item \texttt{.code}
           \begin{itemize}
               \item apps have many functions: not all used at the same time.
-              \item only allocate pages currently used functions
+              \item only allocate pages for currently used functions
           \end{itemize}
     \item \texttt{heap}
           \begin{itemize}
               \item often sparsely-used
-              \item in contrast to code: just zero phys.\ page before mapping it
+              \item in contrast to code: just zero physical page before mapping it
           \end{itemize}
     \item \texttt{stack}: often sparsely-used
 \end{itemize}
