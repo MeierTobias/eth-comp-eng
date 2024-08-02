@@ -111,4 +111,16 @@ If the user-mode process requests a service in a controlled manner it is called 
     \item Creating a new process.
 \end{itemize}
 
-RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service.
+RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service which defines the registers used for arguments and the return value.
+
+\newpar{}
+\ptitle{Machine Calls and Interrups}
+
+\begin{itemize}
+    \item Supervisor can request services from machine mode
+    \item \textbf{Devices} raise interrupts to request kernel services
+    \begin{itemize}
+        \item Device-initiated exceptions, handeled similar to user exceptions
+    \end{itemize} 
+\end{itemize}
+

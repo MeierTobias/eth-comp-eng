@@ -910,3 +910,29 @@ SCAUSE will tell why the exception happened (e.g., a page fault)
 \ptitle{STVAL} Supervisor Trap Value register
 
 STVAL will provide extended information about the exception (e.g., page fault's address)
+
+\paragraph{Storing the Trap Frame (TF)}
+
+User mode stack is a bad choice for storing the TF:
+\begin{itemize}
+    \item The stack might not be mapped.
+    \item Supervisor might not have access to user mode pages.
+    \item Kernel must zero registers after using user-mode stack to not disclose sensitive information (slow).
+\end{itemize}
+Therefore, the kernel stack is commonly used. Its location is stored in the \texttt{sscratch} registers.
+
+\newpar{}
+\ptitle{Excerpt of Trap Handler}
+
+\begin{lstlisting}[language={[RISC-V]Assembler}]
+trap_handler_s:
+	csrrw sp, sscratch, sp  // sscratch = sp_u  
+    addi sp, sp, -264
+    
+	sd ra, 8(sp)
+	sd t0, 16(sp)
+	sd t1, 24(sp)
+	sd t2, 32(sp)
+    .
+    .
+\end{lstlisting}

@@ -74,7 +74,7 @@ Common OS start special first process (init process) which starts other processe
     \item Select a pid
     \item Copy the kernel page tables of the process (kernel is mapped to each user address space)
     \item Initialize the VMAs
-    \item Information for the \code{.text} VMA
+    \item Parse the \texttt{elf} datastructure
 \end{itemize}
 
 \newpar{}
@@ -84,19 +84,32 @@ Common OS start special first process (init process) which starts other processe
 \end{center}
 To start a process, the kernel needs to know
 \begin{itemize}
-    \item the \code{.text} section of the application (where it lies)
-    \item Address of 1st instruction (from ELF)
+    \item The \code{.text} section of the application (where it lies)
+    \item The address of 1st instruction
 \end{itemize}
 One can then switch to usermode after
 \begin{itemize}
-    \item Initializing user mode registers to zero (hide kernel registers)
-    \item Set SEPC to first instruction of the program
+    \item Initializing user mode registers to zero (hide kernel data used before \texttt{sret})
+    \item Set SEPC to first instruction (we get it from \texttt{elf})
+    \begin{lstlisting}[style=bright_C++]
+    asm volatile("mv t0, %0\n\t"
+            "csrw sepc, t0\n\t" ::"r"(elf.elf.e_entry)
+            : "t0");
+    \end{lstlisting}
     \item Set user-mode SP (can happen in kernel (e.g.\ Jake) or user-mode)
+    \begin{lstlisting}[style=bright_C++]
+    asm volatile("mv a0, %[farg]\n\t"
+            "mv sp, %[stack]\n\t"
+            "li ra, 0\n\t"
+            "li t0, 0\n\t"
+            .
+            .
+    \end{lstlisting}
     \item call \code{sret} with \code{sstatus.spp = 0}
 \end{itemize}
 
 \subsubsection{Multiprocessing}
-Applications should be able to create new processes. Most kernels provide a system call called \textit{fork}:
+Applications should be able to create new processes. Most kernels provide a system call called \texttt{fork}:
 
 \newpar{}
 \ptitle{Fork System Call}
@@ -106,7 +119,7 @@ Fork creates an \textbf{identical copy} of the address space of the calling proc
     \includegraphics[width = 0.8\linewidth]{fork.png}
 \end{center}
 
-Just calling \textit{fork} can be useful sometimes (e.g.\ running same process on multiple CPUs) but to create a new process one must call \textit{exec}:
+Just calling \texttt{fork} can be useful sometimes (e.g.\ running same process on multiple CPUs) but to create a \textit{new} process one must call \texttt{exec}:
 
 \ptitle{Exec System Call}
 \begin{itemize}
@@ -126,7 +139,7 @@ In jake, \code{fork} and \code{exec} are combined to \code{execv}
 void scall_handler_execv()
 {
     process_list[proc_running].status = PROCESS_PAUSED;     // pause current process
-    tf_user->a0 = 0;            // success                                    
+    tf_user->a0 = 0;    // return success to parent                                    
     proc_copy_frame(&process_list[proc_running].tf, tf_user);
 
     void *ptr__ = NULL;
@@ -145,7 +158,7 @@ void scall_handler_execv()
     }
     // call next app (won't return on success!)
     if (proc_run_process(ptr__, tf_user->a2, tf_user->a3) < 0) {
-        // failure handling
+        // failed creating new process
         tf_user->a0 = -1;
         csrw(satp, process_list[proc_running].satp);
         pt_flush_tlb();
