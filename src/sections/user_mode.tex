@@ -53,14 +53,14 @@ An isolated kernel can provide certain security benefits but the system has to s
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel.png}
 
-A kernel service request only requires a switching of the privilege and not the VMA but now the privilege have to be associated to different areas within the address space. 
+A kernel service request only requires a switching of the privilege and not the VMA but now the privileges have to be associated to different areas within the address space. 
 
 \newpar{}
 \ptitle{Defining Privilege Levels}
 
 This is done by setting the \textbf{U-bit} in the page table entry.
 
-Data pages with U-bit unset (kernel data pages) can only be accessed by code run in pages with U-bit unset (kernel code pages). This means only kernel code can access kernel data. Similarly code pages need the U-bit unset for executing privileged instructions such as \texttt{csrw satp 0(\dots)}.
+Data pages with U-bit unset in the \textbf{leaf PTE} (kernel data pages) can only be accessed by code run in pages with U-bit unset in the leaf PTE (kernel code pages). This means only kernel code can access kernel data. Similarly code pages need the U-bit unset for executing privileged instructions such as \texttt{csrw satp 0(\dots)}.
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel_privileges.png}
 
@@ -94,7 +94,7 @@ The RISC-V mode with sandboxed execution. The kernel switches to this mode every
 \ptitle{Terminology Example: Returning From S to U}
 \begin{itemize}
     \item SPP: Supervisor Previous Privilege gives information about which mode to return to. E.g.\ calling \texttt{sret} from S, the previous privilege was the user mode if \texttt{sstatus.SPP=0}. When ``returning'' from S to S this would be 1.
-    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the user mode app will continue at SP=SEPC.
+    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the user mode app will continue at SP=SEPC. E.g.\ in case of demand paging this will be the user \texttt{pc} that caused the soft PF.
 \end{itemize}
 
 

@@ -70,10 +70,16 @@ After starting the new process, its first instruction will cause a page fault (n
 \subsubsection{Starting the First Process}
 Common OS start special first process (init process) which starts other processes. First, the specific process data structure must be initialized and then, one switches to user mode.
 \ptitle{Process Data Structure}
+
+On start-up, the process data structure gets populated as follows:
 \begin{itemize}
     \item Select a pid
-    \item Copy the kernel page tables of the process (kernel is mapped to each user address space)
-    \item Initialize the VMAs
+    \item Allocate root PT. Store this physical address in \texttt{satp} field
+    \item Copy the kernel page tables of the process
+    \begin{itemize}
+        \item Kernel has identical virtual address for each process but translation is process-specific (\texttt{satp})
+    \end{itemize}
+    \item Initialize the VMAs (code and stack)
     \item Parse the \texttt{elf} datastructure
 \end{itemize}
 
@@ -90,7 +96,7 @@ To start a process, the kernel needs to know
 One can then switch to usermode after
 \begin{itemize}
     \item Initializing user mode registers to zero (hide kernel data used before \texttt{sret})
-    \item Set SEPC to first instruction (we get it from \texttt{elf})
+    \item Set SEPC to first instruction (we get it from \texttt{elf.elf.e\_entry})
     \begin{lstlisting}[style=bright_C++]
     asm volatile("mv t0, %0\n\t"
             "csrw sepc, t0\n\t" ::"r"(elf.elf.e_entry)
@@ -114,7 +120,7 @@ Applications should be able to create new processes. Most kernels provide a syst
 \newpar{}
 \ptitle{Fork System Call}
 
-Fork creates an \textbf{identical copy} of the address space of the calling process
+Fork creates an \textbf{identical copy} of the address space of the calling process. The process calling fork is called \textit{parent}. Fork returns either 0 or 1 to distinguish whether one has ended up in the child or parent process.
 \begin{center}
     \includegraphics[width = 0.8\linewidth]{fork.png}
 \end{center}

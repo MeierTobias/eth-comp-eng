@@ -217,6 +217,8 @@ struct block *buddy_alloc(unsigned order)
     int smallest_order = __buddy_find_smallest_free_order(order);
     if (smallest_order == -1) return -1;
 
+    // does nothing if "smallest_order == order"
+    // else split "smallest_order" until "order"
     int ret = buddy_split(smallest_order, order);
     if(ret == -2) return NULL;
 
@@ -415,6 +417,8 @@ static int __buddy_split(unsigned order)
 
 \newpar{}
 \ptitle{Merge}
+
+Recursively merges block and buddy.
 \begin{lstlisting}[style=bright_C++]
 static void __buddy_try_merge(struct block *block)
 {
