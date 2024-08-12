@@ -272,7 +272,6 @@ exit:
 \includegraphics[width=0.7\linewidth]{unconditional_jumps.png}
 \begin{itemize}
     \item \texttt{JAL} stores the address of the instruction following the jump (PC+4) into the register \texttt{rd}.
-    \item The standard software calling convention uses \texttt{x1/ra} as the return address register.
     \item The registers that are used after the PC returned to the line below the jump instruction have to be saved to the stack.
     \item In RV32I and RV64I, both \code{JAL} and \code{JALR} will throw an error if the target address is not 4-byte-aligned.
     \item The table~\ref{registers} shows all the registers that have to be saved by the \textbf{caller/callee}.
@@ -299,7 +298,7 @@ addi    sp, sp, 4       # reset the stack pointer
 \ptitle{Remarks}
 \begin{itemize}
     \item \texttt{jalr} stores \texttt{PC+4} in \texttt{rd}
-    \item One uses \texttt{ra} as \texttt{rd} by convention
+    \item One uses \texttt{x1/ra} as \texttt{rd} by convention
     \item Then, the called function has \texttt{ra} available in the same way as we have it in ``our'' function. The called function will analogously first push \texttt{ra} to the stack and finally return to \texttt{ra}, where we have stored \texttt{PC+4}
     \item At the end of the main function (end of program) one usually calls
           \begin{lstlisting}[language={[RISC-V]Assembler}]
