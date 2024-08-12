@@ -87,30 +87,47 @@ In DDR4 a cache line has due to \textit{read/write bursts} the size
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
-In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of slots per set (e.g.\ 2-way 8-set associative).
+In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of slots per set.
 
 \ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
-    \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. %cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
-    \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate. %cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
+    \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. 
+    \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate.
     \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookup time such that, on typical workloads, most accesses do not cause eviction.
-        % \item Has always less slot bits than direct-mapped cache. % For the same size of cache line this is true but also very trivial
-        % Removed comment about LRU since its duplicate. I think this should be an overview and the details are already in the subsection
 \end{itemize}
 
-\paragraph{Direct Mapped Cache}
+\paragraph{Direct-Mapped Cache}
 In direct-mapped cache, every slot of the cache can only map to one place in DRAM.
 \begin{itemize}
     \item Tag is the ``row'' in DRAM, ``slot'' the column.
     \item The location in cache is solely determined by the slot. However, tag must be stored also to have a full reference to DRAM.
 \end{itemize}
+
 \newpar{}
+\ptitle{Address Assignment}
+
 The 32-bit address of a 16-set, 64 byte cache line, direct mapped cache consists of
 \begin{itemize}
     \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
     \item \textbf{Slot} (for 16 sets we need 4 bits: \fncode{ssss})
+    \begin{itemize}
+        \item Low bits are chosen for slot assignment to have different cache slots for neighbouring DRAM blocks (PSL).
+    \end{itemize}
     \item \textbf{Tag} (22 bits: \fncode{tt..tt})
 \end{itemize}
+
+\newpar{}
+\ptitle{Cache Access}
+
+\begin{enumerate}
+    \item Go to slot given by \fncode{ssss}
+    \item Compare tag in cache with \fncode{tt..tt}
+    \begin{itemize}
+        \item Success: access cache data
+        \item Fail: access DRAM
+    \end{itemize}
+\end{enumerate}
+
 \includegraphics[width = \linewidth]{Cache.png}
 \newpar{}
 \ptitle{Properties}
@@ -126,7 +143,7 @@ With fully-associative cache, every line from DRAM can go to every cache entry.
 \begin{itemize}
     \item There are no slot bits anymore.
     \item Very small caches (e.g.\ small TLBs) use this approach.
-    \item Use LRU policy on eviction (PTL) as we ignore spatial context.
+    \item When cache is full: Use LRU policy on eviction (PTL) as we ignore spatial context.
 \end{itemize}
 
 \newpar{}
@@ -134,6 +151,23 @@ The 64-bit cache line consists of
 \begin{itemize}
     \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
     \item \textbf{Tag} (26 bits: \fncode{tt..tt})
+\end{itemize}
+
+\paragraph{Set-Associative Cache}
+
+\newpar{}
+\ptitle{Address Assignment}
+
+The 32-bit address of a 16-set, 64 byte cache line, 4-set 4-way associative cache consists of
+\begin{itemize}
+    \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
+    \item \textbf{Slot} (for 4 sets we need 2 bits: \fncode{ss})
+    \item \textbf{Tag} (22 bits: \fncode{tt..tttt})
+\end{itemize}
+i.e.\ now the given 16 cache lines are split up in only 2 sets. 
+\begin{itemize}
+    \item A DRAM block can reside anywhere within its set.
+    \item The tag bits fully determine the block within its set.
 \end{itemize}
 
 \newpar{}

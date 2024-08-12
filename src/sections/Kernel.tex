@@ -108,7 +108,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \end{itemize}
 
 \newpar{}
-\ptitle{Malloc}
+\ptitle{malloc}
 \begin{enumerate}
     \item Walk the linked list to find free space
     \item Set magic value and remove node from free LL (update pointers)
@@ -122,7 +122,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \end{itemize}
 
 \newpar{}
-\ptitle{\code{free(a)}}%ChkTex 36
+\ptitle{free}
 
 \begin{enumerate}
     \item Check magic value. If it has been overwritten: out-of-bound software bug
@@ -167,6 +167,7 @@ Flips the right bits in the bitmap to zero %ChkTex 36
     \item Depending on the bitmaps granularity, there is a tradeoff between \textbf{fragmentation} and \textbf{performance}:%ChkTex 36
           \begin{itemize}
               \item fine bitmap: low internal fragmentation but expensive \code{malloc()} %ChkTex 36
+              % TODO: Is it expensive because of more external fragmentation or because more "small steps" have to be taken on malloc?
               \item coarse bitmap: high internal frag., cheap \code{malloc()} %ChkTex 36
           \end{itemize}
 \end{itemize}
@@ -581,6 +582,7 @@ Solves issues arising from segmentation.
     \item If \code{present == 0}, allocate new page (\code{buddy\_alloc(0)} $\to$ \code{ppn}) and update PPN.\ %ChkTeX 36
 \end{itemize}
 
+\newpar{}
 \ptitle{Page Table Entry}
 
 \begin{center}
@@ -617,8 +619,8 @@ Solves issues arising from segmentation.
 \begin{itemize}
     \item \texttt{V} Stores whether the memory has already been mapped. Can also be $0$ on valid access (soft PF).
     \item \texttt{G} pages are not flushed by TLB as they are globally valid.
-    \item \texttt{A} indicates accesses (e.g.\ useful for swapping policy).
-    \item \texttt{D} indicates write accesses (e.g.\ useful for TLB).
+    \item \texttt{A} indicates accesses (e.g.\ useful for LRU swapping).
+    \item \texttt{D} indicates write accesses (e.g.\ useful for TLB to keep TLB/DRAM synchronized).
 \end{itemize}
 
 \newpar{}
@@ -785,7 +787,7 @@ The kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (
 \paragraph{Page Faults}
 The VMA is used to differentiate between \textbf{soft} and \textbf{hard page faults}:
 \begin{itemize}
-    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. Either there is no VMA of permissions are not given. This results in the termination of the application.
+    \item \textbf{Hard page faults} are caused by invalid memory access due to a software bug. Either there is no VMA or permissions are not given. This results in the termination of the application.
     \item \textbf{Soft page faults} occur when valid memory (in VMA and permissions given) is accessed with an invalid page table entry. In this case a new page table entry needs to be created (see~\ref{page demanding} Demand Paging).
 \end{itemize}
 
@@ -802,7 +804,7 @@ In demand paging, memory is only allocated on demand by using \textbf{soft page 
           \texttt{sw t0, 0(t1)}
     \item The MMU walks the pages and gets to an entry with the valid bit set to zero.~\texttt{stvec} is called.
     \item The kernel pushes the user registers (TF) to the kernel stack.
-    \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue with 4.
+    \item The kernel checks if the requested address (found in \texttt{stval}) is in the valid area (VMA) and if the permissions are given. If not: kill process. If given, continue with 5.
     \item Then the page gets allocated
           \begin{itemize}
               \item permissions according to the VMA
@@ -831,7 +833,7 @@ There are 3 common use cases for page sharing.
     \item mapping same physical page to the virtual pages of multiple processes
     \item all processes have r/w permissions or some have r, other w
           \begin{itemize}
-              \item intended to modify other's contents for communication
+              \item modifying other's contents is intended
           \end{itemize}
 \end{itemize}
 
@@ -848,15 +850,15 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
     \item upon first write access:
           \begin{enumerate}
               \item soft page fault: allocate new page, set it to zero but with write permissions (validity checked via VMA).
-              \item Write with valid access.
+              \item Repeat write with valid access.
           \end{enumerate}
 \end{itemize}
 
 \paragraph{Page Swapping}
-Idea: move pages to SSD if all RAM is used
+Idea: Move pages to SSD if all DRAM is used
 \begin{itemize}
-    \item unset present bit in the PTE. This triggers a PF on access
-    \item store physical address on SSD in the PTE to find page later
+    \item Unset present bit in the PTE. This triggers a PF on access
+    \item Store physical address on SSD in the PTE to find page later
 \end{itemize}
 
 \newpar{}
@@ -866,7 +868,7 @@ On a (soft) PF the kernel
 \begin{itemize}
     \item consults VMA to check whether it is indeed a soft PF
     \item checks PTE to find that page is indeed swapped out
-    \item swaps out another victim page
+    \item swaps out another victim page (use \texttt{A} bit)
     \item allocates the new free page, update PTE
 \end{itemize}
 
@@ -875,7 +877,7 @@ On a (soft) PF the kernel
 
 \begin{itemize}
     \item various, e.g.\ LRU
-    \item support from paging HW: level-0 PTEs have recently-accessed bit
+    \item support from paging HW: level-0 PTEs have \texttt{A} bit
           \begin{itemize}
               \item don't swap these pages out
           \end{itemize}
