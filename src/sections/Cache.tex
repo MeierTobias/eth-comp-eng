@@ -65,6 +65,10 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
 \end{itemize}
 
 \subsection{Data/ Instruction Cache}
+\begin{itemize}
+    \item On data loads, the entire DRAM block gets stored in cache
+    \item Similarly for instructions, an entire DRAM \textit{block of 4 B instructions} gets stored
+\end{itemize}
 
 \subsubsection{Structure}
 \ptitle{Cache Line Size}
@@ -153,6 +157,16 @@ The 64-bit cache line consists of
     \item \textbf{Tag} (26 bits: \fncode{tt..tt})
 \end{itemize}
 
+\newpar{}
+\ptitle{Properties}
+\begin{itemize}
+    \item[+] Flexible
+    \item[+] Dense population
+    \item[-] $\mathcal{O}(n)$ for lookup
+    \item[-] Many tag bits
+    \item[-] Search through all tags
+\end{itemize}
+
 \paragraph{Set-Associative Cache}
 
 \newpar{}
@@ -162,22 +176,12 @@ The 32-bit address of a 16-set, 64 byte cache line, 4-set 4-way associative cach
 \begin{itemize}
     \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
     \item \textbf{Slot} (for 4 sets we need 2 bits: \fncode{ss})
-    \item \textbf{Tag} (22 bits: \fncode{tt..tttt})
+    \item \textbf{Tag} (24 bits: \fncode{tt..tttt})
 \end{itemize}
 i.e.\ now the given 16 cache lines are split up in only 2 sets. 
 \begin{itemize}
     \item A DRAM block can reside anywhere within its set.
     \item The tag bits fully determine the block within its set.
-\end{itemize}
-
-\newpar{}
-\ptitle{Properties}
-\begin{itemize}
-    \item[+] Flexible
-    \item[+] Dense population
-    \item[-] $\mathcal{O}(n)$ for lookup
-    \item[-] Many tag bits
-    \item[-] Search through all tags
 \end{itemize}
 
 \subsubsection{Loading vs. Storing}

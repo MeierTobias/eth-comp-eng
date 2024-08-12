@@ -128,26 +128,13 @@ Depending on the relative order, either the \code{EX/MEM} or the \code{MEM/WB} p
           \end{enumerate}
 \end{itemize}
 
-%TODO: I find this example confusing: it suggests that and/or have to be managed differently even though they are the same and only their position is relevant.
-% Additionally, I don't see it adding value if one understands the previous subsubsection
-
-% \begin{examplesection}[Example]\label{example_hazard_detection}
-%     Even though the \code{and} and the \code{or} instruction face a similar hazard, the comparison required to detect the hazard is specific to their relative location w.r.t.\ the \code{sub} instruction.
-    
-%     \includegraphics[width=\linewidth]{example_hazard_detection.png}
-% \end{examplesection}
-
 \paragraph{Solution: Forwarding}
 \textbf{Type 1} data hazards (not containing a memory load) can be resolved by forwarding data from an earlier instruction.
 
 \newpar{}
 For example, the data in the \code{EX/MEM} pipeline register can be forwarded to the \code{EX} stage.
 
-% By passing the result of the execution stage directly into the input of the next execution stage the \code{add}\textleftarrow\code{sub} RAW hazard can be avoided.
-
 \includegraphics[width=\linewidth]{cpu_pipelining_raw.png}
-
-% The \textit{forwarding unit} decides which registers from which stages are used by the \textit{ALU}. This decision is affected and meant to resolve \textbf{type 1 data hazards} (no memory load involved).
 
 \ptitle{Forwarding Unit}
 \begin{center}
@@ -179,19 +166,11 @@ For \textbf{Type 2} hazards (containing a memory load) which need forwarding to 
 
 \includegraphics[width=\linewidth]{cpu_pipelining_raw_stall.png}
 
-% \ptitle{Remark:}
-% The gray areas in the block diagram indicate the execution time inside one cycle (first half, second half or full cycle). A first half block can be executed in the same cycle as a second half block which reduces the number of bubbles.
-
 \newpar{}
-As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \code{NOP} instruction into the pipeline, resulting in a temporary pause of the CPU.
-% \begin{itemize}
-%     % \item To achieve this, the hazard detection unit selects the zero input of the multiplexer yielding zero control registers.
-%     \item Therefore subsequently, the affected stages ``do nothing'' for a complete cycle and the PC is kept at the next instruction. This mechanism is meant to resolve \textbf{type 2 data hazards} (memory load involved).
-% \end{itemize}
+As mentioned in Table~\ref{tab:opcode}, setting the four bits (\code{Branch, RegWrite, MemWrite, MemRead}) to zero creates and pushes a \code{NOP} instruction into the pipeline, resulting in a temporary pause of the CPU. To achieve this, the hazard detection unit selects the zero input of the multiplexer yielding \textbf{zero control registers}. Note that the PC can be manipulated.
 \begin{center}
     \includegraphics[width=\linewidth]{cpu_pipelining_NOP.png}
 \end{center}
-% Note that the comparison already happens at the \code{ID/EX} stage and that the PC is manipulated! % TODO: don't all comparisons happen at ID/EX stage?
 
 \subsubsection{Control Hazards}\label{control hazards}
 
