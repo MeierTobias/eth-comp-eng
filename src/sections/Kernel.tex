@@ -680,6 +680,71 @@ One page table has 512 entries ($2^9$).
           \end{itemize}
 \end{itemize}
 
+\subsubsection{Page Setup in Jake}
+
+\newpar{}
+\ptitle{Utils}
+\begin{lstlisting}[style=bright_C++]
+static void pt_walker_set_nonleaf_pte(pte_t *pte){
+    pte_t table = pt_alloc_page_table();
+
+    assert(pte_is_valid(table));
+
+    *pte = table;
+    pt_flush_tlb();
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=bright_C++]
+static pte_t *pt_walker_next_pte(pte_t *pte_to_start_from,
+                unsigned long depth_of_pte_to_start_from,
+                unsigned long vpn)
+{
+    unsigned long phys_addr_of_next_pte = 0;
+    pte_t *next_pte = NULL;
+    phys_addr_of_next_pte = 
+        ((ppn2phys(pte_get_ppn(*pte_to_start_from))) + 
+        ((vpn2page_table_index_at_level(vpn, 
+        depth2level(depth_of_pte_to_start_from+1)))<<3));
+    next_pte = phys2virt(phys_addr_of_next_pte);
+
+    return next_pte;
+}
+\end{lstlisting}
+
+\newpar{}
+\ptitle{Set PTE}
+\begin{lstlisting}[style=bright_C++]
+int pt_walker_set_pte(unsigned long satp, 
+    unsigned long vpn, pte_t pte_val,
+    unsigned depth){
+    // preps
+    /* NOTE: pointer to curr. PTE, not to where curr. PTE points to! */
+    pte_t root = satp2pte(satp);
+    pte_t *pte = &root;
+
+    // checks
+    assert(pte_is_valid(pte_val));
+    assert(depth > 0);
+    assert(depth < PT_NUM_LEVELS);
+
+    // the actual PT walk
+    for(int d = 0; d<depth; d++){
+        // next line always ok at satp
+        pte = pt_walker_next_pte(pte, d, vpn);		
+        if (pte_is_leaf(*pte)) 
+            return -EMAPPED; // mapped :(==
+        if(!pte_is_valid(*pte)) 
+            pt_walker_set_nonleaf_pte(pte); // allocate
+    }
+
+    // being here implies: d=depth, valid, nonleaf
+    *pte = pte_val;     // set the pte
+    pt_flush_tlb();
+    return 0;
+}
+\end{lstlisting}
+
 \subsubsection{Virtual Memory Management}
 The virtual memory space is divided into two sections one for the application and one for the kernel.
 \begin{center}
