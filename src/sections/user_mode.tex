@@ -43,13 +43,13 @@ To achieve this there are at least two modes:
 \subsubsection{Address Spaces}
 In the page tables no information about a process' identity are stored. Therefore, multiple address spaces are necessary. Additionally for security reasons processes should not be allowed to create page tables by themselves. As a result the kernel handles processes and runs each process (user-mode) in an own virtual address space. The kernel itself can either run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
 
-\paragraph{Isolated Kernel}
+\paragraph{Isolated Kernel / Microkernel}
 
 \includegraphics[width=\linewidth]{user_mode_isolated_kernel.png}
 
 An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive (writing \texttt{satp} every time). Privilege information are given by the type of address space (low, high), not by a PTE bit.
 
-\paragraph{Joint Kernel}
+\paragraph{Joint Kernel / Macrokernel}
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel.png}
 

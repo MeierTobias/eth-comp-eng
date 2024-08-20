@@ -362,7 +362,7 @@ slli    a1,a1,0x2           # multiply offset by 4 (byte)
                             # <- 32-bit integer
 add     a2,a0,a1            # offset address
 
-lw      a3,0(a2)            # load from offset address
+lw      a3,0(a2)            # load signed from offset address
 addi    a3,a3,0x1           # increment by one
 sw      a3,0(a2)            # store to offset address
 \end{lstlisting}

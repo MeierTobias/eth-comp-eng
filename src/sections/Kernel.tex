@@ -52,13 +52,14 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \begin{center}
     \includegraphics[width=\linewidth]{Allocators.png}
 \end{center}
+% TODO: we cuold remove this, since it's already shown in the diagramm
 \begin{itemize}
     \item Slab allocator built \textit{on top} of low-level allocator:
           \begin{itemize}
             %   \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
               \item Slab allocator for small memory requests within pages
           \end{itemize}
-    \item Applications' allocators ask kernel (buddy) for memory
+    \item Applications' allocators ask kernel (buddy) for memory 
 \end{itemize}
 
 \subsection{Dynamic Memory Management (Heap)}
@@ -91,14 +92,14 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \newpar{}
 \ptitle{Data Structure}
 \begin{lstlisting}[language={C}]
-    typedef struct __node_t {
-        int size;                           // allocation size
-        union {                             // contains either:
-            int magic;                      // sanity check or
-            struct __node_t *next;          // next free section
-        } u;
-    } node_t;         
-    \end{lstlisting}
+typedef struct __node_t {
+    int size;                           // allocation size
+    union {                             // contains either:
+        int magic;                      // sanity check or
+        struct __node_t *next;          // next free section
+    } u;
+} node_t;         
+\end{lstlisting}
 
 \includegraphics[width = \linewidth]{free_linked_list.png}
 
@@ -129,8 +130,8 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
     \item Allocate a new free node
     \item Insert node to the front of the free LL:
           \begin{itemize}
-              \item \code{*next = head}
-              \item \code{head = node}
+              \item \fncode{*next = head}
+              \item \fncode{head = node}
           \end{itemize}
 \end{enumerate}
 A \textit{doubly linked list} can be used for convenient unlinking
@@ -179,7 +180,7 @@ Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fr
 \begin{itemize}
     \item[+] Flexible (various allocation sizes, growing/shrinking)
     \item[-] Some internal fragmentation
-    \item[-] External fragmentation: \textit{Fragmentation across slabs} (not optimized for full utilization): Can't move memory between slabs as they become full/empty. \textbf{Buddy} solves this issue.
+    \item[-] External fragmentation: \textit{Fragmentation across slabs} (not optimized for full utilization): Can't move memory between slabs as they become full/empty.\ \textbf{Buddy} solves this issue.
 \end{itemize}
 
 \newpar{}
@@ -268,12 +269,12 @@ int buddy_free(struct block *block)
 
 \textbf{Remarks}
 \begin{itemize}
-    \item Both \code{block\_alloc} and \code{block\_free} trigger a max of (\code{max\_order}) of operations. %ChkTeX 36 
+    \item Both \code{block\_alloc} and \code{block\_free} trigger a max of (\code{order}) of operations. %ChkTeX 36 
     \item Initialization: Call \code{block\_free} on every 4kB page (causes merging).
 \end{itemize}
 
 \paragraph{Buddy Allocator: Data Structures}
-\ptitle{Block}
+\ptitle{Block} (Bitmap)
 \begin{lstlisting}[style=bright_C++]
 struct block {
     unsigned refcnt;    /* e.g. for shared memory */
@@ -504,6 +505,7 @@ Solves issues arising from segmentation.
               \item Reason for buddy page size
           \end{itemize}
     \item Kernel allocates pages (buddy)
+    \item Page table entries are located in the kernel vma (stack/heap)
     \item CPU's MMU translates addresses using the page table
 \end{itemize}
 
