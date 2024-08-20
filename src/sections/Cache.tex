@@ -86,13 +86,14 @@ In DDR4 a cache line has due to \textit{read/write bursts} the size
 \newpar{}
 \textbf{Remarks}
 \begin{itemize}
-    \item In contrast to TLB cache, data/instruction cache is accessed with \textbf{physical} addresses to avoid flushing the cache when switching vmas.
-    \item In the case of TLB, the data remain in DRAM but the address translation is saved in cache. For data/instruction cache the actual data are cached using their physical addresses.
+    \item In contrast to TLB cache, data/instruction cache is accessed with \textbf{physical} addresses to avoid flushing the cache when switching vmas. % TODO: Is this correct?
+    \item In the case of TLB, the data remain in DRAM but the address translation is saved in cache. For data/instruction cache the actual data are cached using their physical addresses. % TODO: Duplicated explanation. TLB stores addresses and data cache data.
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
 In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of slots per set.
 
+% TODO: Should we remove this section and move the information into the corresponding subsections? 
 \ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
     \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. 

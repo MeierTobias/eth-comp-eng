@@ -197,7 +197,7 @@ lw t6, 400(t0)
 
 There are three ways to solve this problem
 \begin{itemize}
-    \item~\ref{contr_stalling} Bubble
+    \item~\ref{contr_stalling} Stalling
     \item~\ref{shortcut} Shortcut
     \item~\ref{prediction} Prediction
 \end{itemize}
@@ -229,7 +229,7 @@ Wait less by adding additional logic to calculate the branch outcome sooner.
 \paragraph{Prediction}\label{prediction}
 Predict the outcome of a branch instruction and roll back if the prediction was wrong.
 \begin{itemize}
-    \item The previous solutions waited for the branch outcome before the first action was taken.
+    \item The previous solutions waited for the branch outcome before the first action was taken. % TODO: This is exactly what was stated above and here. Could we remove these two bullet points?
           \begin{itemize}
               \item Now action is taken before the result is known.
           \end{itemize}
