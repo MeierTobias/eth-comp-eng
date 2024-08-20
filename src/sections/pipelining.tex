@@ -98,6 +98,18 @@ Depending on the relative order, either the \code{EX/MEM} or the \code{MEM/WB} p
     \includegraphics[width=0.8\linewidth]{example_hazard_detection.png}
 \end{center}
 
+\newpar{}
+\ptitle{Remarks}
+\begin{itemize}
+    \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd}) % TODO: store has no rd
+    \item 3 components of hardware logic are required to handle data hazards:
+          \begin{enumerate}
+              \item Hazard detection logic (detect that there \textit{actually is} a hazard)
+              \item Forwarding logic
+              \item Stalling logic
+          \end{enumerate}
+\end{itemize}
+
 \paragraph{RAW Hazard Types}
 \renewcommand{\arraystretch}{1.3}
 \setlength{\oldtabcolsep}{\tabcolsep}\setlength\tabcolsep{6pt}
@@ -114,17 +126,7 @@ Depending on the relative order, either the \code{EX/MEM} or the \code{MEM/WB} p
 \renewcommand{\arraystretch}{1}
 \setlength\tabcolsep{\oldtabcolsep}
 
-\newpar{}
-\ptitle{Remarks}
-\begin{itemize}
-    \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd}) % TODO: store has no rd
-    \item 3 components of hardware logic are required to handle data hazards:
-          \begin{enumerate}
-              \item Hazard detection logic (detect that there \textit{actually is} a hazard)
-              \item Forwarding logic
-              \item Stalling logic
-          \end{enumerate}
-\end{itemize}
+
 
 \paragraph{Solution: Forwarding}
 \textbf{Type 1} data hazards (not containing a memory load) can be resolved by forwarding data from an earlier instruction.

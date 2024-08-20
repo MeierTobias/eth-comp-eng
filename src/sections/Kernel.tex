@@ -55,7 +55,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \begin{itemize}
     \item Slab allocator built \textit{on top} of low-level allocator:
           \begin{itemize}
-              \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
+            %   \item Kernel (buddy allocator) provides memory and can grow full slabs / shrink empty ones
               \item Slab allocator for small memory requests within pages
           \end{itemize}
     \item Applications' allocators ask kernel (buddy) for memory
@@ -184,6 +184,7 @@ Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fr
 
 \newpar{}
 \ptitle{Implementation}
+% so much duplication :(((
 \begin{itemize}
     \item LL:
           \begin{itemize}
@@ -194,8 +195,8 @@ Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fr
     \item Bitmap:
           \begin{itemize}
               \item [+] Coalescing for free
-              \item [-] Slow malloc due to scanning
               \item [+] Less metadata: single bit
+              \item [-] Slow malloc due to scanning
           \end{itemize}
 \end{itemize}
 
@@ -808,15 +809,9 @@ This is tackled by
               \item \code{sp, ra} etc.\
           \end{itemize}
           and JALR to high address space
-    \item Change the \code{mode} bit to turn on the MMU
+    \item Change the \fncode{mode} bit in \fncode{satp}  to turn on the MMU
     \item Remove the double mapped kernel.
 \end{enumerate}
-
-\newpar{}
-\ptitle{Remarks}
-\begin{itemize}
-    \item MMU start is triggered by writing an Sv48-specific value to \texttt{satp}.
-\end{itemize}
 
 \subsubsection{VMAs}
 % If an application violates the permissions or tries to access an unmapped memory area the CPU throws an exception. (For more details on exceptions see Section~\ref{exceptions}) This exception is called a page fault.
@@ -988,7 +983,7 @@ SCAUSE will tell why the exception happened (e.g., a page fault)
 
 STVAL will provide extended information about the exception (e.g., page fault's address)
 
-\paragraph{Storing the Trap Frame (TF)}
+\subsubsection{Storing the Trap Frame (TF)}
 
 User mode stack is a bad choice for storing the TF:
 \begin{itemize}
