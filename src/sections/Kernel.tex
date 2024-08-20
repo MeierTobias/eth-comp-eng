@@ -511,13 +511,12 @@ Solves issues arising from segmentation.
 
 \paragraph{Linear Page Table}
 \begin{itemize}
-    \item stored in CPU
+    \item simple
     \item large unused parts (virtual $>>$ physical)
           \begin{itemize}
               \item wastes physical memory
           \end{itemize}
-    \item simple
-    \item virtual address is index to page table
+    \item the virtual address is the row index of the page table
           \begin{itemize}
               \item virtual offset = physical offset within page
           \end{itemize}
@@ -620,10 +619,11 @@ Solves issues arising from segmentation.
 \setlength\tabcolsep{\oldtabcolsep}
 
 \begin{itemize}
-    \item \texttt{V} Stores whether the memory has already been mapped. Can also be $0$ on valid access (soft PF).
+    \item \texttt{V} Stores whether the memory has already been mapped.
     \item \texttt{G} pages are not flushed by TLB as they are globally valid.
-    \item \texttt{A} indicates accesses (e.g.\ useful for LRU swapping).
+    \item \texttt{A} indicates accesses (e.g.\ useful for page swapping).
     \item \texttt{D} indicates write accesses (e.g.\ useful for TLB to keep TLB/DRAM synchronized).
+    \item \texttt{U} kernel/user permission, can be compared to the \texttt{sstatus} which stores the requesting mode.
 \end{itemize}
 
 \newpar{}
@@ -656,33 +656,9 @@ One page table has 512 entries ($2^9$).
 \begin{itemize}
     \item To determine if the current page table entry points to a next page table or to a bigger page size the X, W, R flags in are used (all 0 = next level of page table).
     \item In case of e.g.\ a huge page the permission bits are already set at level 1 instead of level 0.
-    \item Address alignment must be respected on physical memory allocation.
-\end{itemize}
-\paragraph{The MMU}
-\begin{itemize}
-    \item The MMU is a HW component
-    \item After starting it, MMU interposes on each memory access:
-          \begin{itemize}
-              \item Lookup TLB. If cache hit: done. If cache miss: continue
-              \item Go to DRAM page at (phys.) address stored in \code{satp}
-              \item Execute a memory walk to the physical address that corresponds to the given virtual address
-              \item Store translation in TLB
-          \end{itemize}
-    \item During the memory walk the MMU
-          \begin{itemize}
-              \item Checks:
-                    \begin{itemize}
-                        \item validity using the \code{V} bit
-                        \item permissions depending on the \code{R/W/X} bits
-                        \item kernel/user permissions depending on the \code{U} bit
-                              \begin{itemize}
-                                  \item \texttt{sstatus} stores processor's state (kernel/user)
-                              \end{itemize}
-                    \end{itemize}
-              \item Raises exceptions if validity or permissions are not given (page faults)
-          \end{itemize}
 \end{itemize}
 
+% TODO: I don't get what this example shows us. For me this is just a specific implementation and not a general concept.
 \subsubsection{Page Setup in Jake}
 
 \newpar{}
@@ -826,25 +802,26 @@ struct vma{
     struct node node;
 }
 \end{lstlisting}
+% TODO: The all the information that was here is already in the sections below and above (U bit)
 
 The kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (and itself). VMAs are managed by the MMU (\code{mmap, munmap}).
 
-
-\newpar{}
-\ptitle{Benefits for Different Memory Regions}
-\begin{itemize}
-    \item \texttt{.code}
-          \begin{itemize}
-              \item apps have many functions: not all used at the same time.
-              \item only allocate pages for currently used functions
-          \end{itemize}
-    \item \texttt{heap}
-          \begin{itemize}
-              \item often sparsely-used
-              \item in contrast to code: just zero physical page before mapping it
-          \end{itemize}
-    \item \texttt{stack}: often sparsely-used
-\end{itemize}
+% TODO: These are benefits of demand paging not VMA and are already mentioned.
+% \newpar{}
+% \ptitle{Benefits for Different Memory Regions}
+% \begin{itemize}
+%     \item \texttt{.code}
+%           \begin{itemize}
+%               \item apps have many functions: not all used at the same time.
+%               \item only allocate pages for currently used functions
+%           \end{itemize}
+%     \item \texttt{heap}
+%           \begin{itemize}
+%               \item often sparsely-used
+%               \item in contrast to code: just zero physical page before mapping it
+%           \end{itemize}
+%     \item \texttt{stack}: often sparsely-used
+% \end{itemize}
 
 \paragraph{Page Faults}
 The VMA is used to differentiate between \textbf{soft} and \textbf{hard page faults}:
@@ -917,7 +894,7 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
 \end{itemize}
 
 \paragraph{Page Swapping}
-Idea: Move pages to SSD if all DRAM is used
+Idea: Move pages to SSD if all DRAM is used % TODO: This sentence is almost all that is needed for this section. :)
 \begin{itemize}
     \item Unset present bit in the PTE. This triggers a PF on access
     \item Store physical address on SSD in the PTE to find page later

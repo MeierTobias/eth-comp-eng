@@ -297,12 +297,11 @@ addi    sp, sp, 4       # reset the stack pointer
 
 \ptitle{Remarks}
 \begin{itemize}
-    \item \texttt{jalr} stores \texttt{PC+4} in \texttt{rd}
     \item One uses \texttt{x1/ra} as \texttt{rd} by convention
-    \item Then, the called function has \texttt{ra} available in the same way as we have it in ``our'' function. The called function will analogously first push \texttt{ra} to the stack and finally return to \texttt{ra}, where we have stored \texttt{PC+4}
+    \item Then, the called function has \texttt{ra} available in the same way as we have it in ``our'' function. The called function will perform its task and finally return to \texttt{ra}, which holds the corresponding address of the line below the \texttt{jalr} instruction in ``our'' function.
     \item At the end of the main function (end of program) one usually calls
           \begin{lstlisting}[language={[RISC-V]Assembler}]
-        jalr zero, 0(ra)
+jalr zero, 0(ra)
     \end{lstlisting}
           i.e.\ no return address is stored
 \end{itemize}
@@ -314,8 +313,8 @@ RISC-V instruction set architecture (ISA) \code{RV32I} can be found in Section\ 
 \ptitle{Bitwise Invertion}
 
 \begin{lstlisting}[language={[RISC-V]Assembler}]
-addi    a1,zero, -1         # create 0b11...111
-xor     a0,a0,a1            # xor with 0b11..11
+addi    a1, zero, -1         # create 0b11...111
+xor     a0, a0,   a1         # xor with 0b11..11
 \end{lstlisting}
 Remarks:
 \begin{itemize}
@@ -327,8 +326,8 @@ Remarks:
 \ptitle{64-Bit Extension}
 
 \begin{lstlisting}[language={[RISC-V]Assembler}]
-slli    a0,a0,0x3f          # 0x3f = 63d
-srai    a0,a0,0x3f          # 64 bit extended mask of a0
+slli    a0, a0, 0x3f          # 0x3f = 63d
+srai    a0, a0, 0x3f          # 64 bit extended mask of a0
 \end{lstlisting}
 
 Remarks:
@@ -340,11 +339,11 @@ Remarks:
 \ptitle{Store Local Variables on Stack}
 
 \begin{lstlisting}[language={[RISC-V]Assembler}]
-    addi sp, sp, -8
-    # save ra on Stack
-    sw ra, 4(sp)
-    # save local variable
-    sw t0, (sp)
+addi    sp, sp,   -8
+# save ra on Stack
+sw      ra, 4(sp)
+# save local variable
+sw      t0, 0(sp)
 \end{lstlisting}
 Remark:
 \begin{itemize}
@@ -358,13 +357,13 @@ Remark:
 \begin{lstlisting}[language={[RISC-V]Assembler}]
 # a0 = base address
 # a1 = offset
-slli    a1,a1,0x2           # multiply offset by 4 (byte) 
+slli    a1, a1, 0x2         # multiply offset by 4 (byte) 
                             # <- 32-bit integer
-add     a2,a0,a1            # offset address
-
-lw      a3,0(a2)            # load signed from offset address
-addi    a3,a3,0x1           # increment by one
-sw      a3,0(a2)            # store to offset address
+add     a2, a0, a1          # offset address
+ 
+lw      a3, 0(a2)           # load signed from offset address
+addi    a3, a3, 0x1         # increment by one
+sw      a3, 0(a2)           # store to offset address
 \end{lstlisting}
 
 \newpar{}
@@ -398,24 +397,24 @@ rec_fun:
     sw      ra, 4(sp)       # save ra on the stack
 
     # check if a1 >= 1
-    add     t0,zero,1
-    bge     a1,t0,Else
-    add     a0,zero,zero
-    beq     zero,zero,Exit  # end of if
+    add     t0, zero, 1
+    bge     a1, t0, Else
+    add     a0, zero, zero
+    beq     zero, zero, Exit  # end of if
 
 Else:
     # call f(a0 = a1-1)
-    add     a0,a1,-1        # a0 = a1-1
-    add     s0,zero,a1      # save a1 for later
-    jal    ra, rec_fun     # jump to the function, ra = PC+4
+    add     a0, a1,-1         # a0 = a1-1
+    add     s0, zero,a1       # save a1 for later
+    jal     ra, rec_fun       # jump to the function, ra = PC+4
 
     # f(a1-1) is now stored in a0
-    add     a0,s0,a0
+    add     a0, s0, a0
 
 Exit:
     # post
     lw      s0, 0(sp)       
-    lw      ra, 4(sp)       # restore ra
+    lw      ra, 4(sp)        # restore ra
     addi    sp, sp, 16       # reset/decrease the stack pointer
 
 \end{lstlisting}
