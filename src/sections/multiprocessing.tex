@@ -65,7 +65,7 @@ Defines where \code{.text}/\code{.data}/\code{.bss} sections
 \ptitle{Preparing \code{.text} VMA in Jake}
 
 After starting the new process, its first instruction will cause a page fault (no mapped yet). Since Jake does not have access to the user-mode virtual memory, it uses \textit{physmap} instead which allows for modification to page tables for creating new virtual mappings by mapping the entire physical memory to virtual memory.
-
+% TODO: I think here we want to describe the copy process via the identity mapping. I would move this to the multi process section and not in the executable file section. Also the next chapter is "Starting the First Process" which is also out of order if this stays here.
 
 \subsubsection{Starting the First Process}
 Common OS start special first process (init process) which starts other processes. First, the specific process data structure must be initialized and then, one switches to user mode.
@@ -113,6 +113,7 @@ One can then switch to usermode after
     \end{lstlisting}
     \item call \code{sret} with \code{sstatus.spp = 0}
 \end{itemize}
+% TODO: Are the code examples really needed here. I think they just show a specific case and not a general idea.
 
 \subsubsection{Multiprocessing}
 Applications should be able to create new processes. Most kernels provide a system call called \texttt{fork}:
@@ -138,6 +139,7 @@ Just calling \texttt{fork} can be useful sometimes (e.g.\ running same process o
 \ptitle{Example: Combined System Call in Jake}
 
 In jake, \code{fork} and \code{exec} are combined to \code{execv}
+% TODO: Can we remove this example? This is again a very specific example for jake and not really connected to the chapter (command execv)
 \begin{lstlisting}[style=bright_C++]
 // a1: identifies next application to be run
 // a2: main() argument for next process
@@ -176,6 +178,7 @@ void scall_handler_execv()
 \subsubsection{Jake Implementation}
 % TODO: Should we add the code examples?
 % Please NO
+% Also a NO from me ;) (as commented I would remove all the code that can not be expressed as pseudo-code.)
 
 \subsection{CPU Virtualization}
 After creating the compatibility for running multiple processes one can virtualize the CPU. The idea of CPU virtualization is similar to memory virtualization:
@@ -185,14 +188,6 @@ After creating the compatibility for running multiple processes one can virtuali
     \item Policy: process scheduling
 \end{itemize}
 \subsubsection{Context Switching}
-\begin{itemize}
-    \item The process' context is \textbf{stored} in the \code{trap frame} data structure inside the process data structure.
-    \item CPU cache needs to be flushed (contains old address space)
-\end{itemize}
-
-\newpar{}
-\ptitle{Context}
-
 The designation ``context'' of a process means
 \begin{itemize}
     \item Value of the registers
@@ -201,6 +196,11 @@ The designation ``context'' of a process means
 \end{itemize}
 As VMAs and physical memory are preserved, only the CPU registers must be saved at context switch.
 
+\begin{itemize}
+    \item The process' context is \textbf{stored} in the \code{trap frame} data structure inside the process data structure.
+    \item CPU cache needs to be flushed (contains old address space)
+\end{itemize}
+
 \subsubsection{Scheduling}
 \paragraph{Round-Robin (RR) Scheduling}
 \ptitle{Cooperative RR}
@@ -208,7 +208,7 @@ As VMAs and physical memory are preserved, only the CPU registers must be saved 
 Go through the processes one by one and give each a chance to execute. In jake, one just walks the process list to find the next feasible process to implement RR.\\
 Starvation in cooperative RR:
 \begin{center}
-    \includegraphics[width = .75\linewidth]{RR_motivation.png}
+    \includegraphics[width = \linewidth]{RR_motivation.png}
 \end{center}
 Some processes that only require short CPU time might suffer starvation (blue process).
 
@@ -218,7 +218,7 @@ Some processes that only require short CPU time might suffer starvation (blue pr
 Idea of automated prioritization: kernel learns the processes' priorities. Every process starts at a high-priority priority, the kernel moves it to lower priorities if it uses the CPU too much.\\
 Starvation in priority-based RR:
 \begin{center}
-    \includegraphics[width = .75\linewidth]{RR_prio_starvation.png}
+    \includegraphics[width = \linewidth]{RR_prio_starvation.png}
 \end{center}
 To avoid this, one moves all jobs to high-priority queue once in a while.
 
@@ -231,7 +231,7 @@ To avoid this, one moves all jobs to high-priority queue once in a while.
 \begin{itemize}
     \item High-performance computing usually uses cooperative scheduling (less overhead).
     \item System call for cooperative scheduling: \code{yield}.
-    \item On \code{yield}, the kernel performance a context switch to another process:
+    \item On \code{yield}, the kernel performance a context switch to another process: % TODO: The details are already mentioned a few times. Can we remove this
           \begin{enumerate}
               \item Store the registers in the old process trap frame
               \item Load the registers of the new process from its trap frame
@@ -263,9 +263,7 @@ Pros/cons:
 \end{itemize}
 
 \paragraph{Timers}
-\begin{itemize}
-    \item External oscillator attached to CPU
-\end{itemize}
+External oscillator attached to CPU
 
 \newpar{}
 \ptitle{Memory-Mapped I/O (MMIO)}
@@ -284,6 +282,6 @@ MMIO enables interaction with devices through memory accesses: access \textbf{de
     \item We need to mret to supervisor mode for scheduling
 \end{itemize}
 \begin{center}
-    \includegraphics[width = .75\linewidth]{QEMU_timer.png}
+    \includegraphics[width = \linewidth]{QEMU_timer.png}
 \end{center}
 

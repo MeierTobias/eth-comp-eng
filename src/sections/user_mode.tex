@@ -90,6 +90,7 @@ The RISC-V mode with sandboxed execution. The kernel switches to this mode every
 
 \includegraphics[width=\linewidth]{user_mode_switch_privileges.png}
 
+% TODO: This is exactly what the image above shows.
 \newpar{}
 \ptitle{Terminology Example: Returning From S to U}
 \begin{itemize}
@@ -113,6 +114,7 @@ If the user-mode process requests a service in a controlled manner it is called 
 
 RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service which defines the registers used for arguments and the return value.
 
+% TODO: This is already stated above
 \newpar{}
 \ptitle{Machine Calls and Interrups}
 
