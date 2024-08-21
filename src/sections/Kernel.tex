@@ -52,7 +52,7 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 \begin{center}
     \includegraphics[width=\linewidth]{Allocators.png}
 \end{center}
-% TODO: we cuold remove this, since it's already shown in the diagramm
+% TODO: we could remove this, since it's already shown in the diagramm
 \begin{itemize}
     \item Slab allocator built \textit{on top} of low-level allocator:
           \begin{itemize}
@@ -78,8 +78,10 @@ Kernel allocates code/stack at program start. Heap is allocated dynamically by t
 
 \subsubsection{Linked List (LL): In-Band Metadata}
 \begin{itemize}
-    \item [+] no internal fragmentation
+    \item [+] no internal fragmentation 
     \item [-] external fragmentation
+    \item [-] 8B metadata per node
+    \item [-] slow \fncode{malloc} due to LL-walk
 \end{itemize}
 
 \newpar{}
@@ -141,8 +143,10 @@ Every bit can tell whether $N$ bytes of the heap are free
 \begin{itemize}
     \item [+] Less external fragmentation than in LL
     \item [+] Coalescing for free
+    \item [+] 1b metadata per chunk
     \item [-] More internal fragmentation: inflexible block size
     \item [-] \textbf{Additional} data to keep track of total allocation sizes (as we only know status of our $N$ byte units)
+    \item [-] slow \fncode{malloc} due to bitmap scanning
 \end{itemize}
 
 \newpar{}
@@ -184,22 +188,25 @@ Create ``sub-heaps'' (slabs) for common allocation sizes to reduce ext./int.\ fr
 \end{itemize}
 
 \newpar{}
-\ptitle{Implementation}
-% so much duplication :(((
-\begin{itemize}
-    \item LL:
-          \begin{itemize}
-              \item [+] No coalescing due to \textit{equal, fixed sizes} per slab (in contrast to vanilla LL allocator)
-              \item [+] Fast malloc: no scanning (just take 1st element of free list)
-              \item [-] Extra metadata
-          \end{itemize}
-    \item Bitmap:
-          \begin{itemize}
-              \item [+] Coalescing for free
-              \item [+] Less metadata: single bit
-              \item [-] Slow malloc due to scanning
-          \end{itemize}
-\end{itemize}
+\ptitle{Implementations}
+
+Since the slabs have a fixed size \textbf{LL-allocators} don't add \textit{external fragmentation} and \fncode{malloc} is reduced to $\mathcal{O}(1)$
+
+
+% \begin{itemize}
+%     \item LL:
+%           \begin{itemize}
+%               \item [+] No coalescing due to \textit{equal, fixed sizes} per slab (in contrast to vanilla LL allocator)
+%               \item [+] Fast malloc: no scanning (just take 1st element of free list)
+%               \item [-] Extra metadata
+%           \end{itemize}
+%     \item Bitmap:
+%           \begin{itemize}
+%               \item [+] Coalescing for free
+%               \item [+] Less metadata: single bit
+%               \item [-] Slow malloc due to scanning
+%           \end{itemize}
+% \end{itemize}
 
 \subsubsection{Page Allocation: Buddy Allocator}
 Page allocation optimizes for \textbf{full utilization}.
