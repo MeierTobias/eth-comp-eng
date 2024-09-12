@@ -170,7 +170,6 @@ Conditional branches let the PC jump to a specified line relative to the current
 \begin{itemize}
     \item 12 bits to branch ``around''
     \item Immediate is always multiplied by 2 (for compressed compatibility)
-          % TODO: please give your ok for the following 3 remarks
           \begin{itemize}
               % \item To achieve compressed compatibility the immediate gets per default multiplied by 2 (instead of 4 as for ``common'' 32-bit instructions)
               \item The immediate gets calculated in such a way that the right jump results: divide jump size in bytes by 2

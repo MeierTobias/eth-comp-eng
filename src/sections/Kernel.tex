@@ -741,7 +741,6 @@ The kernel memory space contains five regions:
 \begin{itemize}
     \item maps the entire physical memory left
     \item is required for manipulating page tables
-          % TODO: Additional purposes?
 \end{itemize}
 
 \renewcommand{\arraystretch}{1}
@@ -751,7 +750,6 @@ The kernel memory space contains five regions:
 \begin{enumerate}
     \item Bootloader loads kernel binary from SSD to beginning of DRAM
     \item Kernel assigns some physical memory as kernel stack
-          % TODO: Creates buddy datastructures on kernel stack?
     \item Enable virtual memory (turn the MMU on)
 \end{enumerate}
 
@@ -787,11 +785,10 @@ struct vma{
     struct node node;
 }
 \end{lstlisting}
-% TODO: The all the information that was here is already in the sections below and above (U bit)
 
 The kernel has a list of \textbf{virtual memory areas} (VMAs) for each process (and itself). VMAs are managed by the kernel (\code{mmap, munmap}).
 
-% TODO: These are benefits of demand paging not VMA and are already mentioned.
+%These are benefits of demand paging not VMA and are already mentioned.
 % \newpar{}
 % \ptitle{Benefits for Different Memory Regions}
 % \begin{itemize}
@@ -878,7 +875,7 @@ Map virtual addresses of multiple processes to same copy of a library. Execute-o
 \end{itemize}
 
 \paragraph{Page Swapping}
-Idea: Move pages to SSD if all DRAM is used % TODO: This sentence is almost all that is needed for this section. :)
+Idea: Move pages to SSD if all DRAM is used 
 \begin{itemize}
     \item Unset present bit in the PTE. This triggers a PF on access
     \item Store physical address on SSD in the PTE to find page later

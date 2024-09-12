@@ -14,7 +14,7 @@ Examples of data that are commonly preserved using pipeline registers are
 \begin{enumerate}
     \item PC for later PC-relative branch. Branch outcome known first after register stage (assuming shortcut:~\ref{shortcut}).\\
           Instruction word. Also contains indices of registers used per instruction (needed e.g.\ for hazard detection or final WB).
-          % TODO: Razavi told in lecture that the entire instruction word is pushed. Can we assume that the opcode and funct bits are thrown away after the IF/ID stage? At this point, we calculated the control bits and only need the register indices and immediates for later.
+          % Razavi told in lecture that the entire instruction word is pushed. Can we assume that the opcode and funct bits are thrown away after the IF/ID stage? At this point, we calculated the control bits and only need the register indices and immediates for later.
     \item Data read from register file (for EX \textit{and} MEM stage).
     \item ALU results (Used as address for MEM or as data for WB).
     \item Buffer for MEM/WB (yields 5 short stages instead of 4 long ones).
@@ -27,7 +27,6 @@ The control bits of the individual stages are then stored in an extension of the
     \item[+] shorter clock cycle
     \item[+] fewer bits in the pipeline registers (instruction not passed along)
     \item[-] redundant control information
-          % TODO: Which bits are redundant? Are the MEM&WB bits meant (as they are also available in the ID/EX stage. If we don't push them we loose them so they are not really redundant in my opinion.)? 
 \end{itemize}
 
 \begin{center}
@@ -120,7 +119,7 @@ Depending on the relative order, either the \code{EX/MEM} or the \code{MEM/WB} p
     no                             & 2      & -    & assuming reg-write takes second half, else 3 \\
     \code{EX/MEM} $\to$ \code{EX}  & 0      & 1    & no memory load                               \\
     \code{MEM/WB} $\to$ \code{EX}  & 1      & 2    & memory load                                  \\
-    \code{MEM/WB} $\to$ \code{MEM} & 0      & 2    & memory load                                  % TODO: not sure if this is right
+    \code{MEM/WB} $\to$ \code{MEM} & 0      & 2    & memory load                                  
 \end{tabularx}
 
 \renewcommand{\arraystretch}{1}
