@@ -41,19 +41,19 @@ To achieve this there are at least two modes:
 \end{itemize}
 
 \subsubsection{Address Spaces}
-In the page tables no information about a process' identity are stored. Therefore, multiple address spaces are necessary. Additionally for security reasons processes should not be allowed to create page tables by themselves. As a result the kernel handles processes and runs each process (user-mode) in an own virtual address space. The kernel itself can either run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
+The kernel handles processes and runs each process (user-mode) in an own virtual address space. The kernel itself can either run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
 
 \paragraph{Isolated Kernel / Microkernel}
 
 \includegraphics[width=\linewidth]{user_mode_isolated_kernel.png}
 
-An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive (writing \texttt{satp} every time). Privilege information are given by the type of address space (low, high), not by a PTE bit.
+An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive (\texttt{tlb} flush). Privilege information are given by the type of address space (low, high), not by a PTE bit.
 
 \paragraph{Joint Kernel / Macrokernel}
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel.png}
 
-A kernel service request only requires a switching of the privilege and not the VMA but now the privileges have to be associated to different areas within the address space. 
+A kernel service request only requires switching of the privilege and not the VMA (every app has kernel mapped).
 
 \newpar{}
 \ptitle{Defining Privilege Levels}
@@ -94,8 +94,8 @@ The RISC-V mode with sandboxed execution. The kernel switches to this mode every
 \newpar{}
 \ptitle{Terminology Example: Returning From S to U}
 \begin{itemize}
-    \item SPP: Supervisor Previous Privilege gives information about which mode to return to. E.g.\ calling \texttt{sret} from S, the previous privilege was the user mode if \texttt{sstatus.SPP=0}. When ``returning'' from S to S this would be 1.
-    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the user mode app will continue at SP=SEPC. E.g.\ in case of demand paging this will be the user \texttt{pc} that caused the soft PF.
+    \item SPP: Supervisor Previous Privilege gives information about which mode to return to when calling \texttt{sret} from S. 
+    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the user mode app will continue at \fncode{PC=SEPC}. E.g.\ in case of demand paging this will be the user \texttt{pc} that caused the soft PF.
 \end{itemize}
 
 

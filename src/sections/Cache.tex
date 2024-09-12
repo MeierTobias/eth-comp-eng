@@ -84,10 +84,9 @@ In DDR4 a cache line has due to \textit{read/write bursts} the size
 \end{itemize}
 
 \newpar{}
-\textbf{Remarks}
+\textbf{Remark}
 \begin{itemize}
-    \item In contrast to TLB cache, data/instruction cache is accessed with \textbf{physical} addresses to avoid flushing the cache when switching vmas. % TODO: Is this correct?
-    \item In the case of TLB, the data remain in DRAM but the address translation is saved in cache. For data/instruction cache the actual data are cached using their physical addresses. % TODO: Duplicated explanation. TLB stores addresses and data cache data.
+    \item In contrast to TLB cache, data/instruction cache is accessed with \textbf{physical} addresses to avoid flushing the cache when switching vmas.
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
@@ -99,6 +98,22 @@ In set-associative cache, a DRAM entry can go to any slot in their set. The \tex
     \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. 
     \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate.
     \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookup time such that, on typical workloads, most accesses do not cause eviction.
+\end{itemize}
+
+\newpar{}
+\ptitle{Address Assignment}
+
+The 32-bit address, 64 byte cache line, $n$-way $m$-set associative cache consists of
+\begin{itemize}
+    \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
+    \item \textbf{Slot} (for $m$ sets we need $\log_2(m)$ bits: \fncode{s..s})
+    \item \textbf{Tag} ($26-\log_2(m)$ bits: \fncode{tt..tttt})
+\end{itemize}
+i.e.\ now the given 16 cache lines are split up in only 2 sets. 
+\begin{itemize}
+    \item A DRAM block can reside anywhere within its set.
+    \item The tag bits fully determine the block within its set.
+    \item $\mathcal{O}(n)$ for lookup
 \end{itemize}
 
 \paragraph{Direct-Mapped Cache}
@@ -138,7 +153,7 @@ The 32-bit address of a 16-set, 64 byte cache line, direct mapped cache consists
 \ptitle{Properties}
 \begin{itemize}
     \item[+] simple design
-    \item[+] $\mathcal{O}(1)$: check one tag to detect hit/miss
+    \item[+] $\mathcal{O}(1)$ for lookup: check one tag to detect hit/miss
     \item[-] sparse population
     \item[-] violating PTL: a cache line can be evicted even though there is space left in the cache.
 \end{itemize}
@@ -163,26 +178,11 @@ The 64-bit cache line consists of
 \begin{itemize}
     \item[+] Flexible
     \item[+] Dense population
-    \item[-] $\mathcal{O}(n)$ for lookup
+    \item[-] $\mathcal{O}(n), n=16$ for lookup
     \item[-] Many tag bits
     \item[-] Search through all tags
 \end{itemize}
 
-\paragraph{Set-Associative Cache}
-
-\ptitle{Address Assignment}
-
-The 32-bit address, 64 byte cache line, 4-way 4-set associative cache consists of
-\begin{itemize}
-    \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
-    \item \textbf{Slot} (for 4 sets we need 2 bits: \fncode{ss})
-    \item \textbf{Tag} (24 bits: \fncode{tt..tttt})
-\end{itemize}
-i.e.\ now the given 16 cache lines are split up in only 2 sets. 
-\begin{itemize}
-    \item A DRAM block can reside anywhere within its set.
-    \item The tag bits fully determine the block within its set.
-\end{itemize}
 
 \subsubsection{Loading vs. Storing}
 \ptitle{Loading}

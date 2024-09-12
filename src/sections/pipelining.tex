@@ -101,7 +101,7 @@ Depending on the relative order, either the \code{EX/MEM} or the \code{MEM/WB} p
 \newpar{}
 \ptitle{Remarks}
 \begin{itemize}
-    \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd}) % TODO: store has no rd
+    % \item This approach can lead to unnecessary forwarding when using store operations (already stored register is still detected in \code{PipelineMEM/WB.rd})
     \item 3 components of hardware logic are required to handle data hazards:
           \begin{enumerate}
               \item Hazard detection logic (detect that there \textit{actually is} a hazard)
@@ -229,10 +229,6 @@ Wait less by adding additional logic to calculate the branch outcome sooner.
 \paragraph{Prediction}\label{prediction}
 Predict the outcome of a branch instruction and roll back if the prediction was wrong.
 \begin{itemize}
-    \item The previous solutions waited for the branch outcome before the first action was taken. % TODO: This is exactly what was stated above and here. Could we remove these two bullet points?
-          \begin{itemize}
-              \item Now action is taken before the result is known.
-          \end{itemize}
     \item In general:
           \begin{itemize}
               \item Simple prediction needs less HW but is less reliable.
