@@ -14,9 +14,9 @@ The principles of locality are used to increase the cache hit rate:
     \item \textbf{Principle of temporal locality (PTL)}:
           \begin{itemize}
               \item Information that was accessed recently, will likely be accessed soon again
-              \item Example: variables in a for looop
+              \item Example: variables in a for loop
           \end{itemize}
-    \item \textbf{Priciple of spatial locality (PSL)}
+    \item \textbf{Principle of spatial locality (PSL)}
           \begin{itemize}
               \item Information that is close in memory space, will be accessed together.
               \item Examples: Array, linked lists etc.\
@@ -57,14 +57,18 @@ If the TLB is full entries can be evicted using the \textit{least recently used}
 \newpar{}
 \textbf{Remarks}
 \begin{itemize}
-    \item The TLB is only valid in one virtual address space, i.e.\ the TLB needs to be flushed explicity when changing vmas!
+    \item The TLB is only valid in one virtual address space, i.e.\ the TLB needs to be flushed explicitly when changing vmas!
     \item Additionally, flush TLB in any cases where PT modification could lead to inconsistencies.
     \item Located inside MMU, managed by MMU
     \item Storing larger pages, i.e.\ huge pages in the TLB improves the coverage of the TLB. This idea is guided by PSL.
-    \item Typical sizes: $\mathcal{O}(10)$ in small CPUs, $\mathcal{O}(100)$ in larger ones.  % TODO: what does this mean? O(100)=O(10)=O(1), why would a fixed data structure not be constant in size? Do you mean that their size is in the 10s/100s?
+    \item Typical sizes: $\approx 10$ in small CPUs, $\approx 100$ in larger ones.
 \end{itemize}
 
 \subsection{Data/ Instruction Cache}
+\begin{itemize}
+    \item On data loads, the entire DRAM block gets stored in cache
+    \item Similarly for instructions, an entire DRAM \textit{block of 4 B instructions} gets stored
+\end{itemize}
 
 \subsubsection{Structure}
 \ptitle{Cache Line Size}
@@ -80,54 +84,85 @@ In DDR4 a cache line has due to \textit{read/write bursts} the size
 \end{itemize}
 
 \newpar{}
-\textbf{Remarks}
+\textbf{Remark}
 \begin{itemize}
     \item In contrast to TLB cache, data/instruction cache is accessed with \textbf{physical} addresses to avoid flushing the cache when switching vmas.
-    \item In the case of TLB, the data remain in DRAM but the address translation is saved in cache. For data/instruction cache the actual data are cached using their physical addresses.
 \end{itemize}
 
 \subsubsection{Set-Associative Cache}
-In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of entries per set (e.g.\ 4-way 4-set associative).
+In set-associative cache, a DRAM entry can go to any slot in their set. The \textbf{wayness} is the number of slots per set.
 
 \ptitle{Wayness-Set Tradeoff}
 \begin{itemize}
-    \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. %cache, one has $\mathcal{O}(1)$ lookup but the chance for eviction is higher as there is no way to dodge a conflict because only 1 cache slot is assigned per DRAM block.
-    \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate. %cache one has $\mathcal{O}(n)$ lookup but the chance for eviction is small as one can dodge conflicts.
-    \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookop time such that, on typical workloads, most accesses do not cause eviction.
-        % \item Has always less slot bits than direct-mapped cache. % For the same size of cache line this is true but also very trivial
-        % Removed comment about LRU since its duplicate. I think this should be an overview and the details are already in the subsection
+    \item \textbf{direct-mapped} (1-way n-set associative) fast lookup, high eviction rate. 
+    \item \textbf{fully-associative} (n-way 1-set associative) slow lookup, low eviction rate.
+    \item A \textbf{set-associative} cache finds a tradeoff between risk of eviction and lookup time such that, on typical workloads, most accesses do not cause eviction.
 \end{itemize}
 
-\paragraph{Direct Mapped Cache}
+\newpar{}
+\ptitle{Address Assignment}
+
+The 32-bit address, 64 byte cache line, $n$-way $m$-set associative cache consists of
+\begin{itemize}
+    \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
+    \item \textbf{Slot} (for $m$ sets we need $\log_2(m)$ bits: \fncode{s..s})
+    \item \textbf{Tag} ($26-\log_2(m)$ bits: \fncode{tt..tttt})
+\end{itemize}
+i.e.\ now the given 16 cache lines are split up in only 2 sets. 
+\begin{itemize}
+    \item A DRAM block can reside anywhere within its set.
+    \item The tag bits fully determine the block within its set.
+    \item $\mathcal{O}(n)$ for lookup
+\end{itemize}
+
+\paragraph{Direct-Mapped Cache}
 In direct-mapped cache, every slot of the cache can only map to one place in DRAM.
 \begin{itemize}
     \item Tag is the ``row'' in DRAM, ``slot'' the column.
     \item The location in cache is solely determined by the slot. However, tag must be stored also to have a full reference to DRAM.
 \end{itemize}
+
 \newpar{}
-The 64-bit cache line consists of
+\ptitle{Address Assignment}
+
+The 32-bit address of a 16-set, 64 byte cache line, direct mapped cache consists of
 \begin{itemize}
     \item \textbf{Offset} within the cache line (6 bits: \fncode{cccccc})
-    \item \textbf{Slot} (for 16/$2^4$ slots we need 4 bits: \fncode{ssss})
+    \item \textbf{Slot} (for 16 sets we need 4 bits: \fncode{ssss})
+    \begin{itemize}
+        \item Low bits are chosen for slot assignment to have different cache slots for neighbouring DRAM blocks (PSL).
+    \end{itemize}
     \item \textbf{Tag} (22 bits: \fncode{tt..tt})
 \end{itemize}
+
+\newpar{}
+\ptitle{Cache Access}
+
+\begin{enumerate}
+    \item Go to slot given by \fncode{ssss}
+    \item Compare tag in cache with \fncode{tt..tt}
+    \begin{itemize}
+        \item Success: access cache data
+        \item Fail: access DRAM
+    \end{itemize}
+\end{enumerate}
+
 \includegraphics[width = \linewidth]{Cache.png}
-% TODO: The "cash miss" entry in the picture has tag 1 instead of >>1
 \newpar{}
 \ptitle{Properties}
 \begin{itemize}
     \item[+] simple design
-    \item[+] $\mathcal{O}(1)$: check one tag to detect hit/miss
+    \item[+] $\mathcal{O}(1)$ for lookup: check one tag to detect hit/miss
     \item[-] sparse population
     \item[-] violating PTL: a cache line can be evicted even though there is space left in the cache.
 \end{itemize}
 
 \paragraph{Fully-Assiociative Cache}
-With fully-assiociative cache, every line from DRAM can go to every cache entry. 
+With fully-associative cache, every line from DRAM can go to every cache entry. 
 \begin{itemize}
     \item There are no slot bits anymore.
     \item Very small caches (e.g.\ small TLBs) use this approach.
-    \item Use LRU policy on eviction (PTL) as we ignore spatial context.
+    \item When cache is full: Use LRU policy on eviction (PTL) as we ignore spatial context.
 \end{itemize}
 
 \newpar{}
@@ -142,17 +177,18 @@ The 64-bit cache line consists of
 \begin{itemize}
     \item[+] Flexible
     \item[+] Dense population
-    \item[-] $\mathcal{O}(n)$ for lookup
+    \item[-] $\mathcal{O}(n), n=16$ for lookup
     \item[-] Many tag bits
     \item[-] Search through all tags
 \end{itemize}
+
 
 \subsubsection{Loading vs. Storing}
 \ptitle{Loading}
 \begin{itemize}
     \item If available, the memory can be read directly from cache
     \begin{itemize}
-        \item Otherways, load from DRAM and evict if necessary
+        \item Otherwise, load from DRAM and evict if necessary
     \end{itemize}
     \item Cached loads result in \textbf{clean} cache lines
 \end{itemize}

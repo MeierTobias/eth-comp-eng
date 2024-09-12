@@ -10,13 +10,18 @@ A process is an abstraction for virtualizing resources in a computing system and
 \end{itemize}
 This is achieved with the so-called sandbox execution.
 
+\newpar{}
+\ptitle{Security Through Processes}
+
+Process-specific information such as memory and CPU registers should be shielded from each other with minimal kernel intervention. Conversely, resources like console should be available for all processes.
+
 \subsection{Sandbox Execution}
 The basic idea is that processes run without any interference from the kernel unless needed like in the case of:
 \begin{itemize}
     \item explicit service needed
           \begin{itemize}
-              \item Allocate pages for a new heap
-              \item Print a character on the console
+              \item Allocate pages (a new VMA) for a new heap
+              \item Print a character on the console (kernel avoids process interference)
           \end{itemize}
     \item implicit service needed
           \begin{itemize}
@@ -36,21 +41,26 @@ To achieve this there are at least two modes:
 \end{itemize}
 
 \subsubsection{Address Spaces}
-Each process (user-mode) runs in its own virtual address space. The kernel can either run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
+The kernel handles processes and runs each process (user-mode) in an own virtual address space. The kernel itself can either run in a separate (isolated kernel) virtual address space or in the same virtual address space as the process (joint kernel).
 
-\paragraph{Isolated Kernel}
+\paragraph{Isolated Kernel / Microkernel}
 
 \includegraphics[width=\linewidth]{user_mode_isolated_kernel.png}
 
-An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive.
+An isolated kernel can provide certain security benefits but the system has to switch the address space (and privilege) every time a process needs a service from the kernel which is expensive (\texttt{tlb} flush). Privilege information are given by the type of address space (low, high), not by a PTE bit.
 
-\paragraph{Joint Kernel}
+\paragraph{Joint Kernel / Macrokernel}
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel.png}
 
-A kernel service request only requires a switching of the privilege and not the VMA but now the privilege have to be associated to different areas within the address space. This is done by setting the \textbf{U-bit} in the page table entry.
+A kernel service request only requires switching of the privilege and not the VMA (every app has kernel mapped).
 
-Data pages with U-bit unset (kernel data pages) can only be accessed by code run in pages with U-bit unset (kernel code pages). This means only kernel code can access kernel data.
+\newpar{}
+\ptitle{Defining Privilege Levels}
+
+This is done by setting the \textbf{U-bit} in the page table entry.
+
+Data pages with U-bit unset in the \textbf{leaf PTE} (kernel data pages) can only be accessed by code run in pages with U-bit unset in the leaf PTE (kernel code pages). This means only kernel code can access kernel data. Similarly code pages need the U-bit unset for executing privileged instructions such as \texttt{csrw satp 0(\dots)}.
 
 \includegraphics[width=\linewidth]{user_mode_joint_kernel_privileges.png}
 
@@ -68,7 +78,7 @@ Machine mode is the only mandatory mode in RISC-V. All RISC-V CPUs boot in machi
 \newpar{}
 \ptitle{Supervisor Mode}
 
-The kernel runs in the supervisor mode. Once in supervisor mode, the kernel can enable the MMU. A kernel (e.g., Jake) starting in machine mode can
+The kernel runs in the supervisor mode. Once in supervisor mode, the kernel can enable the MMU but must then ensure its pages have the U-bit unset to not loose access. A kernel (e.g., Jake) starting in machine mode can
 empower the supervisor mode by \textbf{delegating} (most) exceptions (e.g., page fault) before switching to it.
 
 \newpar{}
@@ -83,16 +93,16 @@ The RISC-V mode with sandboxed execution. The kernel switches to this mode every
 \newpar{}
 \ptitle{Terminology Example: Returning From S to U}
 \begin{itemize}
-    \item SPP: Supervisor Previous Privilege = 0. This means that, returning (via \texttt{sret}) from S, the previous privilege was the user mode. When ``returning'' from S to S this would be 1.
-    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the usermode app will continue at SP=SEPC.
+    \item SPP: Supervisor Previous Privilege gives information about which mode to return to when calling \texttt{sret} from S. 
+    \item PC = SEPC: Supervisor Exception PC. This means that, returning (via \texttt{sret}) from S, the user mode app will continue at \fncode{PC=SEPC}. E.g.\ in case of demand paging this will be the user \texttt{pc} that caused the soft PF.
 \end{itemize}
 
 
-\subsubsection{Switching to higher privilege IMPLICITLY}
+\subsubsection{Switching to Higher Privilege IMPLICITLY}
 
 This happens when an exception occurs (see Section~\ref{exceptions} for exception handling). Exceptions are by default delivered to machine mode. Jake (and other kernels) delegates user-mode exceptions from machine mode to supervisor mode. 
 
-\subsubsection{Switching to higher privilege EXPLICITLY}
+\subsubsection{Switching to Higher Privilege EXPLICITLY}
 
 If the user-mode process requests a service in a controlled manner it is called a \textbf{system call} for example
 \begin{itemize}
@@ -101,9 +111,16 @@ If the user-mode process requests a service in a controlled manner it is called 
     \item Creating a new process.
 \end{itemize}
 
-RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service.
+RISC-V features an instruction named \texttt{ecall} for this purpose.\ \texttt{ecall} behaves like a user-initiated exception. There is a contract between user-mode applications and the supervisor-mode kernel for requesting service which defines the registers used for arguments and the return value.
 
 \newpar{}
-% TODO: Supervisor mode to machine mode (next lecture)
+\ptitle{Machine Calls and Interrups}
 
-% TODO: Interrupts (next lecture more)
+\begin{itemize}
+    \item Supervisor can request services from machine mode
+    \item \textbf{Devices} raise interrupts to request kernel services
+    \begin{itemize}
+        \item Device-initiated exceptions, handeled similar to user exceptions
+    \end{itemize} 
+\end{itemize}
+

@@ -1,6 +1,6 @@
 \section{Multiprocessing}
-\subsection{Process Data structure}
-A central data structure (``task'' in Linux) that keeps tracks of the processes' resources:
+\subsection{Process Data Structure}
+A central data structure (``task'' in Linux) that keeps track of the processes' resources:
 \begin{itemize}
     \item Page tables
     \item VMAs
@@ -17,22 +17,24 @@ The data structure gets updated when the process
 \newpar{}
 \ptitle{Process Data structure in Jake}
 \begin{lstlisting}[style=bright_C++]
-    enum PROCESS_STATUS {
-        PROCESS_FREE_SLOT, 	// Slot free to be used
-        PROCESS_RUNNING, 	    // Usermode runs process
-        PROCESS_PAUSED, 	    // Process will be scheduled to run in usermode
-        PROCESS_RESERVED,
+struct process {
+    unsigned int pid;
+    enum PROCESS_STATUS status; 
+    struct node *uvmas;         // user VMAs
+    struct trap_frame tf;       // user registers
+    unsigned long satp;         // process' root PT
+    unsigned long heap_end_vpn;
+    struct elf_jake elf;        // where program instructions are stored
     };
-
-    struct process {
-        unsigned int pid;
-        enum PROCESS_STATUS status; 
-        struct node *uvmas;         // user VMAs
-        struct trap_frame tf;       // user registers
-        unsigned long satp;         // process' root PT
-        unsigned long heap_end_vpn;
-        struct elf_jake elf;        // where program instructions are stored
-    };
+\end{lstlisting}
+\newpar{}
+\begin{lstlisting}[style=bright_C++]
+enum PROCESS_STATUS {
+    PROCESS_FREE_SLOT, 	    // Slot free to be used
+    PROCESS_RUNNING, 	    // Usermode runs process
+    PROCESS_PAUSED, 	    // Process will be scheduled to run in usermode
+    PROCESS_RESERVED,
+};
 \end{lstlisting}
 
 \subsection{Starting a New Process}
@@ -44,35 +46,38 @@ The data structure gets updated when the process
     \item Common OS: executables stored in SSD, link to OS
     \item Jake: stored directly in kernel (no file system): need to know all applications at kernel compilation
 \end{itemize}
-\newpar{}
-\ptitle{Application Linking in Jake}
-%%% relevant? %%%
+
 \newpar{}
 \ptitle{Executable Linkable Format (ELF)}
 \begin{center}
     \includegraphics[width = .5\linewidth]{ELF.png}
 \end{center}
-Defines where \texttt{.text}/\texttt{.data}/\texttt{.bss} sections
+Defines where \code{.text}/\code{.data}/\code{.bss} sections
 \begin{itemize}
     \item are located inside the executable file
     \item should be loaded in (virtual) memory
-    \item \texttt{.text} entry address would define the first instruction of the program
-\end{itemize} 
+    \item \code{.text} entry address would define the first instruction of the program
+\end{itemize}
 
 \newpar{}
-\ptitle{Preparing \texttt{.text} VMA in Jake}
+\ptitle{Preparing \code{.text} VMA in Jake}
 
 After starting the new process, its first instruction will cause a page fault (no mapped yet). Since Jake does not have access to the user-mode virtual memory, it uses \textit{physmap} instead which allows for modification to page tables for creating new virtual mappings by mapping the entire physical memory to virtual memory.
-
 
 \subsubsection{Starting the First Process}
 Common OS start special first process (init process) which starts other processes. First, the specific process data structure must be initialized and then, one switches to user mode.
 \ptitle{Process Data Structure}
+
+On start-up, the process data structure gets populated as follows:
 \begin{itemize}
     \item Select a pid
-    \item Copy the kernel page tables of the process (kernel is mapped to each user address space)
-    \item Initialize the VMAs
-    \item Information for the \texttt{.text} VMA
+    \item Allocate root PT. Store this physical address in \texttt{satp} field
+    \item Copy the kernel page tables of the process
+    \begin{itemize}
+        \item Kernel has identical virtual address for each process but translation is process-specific (\texttt{satp})
+    \end{itemize}
+    \item Initialize the VMAs (code and stack)
+    \item Parse the \texttt{elf} datastructure
 \end{itemize}
 
 \newpar{}
@@ -82,136 +87,144 @@ Common OS start special first process (init process) which starts other processe
 \end{center}
 To start a process, the kernel needs to know
 \begin{itemize}
-    \item the \texttt{.text} section of the application (where it lies)
-    \item Address of 1st instruction (from ELF)
+    \item The \code{.text} section of the application (where it lies)
+    \item The address of 1st instruction
 \end{itemize}
 One can then switch to usermode after
 \begin{itemize}
-    \item Initializing user mode registers to zero (hide kernel registers)
-    \item Set SEPC to first instruction of the program
+    \item Initializing user mode registers to zero (hide kernel data used before \texttt{sret})
+    \item Set SEPC to first instruction (we get it from \texttt{elf.elf.e\_entry})
+    \begin{lstlisting}[style=bright_C++]
+    asm volatile("mv t0, %0\n\t"
+            "csrw sepc, t0\n\t" ::"r"(elf.elf.e_entry)
+            : "t0");
+    \end{lstlisting}
     \item Set user-mode SP (can happen in kernel (e.g.\ Jake) or user-mode)
-    \item call \texttt{sret}
+    \begin{lstlisting}[style=bright_C++]
+    asm volatile("mv a0, %[farg]\n\t"
+            "mv sp, %[stack]\n\t"
+            "li ra, 0\n\t"
+            "li t0, 0\n\t"
+            .
+            .
+    \end{lstlisting}
+    \item call \code{sret} with \code{sstatus.spp = 0}
 \end{itemize}
 
 \subsubsection{Multiprocessing}
-Applications should be able to create new processes. Most kernels provide a system call called \textit{fork}:
 
 \newpar{}
 \ptitle{Fork System Call}
 
-Fork creates an \textbf{identical copy} of the address space of the calling process
+Fork creates an \textbf{identical copy} of the address space of the calling process. The process calling fork is called \textit{parent}. Fork returns either 0 or 1 to distinguish whether one has ended up in the child or parent process.
 \begin{center}
     \includegraphics[width = 0.8\linewidth]{fork.png}
 \end{center}
 
-Just calling \textit{fork} can be useful sometimes (e.g.\ running same process on multiple CPUs) but to create a new process one must call \textit{exec}:
+Just calling \texttt{fork} can be useful sometimes (e.g.\ running same process on multiple CPUs) but to create a \textit{new} process one must call \texttt{exec}:
 
 \ptitle{Exec System Call}
 \begin{itemize}
     \item Typically called in the \textbf{child right after a fork}
-    \item Replaces VMAs of child. 
-    \item For \texttt{.text} VMA, it takes an executable file (e.g., ELF)
+    \item Replaces VMAs of child.
+    \item For \code{.text} VMA, it takes an executable file (e.g., ELF)
 \end{itemize}
 
 \newpar{}
 \ptitle{Example: Combined System Call in Jake}
 
-In jake, \texttt{fork} and \texttt{exec} are combined to \texttt{execv}
-\begin{lstlisting}[style=bright_C++]
-// a1: identifies next application to be run
-// a2: main() argument for next process
-// a3: return value
-void scall_handler_execv()
-{
-    process_list[proc_running].status = PROCESS_PAUSED;     // pause current process
-    tf_user->a0 = 0;            // success                                    
-    proc_copy_frame(&process_list[proc_running].tf, tf_user);
+In jake, \code{fork} and \code{exec} are combined to \code{execv}
+% Can we remove this example? This is again a very specific example for jake and not really connected to the chapter (command execv)
+% \begin{lstlisting}[style=bright_C++]
+% // a1: identifies next application to be run
+% // a2: main() argument for next process
+% // a3: return value
+% void scall_handler_execv()
+% {
+%     process_list[proc_running].status = PROCESS_PAUSED;     // pause current process
+%     tf_user->a0 = 0;    // return success to parent                                    
+%     proc_copy_frame(&process_list[proc_running].tf, tf_user);
 
-    void *ptr__ = NULL;
-    // next application to be run
-    switch (tf_user->a1) {
-    case 0:
-        ptr__ = &_testing;
-        break;
-    case 1:
-        ptr__ = &_hello_jr;
-        break;
-    default:
-        printerr("ERROR: Non-existing application.\n");
-        ecall_poweroff();
-        break;
-    }
-    // call next app (won't return on success!)
-    if (proc_run_process(ptr__, tf_user->a2, tf_user->a3) < 0) {
-        // failure handling
-        tf_user->a0 = -1;
-        csrw(satp, process_list[proc_running].satp);
-        pt_flush_tlb();
-        process_list[proc_running].status = PROCESS_RUNNING;
-    }
-}
-\end{lstlisting}
+%     void *ptr__ = NULL;
+%     // next application to be run
+%     switch (tf_user->a1) {
+%     case 0:
+%         ptr__ = &_testing;
+%         break;
+%     case 1:
+%         ptr__ = &_hello_jr;
+%         break;
+%     default:
+%         printerr("ERROR: Non-existing application.\n");
+%         ecall_poweroff();
+%         break;
+%     }
+%     // call next app (won't return on success!)
+%     if (proc_run_process(ptr__, tf_user->a2, tf_user->a3) < 0) {
+%         // failed creating new process
+%         tf_user->a0 = -1;
+%         csrw(satp, process_list[proc_running].satp);
+%         pt_flush_tlb();
+%         process_list[proc_running].status = PROCESS_RUNNING;
+%     }
+% }
+% \end{lstlisting}
 
 \subsection{CPU Virtualization}
 After creating the compatibility for running multiple processes one can virtualize the CPU. The idea of CPU virtualization is similar to memory virtualization:
 \begin{itemize}
-    \item Each process should have the illusion of having the entire CPU (kernel should create the illusion of infinite CPUs despite having only one or few)
+    \item Each process should have the illusion of having the entire CPU
     \item Software mechanism: context switch
     \item Policy: process scheduling
 \end{itemize}
 \subsubsection{Context Switching}
-\begin{itemize}
-    \item The process' context is \textbf{stored} in the \texttt{trap frame} data structure inside the process data structure.
-    \item CPU cache needs to be flushed (contains old address space)
-\end{itemize}
-
-\newpar{}
-\ptitle{Context}
-
 The designation ``context'' of a process means
 \begin{itemize}
     \item Value of the registers
     \item Address space (described by VMAs)
     \item Page tables and physical pages (reachable through satp)
 \end{itemize}
-As VMAs and physical memory are preserved, only the CPU registers must be saved at context switch.
+
+\newpar{}
+\ptitle{Procedure}
+
+\begin{enumerate}
+    \item Store the CPU registers in the old process trap frame (VMAs and physical memory are preserved)
+    \item Load the CPU registers of the new process from its trap frame
+    \item Flush (TLB) cache
+    \item call \code{sret}
+\end{enumerate}
 
 \subsubsection{Scheduling}
 \paragraph{Round-Robin (RR) Scheduling}
 \ptitle{Cooperative RR}
 
-Go through the processes one by one and give each a chance to execute. In jake, one just walks the process list to find the next feasible process to implement RR.\\
+Go through the processes one by one and give each a chance to execute. In jake, one just walks the process list to find the next feasible.
+
+\newpar{}
 Starvation in cooperative RR:
 \begin{center}
-    \includegraphics[width = .75\linewidth]{RR_motivation.png}
+    \includegraphics[width = \linewidth]{RR_motivation.png}
 \end{center}
 Some processes that only require short CPU time might suffer starvation (blue process).
 
 \newpar{}
 \ptitle{Priority-Based RR}
 
-Idea of automated priorization: kernel learns the processes' priorities. Every process starts at a high-priority priority, the kernel moves it to lower priorities if it uses the CPU too much.\\
+Idea of automated prioritization: kernel learns the processes' priorities. Every process starts at a high-priority priority, the kernel moves it to lower priorities if it uses the CPU too much.\\
 Starvation in priority-based RR:
 \begin{center}
-    \includegraphics[width = .75\linewidth]{RR_prio_starvation.png}
+    \includegraphics[width = \linewidth]{RR_prio_starvation.png}
 \end{center}
 To avoid this, one moves all jobs to high-priority queue once in a while.
 
 \paragraph{Scheduling Modes}
-The kernel needs to run to be able to make a scheduling decision. 
-
-\newpar{}
 \ptitle{Cooperative (Non-Preemptive) Scheduling}
 
 \begin{itemize}
     \item High-performance computing usually uses cooperative scheduling (less overhead).
-    \item System call for cooperative scheduling: \texttt{yield}.
-    \item On \texttt{yield}, the kernel performance a context switch to another process:
-    \begin{enumerate}
-        \item Store the registers in the old process trap frame
-        \item Load the registers of the new process from its trap frame
-        \item call \texttt{sret}
-    \end{enumerate}
+    \item System call for cooperative scheduling: \code{yield}.
+    \item On \code{yield}, the kernel performs a context switch to another process:
 \end{itemize}
 Pros/cons:
 \begin{itemize}
@@ -227,7 +240,7 @@ Pros/cons:
     \item Standard systems (e.g., phones, laptops, etc.) have non-cooperative scheduling (better responsiveness)
     \item Uses a timer connected to CPU to periodically generate \textbf{interrupts} (same as exception or trap)
     \item Kernel periodically preempts processes on each interrupt
-    \item Exception handling: kernel checks on interrupt whether a context switch is necessary and executes it if 
+    \item Exception handling: kernel checks on interrupt whether a context switch is necessary and executes it if
 \end{itemize}
 Pros/cons:
 \begin{itemize}
@@ -238,27 +251,25 @@ Pros/cons:
 \end{itemize}
 
 \paragraph{Timers}
-\begin{itemize}
-    \item External oscillator attached to CPU
-\end{itemize}
+External oscillator attached to CPU
 
 \newpar{}
 \ptitle{Memory-Mapped I/O (MMIO)}
 
-MMIO enables interaction with devices through memory accesses: access \textbf{device rather than DRAM}.
+MMIO enables interaction with devices through memory accesses.
 
 \newpar{}
 \ptitle{RISC-V QEMU Timers}
 
 \begin{itemize}
     \item Current QEMU version only supports machine-mode timers
-    \begin{itemize}
-        \item Timers can only be configured in machine mode
-        \item The interrupts will \textbf{always} be delivered to machine mode (non-maskable)
-    \end{itemize}
+          \begin{itemize}
+              \item Timers can only be configured in machine mode
+              \item The interrupts will \textbf{always} be delivered to machine mode (non-maskable)
+          \end{itemize}
     \item We need to mret to supervisor mode for scheduling
 \end{itemize}
 \begin{center}
-    \includegraphics[width = .75\linewidth]{QEMU_timer.png}
+    \includegraphics[width = \linewidth]{QEMU_timer.png}
 \end{center}
 
